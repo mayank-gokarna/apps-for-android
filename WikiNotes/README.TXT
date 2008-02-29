@@ -43,8 +43,25 @@ Android project should then be created, and you can browse the source,
 build the application and run it in the emulator.
 
 For instructions on how to build the application with activityCreator
-please see
-http://code.google.com/android/intro/installing.html#otherides
-for instructions of how to do this.
+Start a command line and change to the WikiNotes directory, then type
+activityCreator.py com.google.android.wikinotes.WikiNotes
 
+(It is assumed you have set up activityCreator.py, ant and emulator
+to run from the command line. Please see
+http://code.google.com/android/intro/installing.html#otherides
+for more details)
+
+It should give some warnings about files already existing, this is
+expected. Then type:
+
+ant
+
+and the project should build.
+
+Start the emulator and then install the WikiNotes.apk file from the
+bin directory:
+
+adb install WikiNotes.apk
+
+You should then be able to run the app.
 
