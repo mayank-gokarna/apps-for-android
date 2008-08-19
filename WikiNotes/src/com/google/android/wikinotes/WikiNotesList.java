@@ -16,19 +16,19 @@
 
 package com.google.android.wikinotes;
 
-import com.google.android.wikinotes.db.WikiNote;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Menu.Item;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+
+import com.google.android.wikinotes.db.WikiNote;
 
 /**
  * Activity to list wikinotes. By default, the notes are listed in the
@@ -98,7 +98,7 @@ public class WikiNotesList extends ListActivity {
         setListAdapter(adapter);
         
         // use the menu shortcut keys as default key bindings for the entire activity
-        setDefaultKeyMode(SHORTCUT_DEFAULT_KEYS);
+        setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
     }
 
     /**
@@ -108,18 +108,18 @@ public class WikiNotesList extends ListActivity {
     @Override
     protected void onListItemClick(ListView list, View view, int position, long id) {
         Cursor c = mCursor;
-        c.moveTo(position);
-        String title = c.getString(c.getColumnIndex(WikiNote.Notes.TITLE));
+        c.moveToPosition(position);
+        String title = c.getString(c.getColumnIndexOrThrow(WikiNote.Notes.TITLE));
         
         // Create the URI of the note we want to view based on the title
         Uri uri = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI, title);
-        Intent i = new Intent(Intent.VIEW_ACTION, uri);
+        Intent i = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(i);
     }
 
     @Override
-    protected void onFreeze(Bundle outState) {
-        super.onFreeze(outState);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putString(SEARCH_CRITERIA_KEY, mSearchCriteria);
     }
     
@@ -127,15 +127,15 @@ public class WikiNotesList extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         
-        menu.add(0, WikiNotes.HOME_ID, R.string.menu_home).setShortcut('#', 'h');
-        menu.add(0, WikiNotes.SEARCH_ID, R.string.menu_search).setShortcut('*', 's');
-        menu.add(0, WikiNotes.LIST_ID, R.string.menu_list);
+        menu.add(0, WikiNotes.HOME_ID, 0, R.string.menu_home).setShortcut('#', 'h');
+        menu.add(0, WikiNotes.SEARCH_ID, 0, R.string.menu_search).setShortcut('*', 's');
+        menu.add(0, WikiNotes.LIST_ID, 0, R.string.menu_list);
         return true;
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, Item item) {
-        switch (item.getId()) {
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch (item.getItemId()) {
         case WikiNotes.HOME_ID:
             goHome();
             return true;
@@ -151,14 +151,14 @@ public class WikiNotesList extends ListActivity {
     }
 
     private void listNotes() {
-        Intent i = new Intent(Intent.DEFAULT_ACTION, WikiNote.Notes.CONTENT_URI);
+        Intent i = new Intent(Intent.ACTION_VIEW, WikiNote.Notes.CONTENT_URI);
         startActivity(i);
     }
     
     private void goHome() {
         Uri startPageURL = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI, 
                 getResources().getString(WikiNotes.DEFAULT_NOTE));
-        Intent startPage = new Intent(Intent.VIEW_ACTION, startPageURL);
+        Intent startPage = new Intent(Intent.ACTION_VIEW, startPageURL);
         startActivity(startPage);
     }
 

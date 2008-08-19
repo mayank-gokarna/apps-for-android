@@ -58,7 +58,7 @@ public class WikiSearch extends Activity {
                         getText().toString();
                 if (!TextUtils.isEmpty(searchText)) {
                     Uri bodySearchURI = Uri.withAppendedPath(WikiNote.Notes.SEARCH_URI, searchText);
-                    Intent i = new Intent(Intent.DEFAULT_ACTION, bodySearchURI);
+                    Intent i = new Intent(Intent.ACTION_VIEW, bodySearchURI);
                     startActivity(i);
                     // finish is called to skip this activity in the backstack
                     finish();
@@ -73,7 +73,7 @@ public class WikiSearch extends Activity {
                 if (!TextUtils.isEmpty(searchText)) {
                     Uri titleSearchURI = Uri.withAppendedPath(
                             WikiNote.Notes.TITLE_SEARCH_URI, searchText);
-                    Intent i = new Intent(Intent.VIEW_ACTION, titleSearchURI);
+                    Intent i = new Intent(Intent.ACTION_VIEW, titleSearchURI);
                     startActivity(i);
                     // finish is called to skip this activity in the backstack
                     finish();
@@ -83,8 +83,8 @@ public class WikiSearch extends Activity {
     }
 
     @Override
-    protected void onFreeze(Bundle outState) {
-        super.onFreeze(outState);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putString(KEY_SEARCH_TEXT, 
                 ((EditText) findViewById(R.id.body_search)).getText().toString());
     }

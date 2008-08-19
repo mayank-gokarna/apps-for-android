@@ -18,6 +18,7 @@ package com.google.android.wikinotes.db;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -43,7 +44,7 @@ import java.util.HashMap;
  */
 public class WikiNotesProvider extends ContentProvider {
 
-    private SQLiteDatabase mDb;
+	private DatabaseHelper dbHelper;
 
     private static final String TAG = "WikiNotesProvider";
     private static final String DATABASE_NAME = "wikinotes.db";
@@ -63,8 +64,11 @@ public class WikiNotesProvider extends ContentProvider {
      * upgrade the database from previous versions.
      */
     private static class DatabaseHelper extends SQLiteOpenHelper {
+        public DatabaseHelper(Context context) {
+			super(context, DATABASE_NAME, null, DATABASE_VERSION);			
+		}
 
-        @Override
+		@Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE wikinotes (_id INTEGER PRIMARY KEY,"
                     + "title TEXT COLLATE LOCALIZED NOT NULL," + "body TEXT,"
@@ -85,9 +89,8 @@ public class WikiNotesProvider extends ContentProvider {
         // On the creation of the content provider, open the database,
         // the Database helper will create a new version of the database
         // if needed through the functionality in SQLiteOpenHelper
-        DatabaseHelper dbHelper = new DatabaseHelper();
-        mDb = dbHelper.openDatabase(getContext(), DATABASE_NAME, null, DATABASE_VERSION);
-        return (mDb == null) ? false : true;
+        dbHelper = new DatabaseHelper(getContext());
+        return true;
     }
 
     /**
@@ -148,6 +151,7 @@ public class WikiNotesProvider extends ContentProvider {
         }
 
         // Run the query and return the results as a Cursor
+        SQLiteDatabase mDb = dbHelper.getReadableDatabase();
         Cursor c = qb.query(mDb, projection, null, whereArgs, null, null, orderBy);
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
@@ -218,8 +222,8 @@ public class WikiNotesProvider extends ContentProvider {
             values.put(WikiNote.Notes.BODY, "");
         }
 
-        rowID = mDb.insert("wikinotes", "body", values);
-        
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        rowID = db.insert("wikinotes", "body", values);        
         if (rowID > 0) {
             Uri newUri = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI, uri.getLastPathSegment());
             getContext().getContentResolver().notifyChange(newUri, null);
@@ -243,9 +247,10 @@ public class WikiNotesProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {
         int count;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (URI_MATCHER.match(uri)) {
         case NOTES:
-            count = mDb.delete("wikinotes", where, whereArgs);
+            count = db.delete("wikinotes", where, whereArgs);
             break;
 
         case NOTE_NAME:
@@ -253,7 +258,7 @@ public class WikiNotesProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Cannot update note using where clause");
             }
             String title = uri.getPathSegments().get(1);
-            count = mDb.delete("wikinotes", "title=?", new String[] {title});
+            count = db.delete("wikinotes", "title=?", new String[] {title});
             break;
 
         default:
@@ -276,19 +281,15 @@ public class WikiNotesProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         int count;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (URI_MATCHER.match(uri)) {
         case NOTES:
-            count = mDb.update("notes", values, where, whereArgs);
+            count = db.update("notes", values, where, whereArgs);
             break;
 
         case NOTE_NAME:
-            // where clause and params not supported by this kind of update
-            if (!TextUtils.isEmpty(where) || (whereArgs != null)) {
-                throw new UnsupportedOperationException("Cannot update note using where clause");
-            }
-            String title = uri.getPathSegments().get(1);
             values.put(WikiNote.Notes.MODIFIED_DATE, System.currentTimeMillis());
-            count = mDb.update("wikinotes", values, "title=?", new String[] {title});
+            count = db.update("wikinotes", values, where, whereArgs);
             break;
 
         default:

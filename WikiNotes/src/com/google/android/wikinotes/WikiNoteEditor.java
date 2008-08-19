@@ -16,15 +16,16 @@
 
 package com.google.android.wikinotes;
 
-import com.google.android.wikinotes.db.WikiNote;
-
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.google.android.wikinotes.db.WikiNote;
 
 /**
  * Wikinote editor activity. This is a very simple activity that allows 
@@ -37,7 +38,8 @@ import android.widget.EditText;
  */
 public class WikiNoteEditor extends Activity {
 
-    private EditText mNoteEdit;
+    protected static final String ACTIVITY_RESULT = "com.google.android.wikinotes.EDIT";
+	private EditText mNoteEdit;
     private String mWikiNoteTitle;
     
     @Override
@@ -80,8 +82,10 @@ public class WikiNoteEditor extends Activity {
         // set listeners for the confirm and cancel buttons
         ((Button) findViewById(R.id.confirmButton)).setOnClickListener(new OnClickListener() {
             public void onClick(View view) {
-                setResult(RESULT_OK, mNoteEdit.getText().toString());
-                finish();
+            	Intent i = new Intent();
+            	i.putExtra(ACTIVITY_RESULT, mNoteEdit.getText().toString());
+            	setResult(RESULT_OK, i);
+            	finish();
             }
         });
         
@@ -95,8 +99,8 @@ public class WikiNoteEditor extends Activity {
     }
 
     @Override
-    protected void onFreeze(Bundle outState) {
-        super.onFreeze(outState);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putString(WikiNote.Notes.TITLE, mWikiNoteTitle);
         outState.putString(WikiNote.Notes.BODY, mNoteEdit.getText().toString());
     }
