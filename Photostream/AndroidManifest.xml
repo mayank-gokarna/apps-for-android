@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.android.photostream">
+
+    <uses-permission android:name="android.permission.INTERNET" />    
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
+    <application
+        android:label="@string/application_name"
+        android:theme="@style/Theme"
+        android:icon="@drawable/application_icon">
+
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/application_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Alias activity used to set the wallpaper on Home. The alias is used
+             simply to have a different label. -->
+        <activity-alias android:name="WallpaperActivity"
+            android:targetActivity="LoginActivity"
+            android:label="@string/activity_set_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.SET_WALLPAPER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Alias activity used to create shortcuts on Home. The alias is used
+             simply to have a different label. -->
+        <activity-alias android:name="CreateShortcutActivity"
+            android:targetActivity="LoginActivity"
+            android:label="@string/activity_create_shortcut">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- action: VIEW, data: flickr://photos/nsid -->
+        <!-- action: VIEW, extra: com.google.android.photostream.extra_user, Flickr.User -->
+        <activity
+            android:name=".PhotostreamActivity"
+            android:label="@string/application_name">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="flickr" android:host="photos" />
+            </intent-filter>
+        </activity>
+
+        <!-- action: VIEW, data: flickr://photo/id (NOT IMPLEMENTED) -->
+        <!-- action: VIEW, extra: com.google.android.photostream.extra_photo, Flickr.Photo -->
+        <activity
+            android:name=".ViewPhotoActivity"
+            android:label="@string/application_name">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="flickr" android:host="photo" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>
