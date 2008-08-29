@@ -286,7 +286,7 @@ public class PhotostreamActivity extends Activity implements
             final int count = list.getCount();
 
             for (int i = 0; i < count; i++) {
-                if (isCancelled()) continue;
+                if (isCancelled()) break;
 
                 final Flickr.Photo photo = list.get(i);
                 Bitmap bitmap = photo.loadPhotoBitmap(Flickr.PhotoSize.THUMBNAIL);

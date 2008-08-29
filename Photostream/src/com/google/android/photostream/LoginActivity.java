@@ -25,6 +25,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.text.Selection;
+import android.text.Spannable;
 
 /**
  * Activity used to login the user. The activity asks for the user name and then starts
@@ -95,6 +97,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         final SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         final String username = preferences.getString(PREFERENCE_USERNAME, DEFAULT_USERNAME);
         mUsername.setText(username);
+        Selection.setSelection((Spannable) mUsername.getText(), username.length());
 
         if (mSwitcher.getDisplayedChild() != 0) {
             mSwitcher.setDisplayedChild(0);
