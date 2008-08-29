@@ -55,7 +55,6 @@ public class WikiNotesProvider extends ContentProvider {
     private static final int NOTES = 1;
     private static final int NOTE_NAME = 2;
     private static final int NOTE_SEARCH = 3;
-    private static final int NOTE_TITLE_SEARCH = 4;
 
     private static final UriMatcher URI_MATCHER;
 
@@ -118,8 +117,9 @@ public class WikiNotesProvider extends ContentProvider {
             // this match searches for a text match in the body of notes
             qb.setTables("wikinotes");
             qb.setProjectionMap(NOTES_LIST_PROJECTION_MAP);
-            qb.appendWhere("body like ?");
-            whereArgs = new String[] {"%" + uri.getLastPathSegment() + "%"};
+            qb.appendWhere("body like ? or title like ?");
+            whereArgs = new String[2];
+            whereArgs[0] = whereArgs[1] = "%" + uri.getLastPathSegment() + "%";
             break;
 
         case NOTE_NAME:
@@ -129,14 +129,6 @@ public class WikiNotesProvider extends ContentProvider {
             whereArgs = new String[] {uri.getLastPathSegment()};
             break;
             
-        case NOTE_TITLE_SEARCH:
-            // and this match searches for a text match in the title of notes
-            qb.setTables("wikinotes");
-            qb.setProjectionMap(NOTES_LIST_PROJECTION_MAP);
-            qb.appendWhere("title like ?");
-            whereArgs = new String[] {"%" + uri.getLastPathSegment() + "%"};
-            break;
-
         default:
             // anything else is considered and illegal request
             throw new IllegalArgumentException("Unknown URL " + uri);
@@ -167,7 +159,6 @@ public class WikiNotesProvider extends ContentProvider {
         switch (URI_MATCHER.match(uri)) {
         case NOTES:
         case NOTE_SEARCH:
-        case NOTE_TITLE_SEARCH:
             // for a notes list, or search results, return a mimetype indicating
             // a directory of wikinotes
             return "vnd.android.cursor.dir/vnd.google.wikinote";
@@ -225,7 +216,7 @@ public class WikiNotesProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         rowID = db.insert("wikinotes", "body", values);        
         if (rowID > 0) {
-            Uri newUri = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI, uri.getLastPathSegment());
+            Uri newUri = Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI, uri.getLastPathSegment());
             getContext().getContentResolver().notifyChange(newUri, null);
             return newUri;
         }
@@ -257,8 +248,8 @@ public class WikiNotesProvider extends ContentProvider {
             if (!TextUtils.isEmpty(where) || (whereArgs != null)) {
                 throw new UnsupportedOperationException("Cannot update note using where clause");
             }
-            String title = uri.getPathSegments().get(1);
-            count = db.delete("wikinotes", "title=?", new String[] {title});
+            String noteId = uri.getPathSegments().get(1);
+            count = db.delete("wikinotes", "_id=?", new String[] {noteId});
             break;
 
         default:
@@ -311,7 +302,6 @@ public class WikiNotesProvider extends ContentProvider {
         URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wikinotes", NOTES);
         URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wikinotes/*", NOTE_NAME);
         URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wiki/search/*", NOTE_SEARCH);
-        URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wiki/titlesearch/*", NOTE_TITLE_SEARCH);
 
         NOTES_LIST_PROJECTION_MAP = new HashMap<String, String>();
         NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes._ID, "_id");

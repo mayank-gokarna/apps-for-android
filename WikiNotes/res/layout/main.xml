@@ -23,8 +23,6 @@
     <TextView android:id="@+id/noteview"  
         android:layout_width="fill_parent" 
         android:layout_height="fill_parent"
-        android:background="@drawable/parchmentbase"
-        android:textColor="#000000"
-        android:textSize="16sp" />
+        android:textSize="10pt" />
 
 </LinearLayout>

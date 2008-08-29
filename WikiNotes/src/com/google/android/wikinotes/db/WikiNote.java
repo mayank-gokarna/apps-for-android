@@ -31,7 +31,7 @@ public class WikiNote {
          * The content:// style URI for this table - this to see all 
          * notes or append a note name to see just the matching note.
          */
-        public static final Uri CONTENT_URI = Uri.parse(
+        public static final Uri ALL_NOTES_URI = Uri.parse(
                 "content://com.google.android.wikinotes.db.wikinotes/wikinotes");
         
         /**
@@ -40,13 +40,6 @@ public class WikiNote {
          */
         public static final Uri SEARCH_URI = Uri.parse(
                 "content://com.google.android.wikinotes.db.wikinotes/wiki/search");
-
-        /**
-         * This URI can be used to search the titles of notes for
-         * an appended search item
-         */
-        public static final Uri TITLE_SEARCH_URI = Uri.parse(
-                "content://com.google.android.wikinotes.db.wikinotes/wiki/titlesearch");
 
         /**
          * The default sort order for this table - 

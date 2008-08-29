@@ -17,12 +17,9 @@
 package com.google.android.wikinotes;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,11 +46,6 @@ import java.util.regex.Pattern;
  */
 public class WikiNotes extends Activity {
 	/**
-	 * The default page name to use if none is specified
-	 */
-	public static final int DEFAULT_NOTE = R.string.start_page;
-
-	/**
 	 * The view URL which is prepended to a matching wikiword in order to fire
 	 * the WikiNotes activity again through Linkify
 	 */
@@ -62,19 +54,15 @@ public class WikiNotes extends Activity {
 
 	public static final int EDIT_ID = Menu.FIRST;
 	public static final int HOME_ID = Menu.FIRST + 1;
-	public static final int SEARCH_ID = Menu.FIRST + 2;
 	public static final int LIST_ID = Menu.FIRST + 3;
 	public static final int DELETE_ID = Menu.FIRST + 4;
-	public static final int ACTIVITY_EDIT = 1;
-	public static final int ACTIVITY_DELETE = 2;
-	public static final int ACTIVITY_LIST = 3;
-	public static final int ACTIVITY_SEARCH = 4;
 
 	private TextView mNoteView;
-	private Cursor mCursor;
+	Cursor mCursor;
 	private Uri mURI;
-	private String mNoteName;
+	String mNoteName;
 	private static final Pattern WIKI_WORD_MATCHER;
+	private WikiActivityHelper mHelper;
 
 	static {
 		// Compile the regular expression pattern that will be used to
@@ -101,8 +89,8 @@ public class WikiNotes extends Activity {
 		// do we have a correct URI including the note name?
 		if ((uri == null) || (uri.getPathSegments().size() < 2)) {
 			// if not, build one using the default StartPage name
-			uri = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI,
-					getResources().getString(DEFAULT_NOTE));
+			uri = Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI,
+					getResources().getString(R.string.start_page));
 		}
 
 		// can we find a matching note?
@@ -135,6 +123,7 @@ public class WikiNotes extends Activity {
 		mURI = uri;
 		mCursor = cursor;
 		cursor.moveToFirst();
+		mHelper = new WikiActivityHelper(this, cursor);
 
 		// get the note name
 		String noteName = cursor.getString(cursor
@@ -146,7 +135,7 @@ public class WikiNotes extends Activity {
 
 		// If a new note was created, jump straight into editing it
 		if (newNote) {
-			editNote();
+			mHelper.editNote(noteName);
 		}
 
 		// Set the menu shortcut keys to be default keys for the activity as
@@ -187,18 +176,16 @@ public class WikiNotes extends Activity {
 
 		// Now add in the custom linkify match for WikiWords
 		Linkify.addLinks(noteView, WIKI_WORD_MATCHER,
-				WikiNote.Notes.CONTENT_URI.toString() + "/");
+				WikiNote.Notes.ALL_NOTES_URI.toString() + "/");
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-
-		menu.add(0, EDIT_ID, 0, R.string.menu_edit).setShortcut('3', 'e');
-		menu.add(0, HOME_ID, 0, R.string.menu_home).setShortcut('#', 'h');
-		menu.add(0, SEARCH_ID, 0, R.string.menu_search).setShortcut('*', 's');
-		menu.add(0, LIST_ID, 0, R.string.menu_list);
-		menu.add(0, DELETE_ID, 0, R.string.menu_delete);
+		menu.add(0, EDIT_ID, 0, R.string.menu_edit).setShortcut('1', 'e').setIcon(R.drawable.icon_delete);
+		menu.add(0, HOME_ID, 0, R.string.menu_start).setShortcut('4', 'h').setIcon(R.drawable.icon_start);
+		menu.add(0, LIST_ID, 0, R.string.menu_recent).setShortcut('3', 'r').setIcon(R.drawable.icon_recent);
+		menu.add(0, DELETE_ID, 0, R.string.menu_delete).setShortcut('2', 'd').setIcon(R.drawable.icon_delete);
 		return true;
 	}
 
@@ -206,93 +193,20 @@ public class WikiNotes extends Activity {
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case EDIT_ID:
-			editNote();
+			mHelper.editNote(mNoteName);
 			return true;
 		case HOME_ID:
-			goHome();
+			mHelper.goHome();
 			return true;
 		case DELETE_ID:
-			deleteNote();
-			return true;
-		case SEARCH_ID:
-			searchNotes();
+			mHelper.deleteNote();
 			return true;
 		case LIST_ID:
-			listNotes();
+			mHelper.listNotes();
 			return true;
 		default:
 			return false;
 		}
-	}
-
-	/**
-	 * If a list of notes is requested, fire the WikiNotes list Content URI and
-	 * let the WikiNotesList activity handle it.
-	 */
-	private void listNotes() {
-		Intent i = new Intent(Intent.ACTION_VIEW, WikiNote.Notes.CONTENT_URI);
-		startActivity(i);
-	}
-
-	/**
-	 * If requested, go back to the start page wikinote by requesting an intent
-	 * with the default start page URI
-	 */
-	private void goHome() {
-		Uri startPageURL = Uri.withAppendedPath(WikiNote.Notes.CONTENT_URI,
-				getResources().getString(DEFAULT_NOTE));
-		Intent startPage = new Intent(Intent.ACTION_VIEW, startPageURL);
-		startActivity(startPage);
-	}
-
-	/**
-	 * Create an intent to start the WikiNoteEditor using the current title and
-	 * body information (if any).
-	 */
-	private void editNote() {
-		// This intent could use the android.intent.action.EDIT for a wiki note
-		// to invoke, but instead I wanted to demonstrate the mechanism for
-		// invoking
-		// an intent on a known class within the same application directly. Note
-		// also that the title and body of the note to edit are passed in using
-		// the extras bundle.
-		Intent i = new Intent(this, WikiNoteEditor.class);
-		i.putExtra(WikiNote.Notes.TITLE, mNoteName);
-		Cursor c = mCursor;
-		i.putExtra(WikiNote.Notes.BODY, c.getString(c
-				.getColumnIndexOrThrow(WikiNote.Notes.BODY)));
-		startActivityForResult(i, ACTIVITY_EDIT);
-	}
-
-	/**
-	 * If requested, delete the current note. The user is prompted to confirm
-	 * this operation with a dialog, and if they choose to go ahead with the
-	 * deletion, the current activity is finish()ed once the data has been
-	 * removed, so that android naturally backtracks to the previous activity.
-	 */
-	private void deleteNote() {
-		new AlertDialog.Builder(this).setTitle(
-				getResources().getString(R.string.delete_title)).setMessage(
-				R.string.delete_message).setPositiveButton(R.string.yes_button,
-				new OnClickListener() {
-					public void onClick(DialogInterface dialog, int arg1) {
-						Cursor c = mCursor;
-						Uri noteUri = ContentUris.withAppendedId(
-								WikiNote.Notes.CONTENT_URI, c.getInt(0));
-						getContentResolver().delete(noteUri, null, null);
-						setResult(RESULT_OK);
-						finish();
-					}
-				}).setNegativeButton(R.string.no_button, null).show();
-	}
-
-	/**
-	 * Fire a targeted intent request to the WikiSearch class to show a search
-	 * screen.
-	 */
-	private void searchNotes() {
-		Intent i = new Intent(this, WikiSearch.class);
-		startActivity(i);
 	}
 
 	/**
@@ -303,12 +217,12 @@ public class WikiNotes extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent result) {
 		super.onActivityResult(requestCode, resultCode, result);
-		if ((requestCode == ACTIVITY_EDIT) && (resultCode == RESULT_OK)) {
+		if ((requestCode == WikiActivityHelper.ACTIVITY_EDIT) && (resultCode == RESULT_OK)) {
 			// edit was confirmed - store the update
 			Cursor c = mCursor;
 			c.requery();
 			c.moveToFirst();
-			Uri noteUri = ContentUris.withAppendedId(WikiNote.Notes.CONTENT_URI, c.getInt(0));
+			Uri noteUri = ContentUris.withAppendedId(WikiNote.Notes.ALL_NOTES_URI, c.getInt(0));
 			ContentValues values = new ContentValues();
 			values.put(WikiNote.Notes.BODY, result
 					.getStringExtra(WikiNoteEditor.ACTIVITY_RESULT));

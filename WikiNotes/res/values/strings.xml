@@ -1,32 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 
- * Copyright (C) 2008 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- -->
- 
+<!--
+	* Copyright (C) 2008 Google Inc. 
+	* 
+	* Licensed under the Apache License, Version 2.0 (the "License");
+	* you may not use this file except in compliance with the License.
+	* You may obtain a copy of the License at
+	* 
+	*     http://www.apache.org/licenses/LICENSE-2.0
+	* 
+	* Unless required by applicable law or agreed to in writing, software
+	* distributed under the License is distributed on an "AS IS" BASIS,
+	* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	* See the License for the specific language governing permissions and
+	* limitations under the License.
+-->
 <resources>
-    <string name="app_name">Wiki Notes</string>
-    <string name="wiki_title">Wiki Notes - %s</string>
+	<string name="app_name">Wiki Notes</string>
+	<string name="wiki_title">Wiki Notes -%s</string>
     <string name="wiki_editing">Editing Note - %s</string>
     <string name="confirm_button">Confirm</string>
     <string name="cancel_button">Cancel</string>
-    <string name="menu_edit">Edit Page</string>
-    <string name="menu_home">Go To Start Page</string>
-    <string name="menu_search">Search Pages</string>
-    <string name="menu_list">List Recently Updated Pages</string>
-    <string name="menu_delete">Delete Current Page</string>
-    <string name="delete_title">Delete Page?</string>
+    <string name="delete_title">Delete Note?</string>
     <string name="delete_message">Really delete this page? All information will be lost!</string>
     <string name="yes_button">Yes</string>
     <string name="no_button">No</string>
@@ -35,5 +29,9 @@
     <string name="search_body">Search Contents</string>
     <string name="search_titles">Search Titles</string>
     <string name="search_title">Search Notes</string>
-    <string name="start_page">StartPage</string>
+    <string name="start_page">Top Note</string>
+    <string name="menu_edit">Edit Note</string>
+    <string name="menu_start">Go To Start Note</string>
+    <string name="menu_recent">List All Notes</string>
+    <string name="menu_delete">Delete Note</string>
 </resources>
