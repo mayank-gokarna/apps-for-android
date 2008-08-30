@@ -30,6 +30,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.widget.ImageView;
 import android.widget.ViewAnimator;
 
@@ -48,11 +49,15 @@ public class PhotostreamActivity extends Activity implements
 
     private static final String STATE_USER = "com.google.android.photostream.state_user";
     private static final String STATE_PAGE = "com.google.android.photostream.state_page";
+    private static final String STATE_PAGE_COUNT = "com.google.android.photostream.state_pagecount";
 
     private static final int PHOTOS_COUNT_PER_PAGE = 6;
 
     private Flickr.User mUser;
     private int mCurrentPage = 1;
+    private int mPageCount = 0;
+
+    private LayoutInflater mInflater;
 
     private ViewAnimator mSwitcher;
     private View mMenuNext;
@@ -109,6 +114,7 @@ public class PhotostreamActivity extends Activity implements
         if (savedInstanceState != null) {
             user = savedInstanceState.getParcelable(STATE_USER);
             mCurrentPage = savedInstanceState.getInt(STATE_PAGE);
+            mPageCount = savedInstanceState.getInt(STATE_PAGE_COUNT);
         } else {
             user = getUser();
             if (user == null) {
@@ -151,6 +157,7 @@ public class PhotostreamActivity extends Activity implements
     }
 
     private void setupViews() {
+        mInflater = LayoutInflater.from(PhotostreamActivity.this);
         mNextAnimation = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_slide_next);
         mBackAnimation = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_slide_back);
 
@@ -173,6 +180,7 @@ public class PhotostreamActivity extends Activity implements
 
         outState.putParcelable(STATE_USER, mUser);
         outState.putInt(STATE_PAGE, mCurrentPage);
+        outState.putInt(STATE_PAGE_COUNT, mPageCount);
     }
 
     @Override
@@ -197,11 +205,24 @@ public class PhotostreamActivity extends Activity implements
         }
     }
 
-    private void prepareMenu(Flickr.PhotoList list) {
-        if (list == null) return;
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        final GridLayout grid = mGrid;
+        final int count = grid.getChildCount();
+        final LoadedPhoto[] list = new LoadedPhoto[count];
 
+        for (int i = 0; i < count; i++) {
+            final ImageView v = (ImageView) grid.getChildAt(i);
+            list[i] = new LoadedPhoto(((BitmapDrawable) v.getDrawable()).getBitmap(),
+                    (Flickr.Photo) v.getTag());
+        }
+
+        return list;
+    }
+
+    private void prepareMenu(int pageCount) {
         final boolean backVisible = mCurrentPage > 1;
-        final boolean nextVisible = mCurrentPage < list.getPageCount();
+        final boolean nextVisible = mCurrentPage < pageCount;
 
         mMenuBack.setVisibility(backVisible ? View.VISIBLE : View.GONE);
         mMenuNext.setVisibility(nextVisible ? View.VISIBLE : View.GONE);
@@ -210,7 +231,17 @@ public class PhotostreamActivity extends Activity implements
     }
 
     private void loadPhotos() {
-        mTask = new GetPhotoListTask().execute(mCurrentPage);
+        final Object data = getLastNonConfigurationInstance();
+        if (data == null) {
+            mTask = new GetPhotoListTask().execute(mCurrentPage);
+        } else {
+            final LoadedPhoto[] photos = (LoadedPhoto[]) data;
+            for (LoadedPhoto photo : photos) {
+                addPhoto(photo);
+            }
+            prepareMenu(mPageCount);
+            mSwitcher.showNext();
+        }
     }
 
     private void showPhotos(Flickr.PhotoList photos) {
@@ -267,17 +298,24 @@ public class PhotostreamActivity extends Activity implements
         return translate;
     }
 
+    private void addPhoto(LoadedPhoto... value) {
+        ImageView image = (ImageView) mInflater.inflate(R.layout.grid_item_photo, mGrid, false);
+        image.setImageBitmap(value[0].mBitmap);
+        image.startAnimation(createAnimationForChild(mGrid.getChildCount()));
+        image.setTag(value[0].mPhoto);
+        image.setOnClickListener(PhotostreamActivity.this);
+        mGrid.addView(image);
+    }    
+
     /**
      * Background task used to load each individual photo. The task loads each photo
      * in order and publishes each loaded Bitmap as a progress unit. The tasks ends
      * by hiding the progress bar and showing the menu.
      */
     private class LoadPhotosTask extends UserTask<Flickr.PhotoList, LoadedPhoto, Flickr.PhotoList> {
-        private final LayoutInflater mInflater;
         private final Random mRandom;
 
         private LoadPhotosTask() {
-            mInflater = LayoutInflater.from(PhotostreamActivity.this);
             mRandom = new Random();
         }
 
@@ -314,17 +352,13 @@ public class PhotostreamActivity extends Activity implements
          */
         @Override
         public void processProgress(LoadedPhoto... value) {
-            ImageView image = (ImageView) mInflater.inflate(R.layout.grid_item_photo, mGrid, false);
-            image.setImageBitmap(value[0].mBitmap);
-            image.startAnimation(createAnimationForChild(mGrid.getChildCount()));
-            image.setTag(value[0].mPhoto);
-            image.setOnClickListener(PhotostreamActivity.this);
-            mGrid.addView(image);
+            addPhoto(value);
         }
 
         @Override
         public void end(Flickr.PhotoList result) {
-            prepareMenu(result);
+            mPageCount = result.getPageCount();
+            prepareMenu(mPageCount);
             mSwitcher.showNext();
             mTask = null;            
         }

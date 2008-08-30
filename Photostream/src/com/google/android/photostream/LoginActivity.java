@@ -86,7 +86,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         // enter it every time
         final SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         final SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(PREFERENCE_USERNAME, mUsername.getText().toString());
+        editor.putString(PREFERENCE_USERNAME, mUsername.getText().toString().trim());
         editor.commit();
     }
 
@@ -175,7 +175,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         }
 
         public Flickr.User doInBackground(String... params) {
-            return Flickr.get().findByUserName(params[0]);
+            return Flickr.get().findByUserName(params[0].trim());
         }
 
         @Override
@@ -200,7 +200,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         }
 
         public UserShortcut doInBackground(String... params) {
-            Flickr.User user = Flickr.get().findByUserName(params[0]);
+            Flickr.User user = Flickr.get().findByUserName(params[0].trim());
             if (user == null) return null;
 
             Flickr.UserInfo info = Flickr.get().getUserInfo(user);
