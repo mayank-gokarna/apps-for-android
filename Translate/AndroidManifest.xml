@@ -1,0 +1,21 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.beust.android.translate">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application android:label="Translate" 
+        android:icon="@drawable/babelfish">
+
+        <activity android:name="TranslateActivity" android:label="Translate">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="HistoryActivity" android:label="History">
+        </activity>
+    </application>
+</manifest>
+
