@@ -40,6 +40,8 @@ import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -125,6 +127,8 @@ class Flickr {
             "http://www.flickr.com/images/buddyicon.jpg";
 
     private static final int IO_BUFFER_SIZE = 4 * 1024;
+
+    private static final boolean FLAG_DECODE_PHOTO_STREAM_WITH_SKIA = false;
 
     private static final Flickr sInstance = new Flickr();
 
@@ -399,22 +403,28 @@ class Flickr {
         Bitmap loadBuddyIcon() {
             Bitmap bitmap = null;
             InputStream in = null;
+            OutputStream out = null;
 
             try {
                 in = new BufferedInputStream(new URL(getBuddyIconUrl()).openStream(),
                         IO_BUFFER_SIZE);
-                bitmap = BitmapFactory.decodeStream(in);
+
+                if (FLAG_DECODE_PHOTO_STREAM_WITH_SKIA) {
+                    bitmap = BitmapFactory.decodeStream(in);
+                } else {
+                    final ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
+                    out = new BufferedOutputStream(dataStream, IO_BUFFER_SIZE);
+                    copy(in, out);
+                    out.flush();
+
+                    final byte[] data = dataStream.toByteArray();
+                    bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                }
             } catch (IOException e) {
                 android.util.Log.e(Flickr.LOG_TAG, "Could not load buddy icon: " + this, e);
             } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        android.util.Log.e(Flickr.LOG_TAG,
-                                "Could not close buddy icon input stream", e);
-                    }
-                }
+                closeStream(in);
+                closeStream(out);
             }
 
             return bitmap;
@@ -524,21 +534,28 @@ class Flickr {
         Bitmap loadPhotoBitmap(PhotoSize size) {
             Bitmap bitmap = null;
             InputStream in = null;
+            BufferedOutputStream out = null;
 
             try {
                 in = new BufferedInputStream(new URL(getUrl(size)).openStream(),
                         IO_BUFFER_SIZE);
-                bitmap = BitmapFactory.decodeStream(in);
+
+                if (FLAG_DECODE_PHOTO_STREAM_WITH_SKIA) {
+                    bitmap = BitmapFactory.decodeStream(in);
+                } else {
+                    final ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
+                    out = new BufferedOutputStream(dataStream, IO_BUFFER_SIZE);
+                    copy(in, out);
+                    out.flush();
+
+                    final byte[] data = dataStream.toByteArray();
+                    bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                }
             } catch (IOException e) {
                 android.util.Log.e(Flickr.LOG_TAG, "Could not load photo: " + this, e);
             } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        android.util.Log.e(Flickr.LOG_TAG, "Could not close photo input stream", e);
-                    }
-                }
+                closeStream(in);
+                closeStream(out);
             }
 
             return bitmap;
@@ -1011,6 +1028,38 @@ class Flickr {
         builder.path(API_REST_URL).appendQueryParameter(PARAM_API_KEY, API_KEY);
         builder.appendQueryParameter(PARAM_METHOD, method);
         return builder;
+    }
+
+    /**
+     * Copy the content of the input stream into the output stream, using a temporary
+     * byte array buffer whose size is defined by {@link #IO_BUFFER_SIZE}.
+     *
+     * @param in The input stream to copy from.
+     * @param out The output stream to copy to.
+     *
+     * @throws IOException If any error occurs during the copy.
+     */
+    private static void copy(InputStream in, OutputStream out) throws IOException {
+        byte[] b = new byte[IO_BUFFER_SIZE];
+        int read;
+        while ((read = in.read(b)) != -1) {
+            out.write(b, 0, read);
+        }
+    }
+
+    /**
+     * Closes the specified stream.
+     *
+     * @param stream The stream to close.
+     */
+    private static void closeStream(Closeable stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                android.util.Log.e(Flickr.LOG_TAG, "Could not close stream", e);
+            }
+        }
     }
 
     /**
