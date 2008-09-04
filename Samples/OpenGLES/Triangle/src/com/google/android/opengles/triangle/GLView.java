@@ -22,7 +22,7 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import java.io.Writer;
+import java.util.concurrent.Semaphore;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGL11;
@@ -130,6 +130,27 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
 
         @Override
         public void run() {
+            /*
+             * When the android framework launches a second instance of
+             * an activity, the new instance's onCreate() method may be
+             * called before the first instance returns from onDestroy().
+             *
+             * This semaphore ensures that only one instance at a time
+             * accesses EGL.
+             */
+            try {
+                try {
+                sEglSemaphore.acquire();
+                } catch (InterruptedException e) {
+                    return;
+                }
+                guardedRun();
+            } finally {
+                sEglSemaphore.release();
+            }
+        }
+
+        private void guardedRun() {
             /*
              * Get an EGL instance
              */
@@ -279,42 +300,9 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private static final Semaphore sEglSemaphore = new Semaphore(1);
     private boolean mDone;
     private boolean mSizeChanged = true;
     private int mWidth;
     private int mHeight;
-}
-
-
-class LogWriter extends Writer {
-
-    @Override
-    public void close() {
-        flushBuilder();
-    }
-
-    @Override
-    public void flush() {
-        flushBuilder();
-    }
-
-    @Override
-    public void write(char[] buf, int offset, int count) {
-        for (int i = 0; i < count; i++) {
-            char c = buf[offset + i];
-            if (c == '\n') {
-                flushBuilder();
-            } else {
-                mBuilder.append(c);
-            }
-        }
-    }
-
-    private void flushBuilder() {
-        if (mBuilder.length() > 0) {
-            mBuilder.delete(0, mBuilder.length());
-        }
-    }
-
-    private StringBuilder mBuilder = new StringBuilder();
 }
