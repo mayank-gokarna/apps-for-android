@@ -24,9 +24,9 @@ public class TriangleActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mGLView = new GLView(this);
+        setContentView(R.layout.main);
+        mGLView = (GLView) findViewById(R.id.glview);
         mGLView.setRenderer(new TriangleRenderer(this));
-        setContentView(mGLView);
     }
 
     private GLView mGLView;
