@@ -5,9 +5,9 @@ as possible while still demonstrating how to create an
 Android OpenGLES application. Feature include:
 
 - Initializing EGL and OpenGL ES.
-- Using a separate thread to render OpenGL ES, to allow smooth animation.
-- Reinitializing EGL and OpenGL ES after resuming from a pause.
-
+- Using a separate thread to render.
+- Reinitializing EGL and OpenGL ES after resuming from a pause and/or a lost surface.
+- Cleanly exiting when the view is removed from the window.
 
 BUILDING
 

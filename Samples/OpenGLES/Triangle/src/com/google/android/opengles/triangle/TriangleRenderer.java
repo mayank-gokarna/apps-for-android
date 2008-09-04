@@ -28,7 +28,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
-import android.util.Log;
+import android.os.SystemClock;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.opengles.GL10;
@@ -38,15 +38,77 @@ public class TriangleRenderer implements GLView.Renderer{
     public TriangleRenderer(Context context) {
         mContext = context;
         mTriangle = new Triangle();
-        Log.i("TriangleRenderer", "initialized");
     }
 
     public int[] getConfigSpec() {
+        // We don't need a depth buffer, and don't care about our
+        // color depth.
         int[] configSpec = {
-                EGL10.EGL_DEPTH_SIZE, 16,
+                EGL10.EGL_DEPTH_SIZE, 0,
                 EGL10.EGL_NONE
         };
         return configSpec;
+    }
+
+    public void surfaceCreated(GL10 gl) {
+        /*
+         * By default, OpenGL enables features that improve quality
+         * but reduce performance. One might want to tweak that
+         * especially on software renderer.
+         */
+        gl.glDisable(GL10.GL_DITHER);
+
+        /*
+         * Some one-time OpenGL initialization can be made here
+         * probably based on features of this particular context
+         */
+        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT,
+                GL10.GL_FASTEST);
+
+        gl.glClearColor(.5f, .5f, .5f, 1);
+        gl.glShadeModel(GL10.GL_SMOOTH);
+        gl.glEnable(GL10.GL_DEPTH_TEST);
+        gl.glEnable(GL10.GL_TEXTURE_2D);
+
+        /*
+         * Create our texture. This has to be done each time the
+         * surface is created.
+         */
+
+        int[] textures = new int[1];
+        gl.glGenTextures(1, textures, 0);
+
+        mTextureID = textures[0];
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureID);
+
+        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,
+                GL10.GL_NEAREST);
+        gl.glTexParameterf(GL10.GL_TEXTURE_2D,
+                GL10.GL_TEXTURE_MAG_FILTER,
+                GL10.GL_LINEAR);
+
+        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S,
+                GL10.GL_CLAMP_TO_EDGE);
+        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
+                GL10.GL_CLAMP_TO_EDGE);
+
+        gl.glTexEnvf(GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE,
+                GL10.GL_REPLACE);
+
+        InputStream is = mContext.getResources()
+                .openRawResource(R.drawable.tex);
+        Bitmap bitmap;
+        try {
+            bitmap = BitmapFactory.decodeStream(is);
+        } finally {
+            try {
+                is.close();
+            } catch(IOException e) {
+                // Ignore.
+            }
+        }
+
+        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
     }
 
     public void drawFrame(GL10 gl) {
@@ -87,7 +149,7 @@ public class TriangleRenderer implements GLView.Renderer{
         gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
                 GL10.GL_REPEAT);
 
-        long time = System.currentTimeMillis() % 4000L;
+        long time = SystemClock.uptimeMillis() % 4000L;
         float angle = 0.090f * ((int) time);
 
         gl.glRotatef(angle, 0, 0, 1.0f);
@@ -96,25 +158,6 @@ public class TriangleRenderer implements GLView.Renderer{
     }
 
     public void sizeChanged(GL10 gl, int w, int h) {
-        /*
-         * By default, OpenGL enables features that improve quality
-         * but reduce performance. One might want to tweak that
-         * especially on software renderer.
-         */
-        gl.glDisable(GL10.GL_DITHER);
-
-        /*
-         * Some one-time OpenGL initialization can be made here
-         * probably based on features of this particular context
-         */
-        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT,
-                GL10.GL_FASTEST);
-
-        gl.glClearColor(.5f, .5f, .5f, 1);
-        gl.glShadeModel(GL10.GL_SMOOTH);
-        gl.glEnable(GL10.GL_DEPTH_TEST);
-        gl.glEnable(GL10.GL_TEXTURE_2D);
-
         gl.glViewport(0, 0, w, h);
 
         /*
@@ -128,40 +171,6 @@ public class TriangleRenderer implements GLView.Renderer{
         gl.glLoadIdentity();
         gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7);
 
-        int[] textures = new int[1];
-        gl.glGenTextures(1, textures, 0);
-
-        mTextureID = textures[0];
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureID);
-
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,
-                GL10.GL_NEAREST);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D,
-                GL10.GL_TEXTURE_MAG_FILTER,
-                GL10.GL_LINEAR);
-
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S,
-                GL10.GL_CLAMP_TO_EDGE);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
-                GL10.GL_CLAMP_TO_EDGE);
-
-        gl.glTexEnvf(GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE,
-                GL10.GL_REPLACE);
-
-        InputStream is = mContext.getResources()
-                .openRawResource(R.drawable.tex);
-        Bitmap bitmap;
-        try {
-            bitmap = BitmapFactory.decodeStream(is);
-        } finally {
-            try {
-                is.close();
-            } catch(IOException e) {
-                // Ignore.
-            }
-        }
-
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
     }
 
     private Context mContext;

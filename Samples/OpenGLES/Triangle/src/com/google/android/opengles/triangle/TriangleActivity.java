@@ -29,5 +29,17 @@ public class TriangleActivity extends Activity {
         mGLView.setRenderer(new TriangleRenderer(this));
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mGLView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGLView.onResume();
+    }
+
     private GLView mGLView;
 }

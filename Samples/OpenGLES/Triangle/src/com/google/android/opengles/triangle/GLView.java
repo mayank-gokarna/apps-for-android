@@ -16,7 +16,6 @@
 
 package com.google.android.opengles.triangle;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
@@ -30,6 +29,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
+import javax.microedition.khronos.opengles.GL;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -42,12 +42,6 @@ import javax.microedition.khronos.opengles.GL10;
  * instance.
  */
 class GLView extends SurfaceView implements SurfaceHolder.Callback {
-
-    SurfaceHolder mHolder;
-
-    private GLThread mGLThread;
-    private Renderer mRenderer;
-
     GLView(Context context) {
         super(context);
         init();
@@ -67,25 +61,37 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void setRenderer(Renderer renderer) {
-        mRenderer = renderer;
+        mGLThread = new GLThread(renderer);
+        mGLThread.start();
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, start our drawing thread.
-        mGLThread = new GLThread(mRenderer);
-        mGLThread.start();
+        mGLThread.surfaceCreated();
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // Surface will be destroyed when we return
-        mGLThread.requestExitAndWait();
-        mGLThread = null;
+        mGLThread.surfaceDestroyed();
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // Surface size or format has changed. This should not happen in this
         // example.
         mGLThread.onWindowResize(w, h);
+    }
+
+    public void onPause() {
+        mGLThread.onPause();
+    }
+
+    public void onResume() {
+        mGLThread.onResume();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mGLThread.requestExitAndWait();
     }
 
     // ----------------------------------------------------------------------
@@ -98,9 +104,19 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
          * @return the EGL configuration specification desired by the renderer.
          */
         int[] getConfigSpec();
+
         /**
-         * Called whenever the OpenGL ES surface is initialized. Reinitialize
-         * your OpenGL state here.
+         * Surface created.
+         * Called when the surface is created. Called when the application
+         * starts, and whenever the GPU is reinitialized. This will
+         * typically happen when the device awakes after going to sleep.
+         * Set your textures here.
+         */
+        void surfaceCreated(GL10 gl);
+        /**
+         * Surface changed size.
+         * Called after the surface is created and whenever
+         * the OpenGL ES surface size changes. Set your viewport here.
          * @param gl
          * @param width
          * @param height
@@ -111,6 +127,133 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
          * @param gl
          */
         void drawFrame(GL10 gl);
+    }
+
+    /**
+     * An EGL helper class.
+     */
+
+    static class EglHelper {
+        public EglHelper() {
+
+        }
+
+        /**
+         * Initialize EGL for a given configuration spec.
+         * @param configSpec
+         */
+        public void start(int[] configSpec){
+            /*
+             * Get an EGL instance
+             */
+            mEgl = (EGL10) EGLContext.getEGL();
+
+            /*
+             * Get to the default display.
+             */
+            mEglDisplay = mEgl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+
+            /*
+             * We can now initialize EGL for that display
+             */
+            int[] version = new int[2];
+            mEgl.eglInitialize(mEglDisplay, version);
+
+            EGLConfig[] configs = new EGLConfig[1];
+            int[] num_config = new int[1];
+            mEgl.eglChooseConfig(mEglDisplay, configSpec, configs, 1,
+                    num_config);
+            mEglConfig = configs[0];
+
+            /*
+            * Create an OpenGL ES context. This must be done only once, an
+            * OpenGL context is a somewhat heavy object.
+            */
+            mEglContext = mEgl.eglCreateContext(mEglDisplay, mEglConfig,
+                    EGL10.EGL_NO_CONTEXT, null);
+
+            mEglSurface = null;
+        }
+
+        /*
+         * Create and return an OpenGL surface
+         */
+        public GL createSurface(SurfaceHolder holder) {
+            /*
+             *  The window size has changed, so we need to create a new
+             *  surface.
+             */
+            if (mEglSurface != null) {
+
+                /*
+                 * Unbind and destroy the old EGL surface, if
+                 * there is one.
+                 */
+                mEgl.eglMakeCurrent(mEglDisplay, EGL10.EGL_NO_SURFACE,
+                        EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
+                mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
+            }
+
+            /*
+             * Create an EGL surface we can render into.
+             */
+            mEglSurface = mEgl.eglCreateWindowSurface(mEglDisplay,
+                    mEglConfig, holder, null);
+
+            /*
+             * Before we can issue GL commands, we need to make sure
+             * the context is current and bound to a surface.
+             */
+            mEgl.eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface,
+                    mEglContext);
+
+            /*
+             * Get to the appropriate GL interface.
+             * This is simply done by casting the GL context to either
+             * GL10 or GL11.
+             */
+            return mEglContext.getGL();
+        }
+
+        /**
+         * Display the current render surface.
+         * @return false if the context has been lost.
+         */
+        public boolean swap() {
+            mEgl.eglSwapBuffers(mEglDisplay, mEglSurface);
+
+            /*
+             * Always check for EGL_CONTEXT_LOST, which means the context
+             * and all associated data were lost (For instance because
+             * the device went to sleep). We need to sleep until we
+             * get a new surface.
+             */
+            return mEgl.eglGetError() != EGL11.EGL_CONTEXT_LOST;
+        }
+
+        public void finish() {
+            if (mEglSurface != null) {
+                mEgl.eglMakeCurrent(mEglDisplay, EGL10.EGL_NO_SURFACE,
+                        EGL10.EGL_NO_SURFACE,
+                        EGL10.EGL_NO_CONTEXT);
+                mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
+                mEglSurface = null;
+            }
+            if (mEglContext != null) {
+                mEgl.eglDestroyContext(mEglDisplay, mEglContext);
+                mEglContext = null;
+            }
+            if (mEglDisplay != null) {
+                mEgl.eglTerminate(mEglDisplay);
+                mEglDisplay = null;
+            }
+        }
+
+        EGL10 mEgl;
+        EGLDisplay mEglDisplay;
+        EGLSurface mEglSurface;
+        EGLConfig mEglConfig;
+        EGLContext mEglContext;
     }
 
     /**
@@ -126,6 +269,7 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             mWidth = 0;
             mHeight = 0;
             mRenderer = renderer;
+            setName("GLThread");
         }
 
         @Override
@@ -145,48 +289,25 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                     return;
                 }
                 guardedRun();
+            } catch (InterruptedException e) {
+                // fall thru and exit normally
             } finally {
                 sEglSemaphore.release();
             }
         }
 
-        private void guardedRun() {
-            /*
-             * Get an EGL instance
-             */
-            EGL10 egl = (EGL10) EGLContext.getEGL();
-
-            /*
-             * Get to the default display.
-             */
-            EGLDisplay dpy = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-
-            /*
-             * We can now initialize EGL for that display
-             */
-            int[] version = new int[2];
-            egl.eglInitialize(dpy, version);
-
+        private void guardedRun() throws InterruptedException {
+            EglHelper eglHelper = new EglHelper();
             /*
              * Specify a configuration for our opengl session
              * and grab the first configuration that matches is
              */
             int[] configSpec = mRenderer.getConfigSpec();
+            eglHelper.start(configSpec);
 
-            EGLConfig[] configs = new EGLConfig[1];
-            int[] num_config = new int[1];
-            egl.eglChooseConfig(dpy, configSpec, configs, 1, num_config);
-            EGLConfig config = configs[0];
-
-            /*
-            * Create an OpenGL ES context. This must be done only once, an
-            * OpenGL context is a somewhat heavy object.
-            */
-            EGLContext context = egl.eglCreateContext(dpy, config,
-                    EGL10.EGL_NO_CONTEXT, null);
-
-            EGLSurface surface = null;
             GL10 gl = null;
+            boolean tellRendererSurfaceCreated = true;
+            boolean tellRendererSurfaceChanged = true;
 
             /*
              * This is our main activity thread's loop, we go until
@@ -195,90 +316,95 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             while (!mDone) {
 
                 /*
-                 *  Update the asynchronous state (window size, key events)
+                 *  Update the asynchronous state (window size)
                  */
                 int w, h;
                 boolean changed;
+                boolean restarted = false;
                 synchronized (this) {
+                    if(needToWait()) {
+                        while (needToWait()) {
+                            wait();
+                        }
+                        restarted = true;
+                    }
+                    if (mDone) {
+                        break;
+                    }
                     changed = mSizeChanged;
                     w = mWidth;
                     h = mHeight;
                     mSizeChanged = false;
                 }
-
+                if (restarted) {
+                    eglHelper.finish();
+                    eglHelper.start(configSpec);
+                    tellRendererSurfaceCreated = true;
+                    changed = true;
+                }
                 if (changed) {
+                    gl = (GL10) eglHelper.createSurface(mHolder);
+                    tellRendererSurfaceChanged = true;
+                }
 
-                    /*
-                     *  The window size has changed, so we need to create a new
-                     *  surface.
-                     */
-                    if (surface != null) {
-
-                        /*
-                         * Unbind and destroy the old EGL surface, if
-                         * there is one.
-                         */
-                        egl.eglMakeCurrent(dpy, EGL10.EGL_NO_SURFACE,
-                                EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
-                        egl.eglDestroySurface(dpy, surface);
-                    }
-
-                    /*
-                     * Create an EGL surface we can render into.
-                     */
-                    surface = egl.eglCreateWindowSurface(dpy, config, mHolder,
-                            null);
-
-                    /*
-                     * Before we can issue GL commands, we need to make sure
-                     * the context is current and bound to a surface.
-                     */
-                    egl.eglMakeCurrent(dpy, surface, surface, context);
-
-                    /*
-                     * Get to the appropriate GL interface.
-                     * This is simply done by casting the GL context to either
-                     * GL10 or GL11.
-                     */
-                    gl = (GL10) context.getGL();
-
-                    if (mRenderer != null) {
-                        mRenderer.sizeChanged(gl, w, h);
-                    }
+                if (tellRendererSurfaceCreated) {
+                    mRenderer.surfaceCreated(gl);
+                    tellRendererSurfaceCreated = false;
+                }
+                if (tellRendererSurfaceChanged) {
+                    mRenderer.sizeChanged(gl, w, h);
+                    tellRendererSurfaceChanged = false;
                 }
                 /* draw a frame here */
-                if (mRenderer != null) {
-                    mRenderer.drawFrame(gl);
-                }
+                mRenderer.drawFrame(gl);
 
                 /*
                  * Once we're done with GL, we need to call swapBuffers()
                  * to instruct the system to display the rendered frame
                  */
-                egl.eglSwapBuffers(dpy, surface);
-
-                /*
-                 * Always check for EGL_CONTEXT_LOST, which means the context
-                 * and all associated data were lost (For instance because
-                 * the device went to sleep). We need to quit immediately.
-                 */
-                if (egl.eglGetError() == EGL11.EGL_CONTEXT_LOST) {
-                    // we lost the gpu, quit immediately
-                    Context c = getContext();
-                    if (c instanceof Activity) {
-                        ((Activity) c).finish();
+                if (!eglHelper.swap()) {
+                    synchronized (this) {
+                        mContextLost = true;
                     }
+                    eglHelper.finish();
                 }
             }
 
             /*
              * clean-up everything...
              */
-            egl.eglMakeCurrent(dpy, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE,
-                    EGL10.EGL_NO_CONTEXT);
-            egl.eglDestroySurface(dpy, surface);
-            egl.eglDestroyContext(dpy, context);
-            egl.eglTerminate(dpy);
+            eglHelper.finish();
+        }
+
+        private boolean needToWait() {
+            return (mPaused || (! mHaveSurface) || mContextLost) && (! mDone);
+        }
+
+        public void surfaceCreated() {
+            synchronized(this) {
+                mHaveSurface = true;
+                mContextLost = false;
+                notify();
+            }
+        }
+
+        public void surfaceDestroyed() {
+            synchronized(this) {
+                mHaveSurface = false;
+                notify();
+            }
+        }
+        public void onPause() {
+            synchronized (this) {
+                mPaused = true;
+            }
+        }
+
+        public void onResume() {
+            synchronized (this) {
+                mPaused = false;
+                notify();
+            }
         }
 
         public void onWindowResize(int w, int h) {
@@ -292,17 +418,29 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         public void requestExitAndWait() {
             // don't call this from GLThread thread or it is a guaranteed
             // deadlock!
-            mDone = true;
+            synchronized(this) {
+                mDone = true;
+                notify();
+            }
             try {
                 join();
             } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
         }
+
+        private boolean mDone;
+        private boolean mPaused;
+        private boolean mHaveSurface;
+        private boolean mContextLost;
+        private int mWidth;
+        private int mHeight;
+        private Renderer mRenderer;
     }
 
     private static final Semaphore sEglSemaphore = new Semaphore(1);
-    private boolean mDone;
     private boolean mSizeChanged = true;
-    private int mWidth;
-    private int mHeight;
+
+    private SurfaceHolder mHolder;
+    private GLThread mGLThread;
 }
