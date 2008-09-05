@@ -21,6 +21,7 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -297,13 +298,13 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void guardedRun() throws InterruptedException {
-            EglHelper eglHelper = new EglHelper();
+            mEglHelper = new EglHelper();
             /*
              * Specify a configuration for our opengl session
              * and grab the first configuration that matches is
              */
             int[] configSpec = mRenderer.getConfigSpec();
-            eglHelper.start(configSpec);
+            mEglHelper.start(configSpec);
 
             GL10 gl = null;
             boolean tellRendererSurfaceCreated = true;
@@ -322,6 +323,10 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                 boolean changed;
                 boolean restarted = false;
                 synchronized (this) {
+                    Runnable r;
+                    while ((r = getEvent()) != null) {
+                        r.run();
+                    }
                     if(needToWait()) {
                         while (needToWait()) {
                             wait();
@@ -337,13 +342,12 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                     mSizeChanged = false;
                 }
                 if (restarted) {
-                    eglHelper.finish();
-                    eglHelper.start(configSpec);
+                    mEglHelper.start(configSpec);
                     tellRendererSurfaceCreated = true;
                     changed = true;
                 }
                 if (changed) {
-                    gl = (GL10) eglHelper.createSurface(mHolder);
+                    gl = (GL10) mEglHelper.createSurface(mHolder);
                     tellRendererSurfaceChanged = true;
                 }
 
@@ -362,18 +366,13 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                  * Once we're done with GL, we need to call swapBuffers()
                  * to instruct the system to display the rendered frame
                  */
-                if (!eglHelper.swap()) {
-                    synchronized (this) {
-                        mContextLost = true;
-                    }
-                    eglHelper.finish();
-                }
-            }
+                mEglHelper.swap();
+             }
 
             /*
              * clean-up everything...
              */
-            eglHelper.finish();
+            mEglHelper.finish();
         }
 
         private boolean needToWait() {
@@ -394,9 +393,24 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                 notify();
             }
         }
+
         public void onPause() {
+
+            queueEvent(new Runnable(){
+
+                public void run() {
+                    mEglHelper.finish();
+                    mPaused = true;
+                    GLThread.this.notify();
+                }});
             synchronized (this) {
-                mPaused = true;
+                while(!(mDone || mPaused)) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
             }
         }
 
@@ -429,6 +443,22 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        public void queueEvent(Runnable r) {
+            synchronized(this) {
+                mEventQueue.add(r);
+            }
+        }
+
+        private Runnable getEvent() {
+            synchronized(this) {
+                if (mEventQueue.size() > 0) {
+                    return mEventQueue.remove(0);
+                }
+
+            }
+            return null;
+        }
+
         private boolean mDone;
         private boolean mPaused;
         private boolean mHaveSurface;
@@ -436,6 +466,8 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         private int mWidth;
         private int mHeight;
         private Renderer mRenderer;
+        private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
+        private EglHelper mEglHelper;
     }
 
     private static final Semaphore sEglSemaphore = new Semaphore(1);

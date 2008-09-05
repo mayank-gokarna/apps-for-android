@@ -109,6 +109,7 @@ public class TriangleRenderer implements GLView.Renderer{
         }
 
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
+        bitmap.recycle();
     }
 
     public void drawFrame(GL10 gl) {
