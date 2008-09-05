@@ -1,0 +1,106 @@
+DownloaderTest shows you how to create an application that downloads a set of
+files from a web server and stores the files on the SD card. It is useful
+for applications, like games, that use too much content to store it all in
+the application apk.
+
+What this does:
+
++ Ensures that a given set of files have been downloaded from the
+web server and installed on the /sdcard before the rest of the
+application runs.
+
++ Provides a simple progress UI for the download process.
+
++ Diagnoses and reports common errors (such as lack of network connectivity)
+that may occur during the download process.
+
+What this doesn't do:
+
++ Does not provide a web server for serving the application data. You must
+provide this yourself. There is no special requirement for the web server.
+Any web server should work.
+
++ Does not check the integrity of the data files each time the application is
+ run. If data file integrity is important to your application, you will
+ have to take extra steps to ensure it.
+
++ Does not check if newer versions of the data files are available on the
+ web server. If you want to do this you will have to do it yourself.
+
++ Does not provide a way of automatically uninstalling the data files when
+ the application is uninstalled.
+
+To use the downloader in your own application:
+
+1) Copy the sources and resources to your project:
+
+   + com.google.android.downloader.PreconditionActivityHelper.java
+   + com.google.android.downloader.DownloaderActivity.java
+   + Merge the res/values/strings.xml strings into your project.
+
+2) Add this code to the start of your activity's onCreate method:
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (! DownloaderActivity.ensureDownloaded(this, FILE_CONFIG_URL,
+                CONFIG_VERSION, DATA_PATH, USER_AGENT)) {
+            return;
+        }
+
+    private final static String FILE_CONFIG_URL =
+        "http://example.com/download.config";
+    private final static String CONFIG_VERSION="1.0";
+    private final static String DATA_PATH = "/sdcard/data/downloadTest";
+    private final static String USER_AGENT = "MyApp Downloader";
+
+3) Edit your application's AndroidManifest.xml file:
+   a) Add the android.permission.INTERNET permission:
+
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="YOUR_PACKAGE_HERE">
+        <uses-permission android:name="android.permission.INTERNET" />
+        ...
+   b) Add the DownloaderActivity activity
+         <application>
+           <activity android:name="DownloaderActivity"
+            android:label="@string/download_activity_title" />
+           ....
+
+
+4) Create a config file with the following structure:
+
+<config version="1.0">
+  <file src="url-of-source-file" dest="relative-path-on-sd-card"
+      size="1234" md5="..." />
+  <file dest="relative-path-on-sd-card">
+    <part src="url-of-first-part-of-file" size="1234" md5="..." />
+    <part src="url-of-second-part-of-file" />
+    ...
+  </file>
+  ...
+</config>
+
+The "version" attribute should match the CONFIG_VERSION argument passed to
+DownloaderActivity.ensureDownloaded().
+
+The "src" attribute can be relative to the config.xml file's URL, or it can be
+absolute. The "dest" attribute is relative to the DATA_PATH argument to
+DownloaderActivity.ensureDownloaded.
+
+The "size" attribute is optional, but if included will speed up downloading by
+reducing the number of HTTP round-trips that will have to be made to download
+the files.
+
+The "md5" attribute is optional, but if included will be used to verify that
+the data was received from the server and written to the SD-Card correctly.
+On OS X you can compute an MD5 digest for a file by executing:
+
+    openssl md5 filename
+
+Note that the "file" tag can either be a single tag or contain child "part"
+tags. Part tags allow hosting large files on web servers that have
+restrictions on the size of individual files.
+
+4) Publish the config file and the data files on your web server.
+
+5) Compile and run the application.
