@@ -81,12 +81,27 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         mGLThread.onWindowResize(w, h);
     }
 
+    /**
+     * Inform the view that the activity is paused.
+     */
     public void onPause() {
         mGLThread.onPause();
     }
 
+    /**
+     * Inform the view that the activity is resumed.
+     */
     public void onResume() {
         mGLThread.onResume();
+    }
+
+
+    /**
+     * Queue an "event" to be run on the GL rendering thread.
+     * @param r the runnable to be run on the GL rendering thread.
+     */
+    public void queueEvent(Runnable r) {
+        mGLThread.queueEvent(r);
     }
 
     @Override
@@ -100,7 +115,7 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
     /**
      * A generic renderer interface.
      */
-    interface Renderer {
+    public interface Renderer {
         /**
          * @return the EGL configuration specification desired by the renderer.
          */
@@ -134,7 +149,7 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
      * An EGL helper class.
      */
 
-    static class EglHelper {
+    private static class EglHelper {
         public EglHelper() {
 
         }
@@ -443,6 +458,10 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        /**
+         * Queue an "event" to be run on the GL rendering thread.
+         * @param r the runnable to be run on the GL rendering thread.
+         */
         public void queueEvent(Runnable r) {
             synchronized(this) {
                 mEventQueue.add(r);
