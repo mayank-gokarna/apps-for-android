@@ -59,9 +59,11 @@ public class DownloaderTest extends Activity {
         startActivity(getIntent());
         finish();
     }
-
+    /**
+     * Fill this in with your own web server.
+     */
     private final static String FILE_CONFIG_URL =
-        "http://jack.palevich.googlepages.com/download.config";
+        "http://example.com/download.config";
     private final static String CONFIG_VERSION = "1.0";
     private final static String DATA_PATH = "/sdcard/data/downloadTest";
     private final static String USER_AGENT = "MyApp Downloader";
