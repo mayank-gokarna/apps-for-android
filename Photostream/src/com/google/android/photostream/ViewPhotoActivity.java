@@ -301,7 +301,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
 
             OutputStream out = null;
             try {
-                out = openFileOutput(mFile.getName(), MODE_WORLD_READABLE);
+                out = openFileOutput(mFile.getName(), MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
                 Flickr.get().downloadPhoto(params[0], Flickr.PhotoSize.LARGE, out);
                 success = true;
             } catch (FileNotFoundException e) {
