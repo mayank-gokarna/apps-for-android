@@ -95,6 +95,13 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         mGLThread.onResume();
     }
 
+    /**
+     * Inform the view that the window focus has changed.
+     */
+    @Override public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        mGLThread.onWindowFocusChanged(hasFocus);
+    }
 
     /**
      * Queue an "event" to be run on the GL rendering thread.
@@ -336,17 +343,20 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                  */
                 int w, h;
                 boolean changed;
-                boolean restarted = false;
+                boolean needStart = false;
                 synchronized (this) {
                     Runnable r;
                     while ((r = getEvent()) != null) {
                         r.run();
                     }
+                    if (mPaused) {
+                        mEglHelper.finish();
+                        needStart = true;
+                    }
                     if(needToWait()) {
                         while (needToWait()) {
                             wait();
                         }
-                        restarted = true;
                     }
                     if (mDone) {
                         break;
@@ -356,7 +366,7 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                     h = mHeight;
                     mSizeChanged = false;
                 }
-                if (restarted) {
+                if (needStart) {
                     mEglHelper.start(configSpec);
                     tellRendererSurfaceCreated = true;
                     changed = true;
@@ -365,7 +375,6 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                     gl = (GL10) mEglHelper.createSurface(mHolder);
                     tellRendererSurfaceChanged = true;
                 }
-
                 if (tellRendererSurfaceCreated) {
                     mRenderer.surfaceCreated(gl);
                     tellRendererSurfaceCreated = false;
@@ -391,12 +400,13 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private boolean needToWait() {
-            return (mPaused || (! mHaveSurface) || mContextLost) && (! mDone);
+            return (mPaused || (! mHasFocus) || (! mHasSurface) || mContextLost)
+                && (! mDone);
         }
 
         public void surfaceCreated() {
             synchronized(this) {
-                mHaveSurface = true;
+                mHasSurface = true;
                 mContextLost = false;
                 notify();
             }
@@ -404,28 +414,14 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
 
         public void surfaceDestroyed() {
             synchronized(this) {
-                mHaveSurface = false;
+                mHasSurface = false;
                 notify();
             }
         }
 
         public void onPause() {
-
-            queueEvent(new Runnable(){
-
-                public void run() {
-                    mEglHelper.finish();
-                    mPaused = true;
-                    GLThread.this.notify();
-                }});
             synchronized (this) {
-                while(!(mDone || mPaused)) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
+                mPaused = true;
             }
         }
 
@@ -436,6 +432,14 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        public void onWindowFocusChanged(boolean hasFocus) {
+            synchronized (this) {
+                mHasFocus = hasFocus;
+                if (mHasFocus == true) {
+                    notify();
+                }
+            }
+        }
         public void onWindowResize(int w, int h) {
             synchronized (this) {
                 mWidth = w;
@@ -480,7 +484,8 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
 
         private boolean mDone;
         private boolean mPaused;
-        private boolean mHaveSurface;
+        private boolean mHasFocus;
+        private boolean mHasSurface;
         private boolean mContextLost;
         private int mWidth;
         private int mHeight;

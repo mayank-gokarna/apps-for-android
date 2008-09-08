@@ -27,6 +27,7 @@ public class TriangleActivity extends Activity {
         setContentView(R.layout.main);
         mGLView = (GLView) findViewById(R.id.glview);
         mGLView.setRenderer(new TriangleRenderer(this));
+        mGLView.requestFocus();
     }
 
     @Override
