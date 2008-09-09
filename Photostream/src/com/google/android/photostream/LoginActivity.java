@@ -170,7 +170,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
      */
     private class FindUserTask extends UserTask<String, Void, Flickr.User> {
         @Override
-        public void begin() {
+        public void onPreExecute() {
             mSwitcher.showNext();
         }
 
@@ -179,7 +179,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         }
 
         @Override
-        public void end(Flickr.User user) {
+        public void onPostExecute(Flickr.User user) {
             if (user != null) {
                 onShowPhotostream(user);
             } else {
@@ -195,7 +195,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
      */
     private class FindUserInfoTask extends UserTask<String, Void, UserShortcut> {
         @Override
-        public void begin() {
+        public void onPreExecute() {
             mSwitcher.showNext();
         }
 
@@ -213,7 +213,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         }
 
         @Override
-        public void end(UserShortcut shortcut) {
+        public void onPostExecute(UserShortcut shortcut) {
             if (shortcut != null) {
                 onCreateShortcut(shortcut);
             } else {

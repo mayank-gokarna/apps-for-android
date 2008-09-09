@@ -356,7 +356,7 @@ public class PhotostreamActivity extends Activity implements
         }
 
         @Override
-        public void end(Flickr.PhotoList result) {
+        public void onPostExecute(Flickr.PhotoList result) {
             mPageCount = result.getPageCount();
             prepareMenu(mPageCount);
             mSwitcher.showNext();
@@ -374,7 +374,7 @@ public class PhotostreamActivity extends Activity implements
         }
 
         @Override
-        public void end(Flickr.PhotoList photoList) {
+        public void onPostExecute(Flickr.PhotoList photoList) {
             showPhotos(photoList);
             mTask = null;
         }

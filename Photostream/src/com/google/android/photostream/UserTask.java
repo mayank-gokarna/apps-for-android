@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <h2>Usage</h2>
  * <p>UserTask must be subclassed to be used. The subclass will override at least
  * one method ({@link #doInBackground(Object[])}), and most often will override a
- * second one ({@link #end(Object)}.)</p>
+ * second one ({@link #onPostExecute(Object)}.)</p>
  *
  * <p>Here is an example of subclassing:</p>
  * <pre>
@@ -93,11 +93,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <h2>The 4 steps</h2>
  * <p>When a user task is executed, the task goes through 4 steps:</p>
  * <ol>
- *     <li>{@link #begin()}, invoked on the UI thread immediately after the task
+ *     <li>{@link #onPreExecute()}, invoked on the UI thread immediately after the task
  *     is executed. This step is normally used to setup the task, for instance by
  *     showing a progress bar in the user interface.</li>
  *     <li>{@link #doInBackground(Object[])}, invoked on the background thread
- *     immediately after {@link #begin()} finishes executing. This step is used
+ *     immediately after {@link # onPreExecute ()} finishes executing. This step is used
  *     to perform background computation that can take a long time. The parameters
  *     of the user task are passed to this step. The result of the computation must
  *     be returned by this step and will be passed back to the last step. This step
@@ -109,7 +109,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     undefined. This method is used to display any form of progress in the user
  *     interface while the background computation is still executing. For instance,
  *     it can be used to animate a progress bar or show logs in a text field.</li>
- *     <li>{@link #end(Object)}, invoked on the UI thread after the background
+ *     <li>{@link # onPostExecute (Object)}, invoked on the UI thread after the background
  *     computation finishes. The result of the background computation is passed to
  *     this step as a parameter.</li>
  * </ol>
@@ -120,7 +120,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <ul>
  *     <li>The task instance must be created on the UI thread.</li>
  *     <li>{@link #execute(Object[])} must be invoked on the UI thread.</li>
- *     <li>Do not call {@link #begin()}, {@link #end(Object)},
+ *     <li>Do not call {@link # onPreExecute ()}, {@link # onPostExecute (Object)},
  *     {@link #doInBackground(Object[])}, {@link #processProgress(Object[])}
  *     manually.</li>
  *     <li>The task can be executed only once (an exception will be thrown if
@@ -141,9 +141,7 @@ public abstract class UserTask<Params, Progress, Result> {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
         public Thread newThread(Runnable r) {
-            final Thread thread = new Thread(r, "UserTask #" + mCount.getAndIncrement());
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            return thread;
+            return new Thread(r, "UserTask #" + mCount.getAndIncrement());
         }
     };
 
@@ -174,7 +172,7 @@ public abstract class UserTask<Params, Progress, Result> {
          */
         RUNNING,
         /**
-         * Indicates that {@link UserTask#end(Object)} has finished.
+         * Indicates that {@link UserTask#onPostExecute(Object)} has finished.
          */
         FINISHED,
     }
@@ -189,6 +187,7 @@ public abstract class UserTask<Params, Progress, Result> {
 
         mWorker = new WorkerRunnable<Params, Result>() {
             public Result call() throws Exception {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 return doInBackground(mParams);
             }
         };
@@ -239,8 +238,8 @@ public abstract class UserTask<Params, Progress, Result> {
      *
      * @return A result, defined by the subclass of this task.
      *
-     * @see #begin()
-     * @see #end(Object)
+     * @see #onPreExecute()
+     * @see #onPostExecute(Object)
      * @see #publishProgress(Object[])
      */
     public abstract Result doInBackground(Params... params);
@@ -248,10 +247,10 @@ public abstract class UserTask<Params, Progress, Result> {
     /**
      * Runs on the UI thread before {@link #doInBackground(Object[])}.
      *
-     * @see #end(Object)
+     * @see #onPostExecute(Object)
      * @see #doInBackground(Object[])
      */
-    public void begin() {
+    public void onPreExecute() {
     }
 
     /**
@@ -259,10 +258,10 @@ public abstract class UserTask<Params, Progress, Result> {
      * specified result is the value returned by {@link #doInBackground(Object[])}
      * or null if the task was cancelled or an exception occured.
      *
-     * @see #begin() 
+     * @see #onPreExecute()
      * @see #doInBackground(Object[])
      */
-    public void end(Result result) {
+    public void onPostExecute(Result result) {
     }
 
     /**
@@ -372,7 +371,7 @@ public abstract class UserTask<Params, Progress, Result> {
 
         mStatus = Status.RUNNING;
 
-        begin();
+        onPreExecute();
 
         mWorker.mParams = params;
         sExecutor.execute(mFuture);
@@ -397,7 +396,7 @@ public abstract class UserTask<Params, Progress, Result> {
     }
 
     private void finish(Result result) {
-        end(result);
+        onPostExecute(result);
         mStatus = Status.FINISHED;
     }
 

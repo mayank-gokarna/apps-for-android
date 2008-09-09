@@ -248,7 +248,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         }
 
         @Override
-        public void end(Bitmap result) {
+        public void onPostExecute(Bitmap result) {
             mPhotoView.setImageBitmap(result);
 
             // Find by how many pixels the title and date must be shifted on the
@@ -291,7 +291,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         private File mFile;
 
         @Override
-        public void begin() {
+        public void onPreExecute() {
             mFile = getFileStreamPath(WALLPAPER_FILE_NAME);
             mSwitcher.showNext();
         }
@@ -324,7 +324,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         }
 
         @Override
-        public void end(Boolean result) {
+        public void onPostExecute(Boolean result) {
             if (!result) {
                 cleanupWallpaper();
                 showWallpaperError();
@@ -378,7 +378,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         }
 
         @Override
-        public void end(Boolean result) {
+        public void onPostExecute(Boolean result) {
             cleanupWallpaper();
 
             if (!result) {
