@@ -103,8 +103,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     be returned by this step and will be passed back to the last step. This step
  *     can also use {@link #publishProgress(Object[])} to publish one or more units
  *     of progress. These values are published on the UI thread, in the
- *     {@link #processProgress(Object[])} step.</li>
- *     <li>{@link #processProgress(Object[])}, invoked on the UI thread after a
+ *     {@link #onProgressUpdate(Object[])} step.</li>
+ *     <li>{@link # onProgressUpdate (Object[])}, invoked on the UI thread after a
  *     call to {@link #publishProgress(Object[])}. The timing of the execution is
  *     undefined. This method is used to display any form of progress in the user
  *     interface while the background computation is still executing. For instance,
@@ -121,7 +121,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     <li>The task instance must be created on the UI thread.</li>
  *     <li>{@link #execute(Object[])} must be invoked on the UI thread.</li>
  *     <li>Do not call {@link # onPreExecute ()}, {@link # onPostExecute (Object)},
- *     {@link #doInBackground(Object[])}, {@link #processProgress(Object[])}
+ *     {@link #doInBackground(Object[])}, {@link # onProgressUpdate (Object[])}
  *     manually.</li>
  *     <li>The task can be executed only once (an exception will be thrown if
  *     a second execution is attempted.)</li>
@@ -271,7 +271,7 @@ public abstract class UserTask<Params, Progress, Result> {
      * @see #publishProgress(Object[])
      * @see #doInBackground(Object[]) 
      */
-    public void processProgress(Progress... values) {
+    public void onProgressUpdate(Progress... values) {
     }
 
     /**
@@ -383,11 +383,11 @@ public abstract class UserTask<Params, Progress, Result> {
      * This method can be invoked from {@link #doInBackground(Object[])} to
      * publish updates on the UI thread while the background computation is
      * still running. Each call to this method will trigger the execution of
-     * {@link #processProgress(Object[])} on the UI thread.
+     * {@link #onProgressUpdate(Object[])} on the UI thread.
      *
      * @params values The progress values to update the UI with.
      *
-     * @see #processProgress(Object[])
+     * @see # onProgressUpdate (Object[])
      * @see #doInBackground(Object[]) 
      */
     protected final void publishProgress(Progress... values) {
@@ -411,7 +411,7 @@ public abstract class UserTask<Params, Progress, Result> {
                     result.mTask.finish(result.mData[0]);
                     break;
                 case MESSAGE_POST_PROGRESS:
-                    result.mTask.processProgress(result.mData);
+                    result.mTask.onProgressUpdate(result.mData);
                     break;
             }
         }
