@@ -7,8 +7,8 @@ Author: Karl Rosaen
 History:
 While writing this game, I had in mind a game I fondly remembered playing 
 years ago.  Recently it was pointed out that this game was in fact JezzBall.
-As a result, this game is certainly heavily influenced by JezzBall, though 
-does attempt to be a perfect clone.  See http://en.wikipedia.org/wiki/JezzBall.
+As a result, this game is certainly heavily influenced by JezzBall, though does
+not attempt to be a perfect clone.  See http://en.wikipedia.org/wiki/JezzBall.
 
 Notes: 
 - Lines are initiated by vertical and horizontal gestures.  On the emulator,
