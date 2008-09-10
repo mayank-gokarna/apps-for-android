@@ -2,7 +2,10 @@ A simple translation activity that users Google's Translation service on the Web
 
 Author: Cédric Beust (cedric@beust.com)
 
-Note: this application reuses existing classes written by Richard Midwinter, Emeric Vernat and Juan B Cabral (for the interface to the Google API) and Alexander Day Chaffee and Gary Gregory (for a list of HTML entities).
+Note: this application reuses existing work by:
+- Richard Midwinter, Emeric Vernat and Juan B Cabral (for the interface to the Google API)
+- Alexander Day Chaffee and Gary Gregory (for a list of HTML entities).
+- Flag icons from http://www.famfamfam.com
 
 Todo:
 
