@@ -61,6 +61,10 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
     }
 
+    public void setGLWrapper(GLWrapper glWrapper) {
+        mGLWrapper = glWrapper;
+    }
+
     public void setRenderer(Renderer renderer) {
         mGLThread = new GLThread(renderer);
         mGLThread.start();
@@ -119,6 +123,12 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
 
     // ----------------------------------------------------------------------
 
+    public interface GLWrapper {
+      GL wrap(GL gl);
+    }
+
+    // ----------------------------------------------------------------------
+
     /**
      * A generic renderer interface.
      */
@@ -156,7 +166,7 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
      * An EGL helper class.
      */
 
-    private static class EglHelper {
+    private class EglHelper {
         public EglHelper() {
 
         }
@@ -230,12 +240,12 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
             mEgl.eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface,
                     mEglContext);
 
-            /*
-             * Get to the appropriate GL interface.
-             * This is simply done by casting the GL context to either
-             * GL10 or GL11.
-             */
-            return mEglContext.getGL();
+
+            GL gl = mEglContext.getGL();
+            if (mGLWrapper != null) {
+                gl = mGLWrapper.wrap(gl);
+            }
+            return gl;
         }
 
         /**
@@ -499,4 +509,5 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
 
     private SurfaceHolder mHolder;
     private GLThread mGLThread;
+    private GLWrapper mGLWrapper;
 }
