@@ -393,14 +393,16 @@ class GLView extends SurfaceView implements SurfaceHolder.Callback {
                     mRenderer.sizeChanged(gl, w, h);
                     tellRendererSurfaceChanged = false;
                 }
-                /* draw a frame here */
-                mRenderer.drawFrame(gl);
+                if ((w > 0) && (h > 0)) {
+                    /* draw a frame here */
+                    mRenderer.drawFrame(gl);
 
-                /*
-                 * Once we're done with GL, we need to call swapBuffers()
-                 * to instruct the system to display the rendered frame
-                 */
-                mEglHelper.swap();
+                    /*
+                     * Once we're done with GL, we need to call swapBuffers()
+                     * to instruct the system to display the rendered frame
+                     */
+                    mEglHelper.swap();
+                }
              }
 
             /*
