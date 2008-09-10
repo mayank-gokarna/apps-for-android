@@ -103,4 +103,14 @@ restrictions on the size of individual files.
 
 4) Publish the config file and the data files on your web server.
 
-5) Compile and run the application.
+5) Install an SD card on your device. If you are using an emulator, consult
+the SDK documentation for the "mksdcard" tool and the emulator -sdcard
+command-line option.
+
+6) For a device, if you are using it while plugged into a computer, make sure that "USB
+mass storage" is turned off. Otherwise the sdcard will be mounted read-only. You can
+view and modify the USB mass storage setting using the "Settings : SD card & phone storage :
+Use for USB storage" check-box.
+
+7) Compile and run the application.
+
