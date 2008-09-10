@@ -3,8 +3,8 @@ INTRODUCTION
 SpriteText shows these features:
 
 - How to use OpenGL textures to draw static and dynamic text.
-- How to find the 2D screen coordinate corresponding to a 3D point.
-- How to keep track of the current transformation matricies.
+- How to find the 2D screen coordinates corresponding to a 3D point.
+- How to keep track of the current transformation matrices.
 - How to display a miliseconds per frame counter.
 
 BUILDING
