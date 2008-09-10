@@ -10,6 +10,7 @@
             </intent-filter>
         </activity>
         <activity android:name="DownloaderActivity"
-            android:label="@string/download_activity_title" />
+            android:label="@string/download_activity_title"
+            android:configChanges="orientation|keyboardHidden" />
     </application>
 </manifest>

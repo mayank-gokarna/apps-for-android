@@ -66,7 +66,6 @@ To use the downloader in your own application:
             android:label="@string/download_activity_title" />
            ....
 
-
 4) Create a config file with the following structure:
 
 <config version="1.0">
@@ -101,16 +100,35 @@ Note that the "file" tag can either be a single tag or contain child "part"
 tags. Part tags allow hosting large files on web servers that have
 restrictions on the size of individual files.
 
-4) Publish the config file and the data files on your web server.
+5) Publish the config file and the data files on your web server.
 
-5) Install an SD card on your device. If you are using an emulator, consult
+6) Make sure you have an SD card installed on your device.
+
+7) If you are using an emulator, consult
 the SDK documentation for the "mksdcard" tool and the emulator -sdcard
 command-line option.
 
-6) For a device, if you are using it while plugged into a computer, make sure that "USB
-mass storage" is turned off. Otherwise the sdcard will be mounted read-only. You can
-view and modify the USB mass storage setting using the "Settings : SD card & phone storage :
-Use for USB storage" check-box.
+8) If you are using the emulator with the Eclipse Android plugin, you can
+configure the emulator to use your sdcard by clicking on the little black
+triangle to the right of the "Debug" icon, and then choosing the
+"Debug Configurations..." menu item. This brings up a "Debug Configurations"
+dialog box where you can choose "Android Application:Downloader", and then
+choose the "Target" tab and edit the "Additional Emulator Command Line
+Options" field. Enter "-sdcard full-path-to-sdcard1.iso".
 
-7) Compile and run the application.
+9) While debugging, or while the device is connected to a computer, make sure
+that "USB mass storage" is turned off. Otherwise the sdcard will be mounted
+read-only. You can modify the USB mass storage setting using the
+"Settings : SD card & phone storage : Use for USB storage" check-box, available
+from the home-screen Settings menu item.
+
+10) Compile and run the application.
+
+Note: When run in the emulator there seems to be an issue where after the
+"Downloader" activity completes the Home screen is displayed rather than the
+"Download Test" activity. If this happens, you can long-press on the "Home"
+button to bring up a menu that lets you choose the "Download Test" activity.
+This behavior does not seem to occur on an actual device.
+
+
 

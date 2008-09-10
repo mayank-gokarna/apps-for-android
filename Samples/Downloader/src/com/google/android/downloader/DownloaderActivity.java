@@ -169,7 +169,7 @@ public class DownloaderActivity extends Activity {
         button.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 if (mDownloadThread != null) {
-                    mUserCanceledDownload = true;
+                    mSuppressErrorMessages = true;
                     mDownloadThread.interrupt();
                 }
             }
@@ -178,7 +178,7 @@ public class DownloaderActivity extends Activity {
     }
 
     private void startDownloadThread() {
-        mUserCanceledDownload = false;
+        mSuppressErrorMessages = false;
         mProgress.setText("");
         mTimeRemaining.setText("");
         mDownloadThread = new Thread(new Downloader(), "Downloader");
@@ -194,6 +194,7 @@ public class DownloaderActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mSuppressErrorMessages = true;
         mDownloadThread.interrupt();
         try {
             mDownloadThread.join();
@@ -219,7 +220,7 @@ public class DownloaderActivity extends Activity {
         AlertDialog alert = new Builder(this).create();
         alert.setTitle(R.string.download_activity_download_stopped);
 
-        if (!mUserCanceledDownload) {
+        if (!mSuppressErrorMessages) {
             alert.setMessage(shortReason);
         }
 
@@ -930,7 +931,7 @@ public class DownloaderActivity extends Activity {
     private final DecimalFormat mPercentFormat = new DecimalFormat("0.00 %");
     private long mStartTime;
     private Thread mDownloadThread;
-    private boolean mUserCanceledDownload;
+    private boolean mSuppressErrorMessages;
 
     private final static long MS_PER_SECOND = 1000;
     private final static long MS_PER_MINUTE = 60 * 1000;
