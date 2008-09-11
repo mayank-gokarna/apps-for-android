@@ -150,8 +150,9 @@ public abstract class UserTask<Params, Progress, Result> {
 
     private static final int MESSAGE_POST_RESULT = 0x1;
     private static final int MESSAGE_POST_PROGRESS = 0x2;
+    private static final int MESSAGE_POST_CANCEL = 0x3;
 
-    private static InternalHandler sHandler;
+    private static final InternalHandler sHandler = new InternalHandler();
 
     private final WorkerRunnable<Params, Result> mWorker;
     private final FutureTask<Result> mFuture;
@@ -181,10 +182,6 @@ public abstract class UserTask<Params, Progress, Result> {
      * Creates a new user task. This constructor must be invoked on the UI thread.
      */
     public UserTask() {
-        if (sHandler == null) {
-            sHandler = new InternalHandler();
-        }
-
         mWorker = new WorkerRunnable<Params, Result>() {
             public Result call() throws Exception {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -195,7 +192,9 @@ public abstract class UserTask<Params, Progress, Result> {
         mFuture = new FutureTask<Result>(mWorker) {
             @Override
             protected void done() {
+                Message message;
                 Result result = null;
+
                 try {
                     result = get();
                 } catch (InterruptedException e) {
@@ -204,13 +203,16 @@ public abstract class UserTask<Params, Progress, Result> {
                     throw new RuntimeException("An error occured while executing doInBackground()",
                             e.getCause());
                 } catch (CancellationException e) {
+                    message = sHandler.obtainMessage(MESSAGE_POST_CANCEL,
+                            new UserTaskResult<Result>(UserTask.this, null));
+                    message.sendToTarget();
                     return;
                 } catch (Throwable t) {
                     throw new RuntimeException("An error occured while executing "
                             + "doInBackground()", t);
                 }
 
-                final Message message = sHandler.obtainMessage(MESSAGE_POST_RESULT,
+                message = sHandler.obtainMessage(MESSAGE_POST_RESULT,
                         new UserTaskResult<Result>(UserTask.this, result));
                 message.sendToTarget();
             }
@@ -234,7 +236,7 @@ public abstract class UserTask<Params, Progress, Result> {
      * This method can call {@link #publishProgress(Object[])} to publish updates
      * on the UI thread.
      *
-     * @params params The parameters of the task.
+     * @param params The parameters of the task.
      *
      * @return A result, defined by the subclass of this task.
      *
@@ -258,9 +260,12 @@ public abstract class UserTask<Params, Progress, Result> {
      * specified result is the value returned by {@link #doInBackground(Object[])}
      * or null if the task was cancelled or an exception occured.
      *
+     * @param result The result of the operation computed by {@link #doInBackground(Object[])}.
+     *
      * @see #onPreExecute()
      * @see #doInBackground(Object[])
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public void onPostExecute(Result result) {
     }
 
@@ -268,10 +273,22 @@ public abstract class UserTask<Params, Progress, Result> {
      * Runs on the UI thread after {@link #publishProgress(Object[])} is invoked.
      * The specified values are the values passed to {@link #publishProgress(Object[])}.
      *
+     * @param values The values indicating progress.
+     *
      * @see #publishProgress(Object[])
-     * @see #doInBackground(Object[]) 
+     * @see #doInBackground(Object[])
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public void onProgressUpdate(Progress... values) {
+    }
+
+    /**
+     * Runs on the UI thread after {@link #cancel(boolean)} is invoked.
+     *
+     * @see #cancel(boolean)
+     * @see #isCancelled()
+     */
+    public void onCancelled() {
     }
 
     /**
@@ -297,14 +314,15 @@ public abstract class UserTask<Params, Progress, Result> {
      * an attempt to stop the task.
      *
      * @param mayInterruptIfRunning <tt>true</tt> if the thread executing this
-     * task should be interrupted; otherwise, in-progress tasks are allowed
-     * to complete.
+     *        task should be interrupted; otherwise, in-progress tasks are allowed
+     *        to complete.
      *
      * @return <tt>false</tt> if the task could not be cancelled,
-     * typically because it has already completed normally;
-     * <tt>true</tt> otherwise
+     *         typically because it has already completed normally;
+     *         <tt>true</tt> otherwise
      *
-     * @see #isCancelled() 
+     * @see #isCancelled()
+     * @see #onCancelled()
      */
     public final boolean cancel(boolean mayInterruptIfRunning) {
         return mFuture.cancel(mayInterruptIfRunning);
@@ -329,6 +347,9 @@ public abstract class UserTask<Params, Progress, Result> {
      * Waits if necessary for at most the given time for the computation
      * to complete, and then retrieves its result.
      *
+     * @param timeout Time to wait before cancelling the operation.
+     * @param unit The time unit for the timeout.
+     *
      * @return The computed result.
      *
      * @throws CancellationException If the computation was cancelled.
@@ -348,13 +369,12 @@ public abstract class UserTask<Params, Progress, Result> {
      *
      * This method must be invoked on the UI thread.
      *
-     * @params params The parameters of the task.
+     * @param params The parameters of the task.
      *
      * @return This instance of UserTask.
      *
      * @throws IllegalStateException If {@link #getStatus()} returns either
-     *         {@link com.google.android.photostream.UserTask.Status#RUNNING} or
-     *         {@link com.google.android.photostream.UserTask.Status#FINISHED}.
+     *         {@link UserTask.Status#RUNNING} or {@link UserTask.Status#FINISHED}.
      */
     public final UserTask<Params, Progress, Result> execute(Params... params) {
         if (mStatus != Status.PENDING) {
@@ -385,10 +405,10 @@ public abstract class UserTask<Params, Progress, Result> {
      * still running. Each call to this method will trigger the execution of
      * {@link #onProgressUpdate(Object[])} on the UI thread.
      *
-     * @params values The progress values to update the UI with.
+     * @param values The progress values to update the UI with.
      *
      * @see # onProgressUpdate (Object[])
-     * @see #doInBackground(Object[]) 
+     * @see #doInBackground(Object[])
      */
     protected final void publishProgress(Progress... values) {
         sHandler.obtainMessage(MESSAGE_POST_PROGRESS,
@@ -401,7 +421,7 @@ public abstract class UserTask<Params, Progress, Result> {
     }
 
     private static class InternalHandler extends Handler {
-        @SuppressWarnings({"unchecked"})
+        @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
         @Override
         public void handleMessage(Message msg) {
             UserTaskResult result = (UserTaskResult) msg.obj;
@@ -413,6 +433,9 @@ public abstract class UserTask<Params, Progress, Result> {
                 case MESSAGE_POST_PROGRESS:
                     result.mTask.onProgressUpdate(result.mData);
                     break;
+                case MESSAGE_POST_CANCEL:
+                    result.mTask.onCancelled();
+                    break;
             }
         }
     }
@@ -421,6 +444,7 @@ public abstract class UserTask<Params, Progress, Result> {
         Params[] mParams;
     }
 
+    @SuppressWarnings({"RawUseOfParameterizedType"})
     private static class UserTaskResult<Data> {
         final UserTask mTask;
         final Data[] mData;
