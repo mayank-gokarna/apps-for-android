@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import android.security.MessageDigest;
@@ -279,7 +280,9 @@ public class DownloaderActivity extends Activity {
 
     private static void quietClose(InputStream is) {
         try {
-            is.close();
+            if (is != null) {
+                is.close();
+            }
         } catch (IOException e) {
             // Don't care.
         }
@@ -287,7 +290,9 @@ public class DownloaderActivity extends Activity {
 
     private static void quietClose(OutputStream os) {
         try {
-            os.close();
+            if (os != null) {
+                os.close();
+            }
         } catch (IOException e) {
             // Don't care.
         }
@@ -390,8 +395,7 @@ public class DownloaderActivity extends Activity {
         }
 
         private static long getLong(Attributes attributes, String localName,
-                long defaultValue)
-        throws SAXException {
+                long defaultValue) {
             String value = attributes.getValue("", localName);
             if (value == null) {
                 return defaultValue;
@@ -425,7 +429,7 @@ public class DownloaderActivity extends Activity {
                 try {
                     Config config = getConfig();
                     filter(config);
-                    download(config);
+                    persistantDownload(config);
                     verify(config);
                     cleanup();
                     reportSuccess();
@@ -434,6 +438,27 @@ public class DownloaderActivity extends Activity {
                 }
             } catch (Exception e) {
                 reportFailure(e.toString() + "\n" + Log.getStackTraceString(e));
+            }
+        }
+
+        private void persistantDownload(Config config)
+        throws ClientProtocolException, DownloaderException, IOException {
+            while(true) {
+                try {
+                    download(config);
+                    break;
+                } catch(java.net.SocketException e) {
+                    if ((!mSuppressErrorMessages)
+                            && e.getMessage().equalsIgnoreCase(
+                                 "The operation timed out")) {
+                        // This exception is a symptom of losing network
+                        // connectivity. Since the network might come back,
+                        // we should keep trying.
+                        Log.i(LOG_TAG, "Network connectivity issue, retrying.");
+                        continue;
+                    }
+                    throw e;
+                }
             }
         }
 
@@ -569,52 +594,68 @@ public class DownloaderActivity extends Activity {
 
         private void download(Config config) throws DownloaderException,
             ClientProtocolException, IOException {
+            mDownloadedSize = 0;
             getSizes(config);
             Log.i(LOG_TAG, "Total bytes to download: "
                     + mTotalExpectedSize);
             for(Config.File file : config.mFiles) {
-                boolean append = false;
-                File dest = new File(mDataDir, file.dest);
-                long bytesAlreadyDownloaded = 0;
-                if (dest.exists() && dest.isFile()) {
-                    append = true;
-                    bytesAlreadyDownloaded = dest.length();
-                    mDownloadedSize += bytesAlreadyDownloaded;
-                }
-                FileOutputStream os = openOutput(file.dest, append);
-                try {
-                    for(Config.File.Part part : file.mParts) {
-                        long bytesThisPart = part.size - bytesAlreadyDownloaded;
-                        // The part.size==0 check below allows us to download
-                        // zero-length files.
-                        if ((bytesThisPart > 0) || (part.size == 0)) {
-                            MessageDigest digest = null;
-                            if ((bytesAlreadyDownloaded == 0)
-                                    && (part.md5 != null)) {
-                                digest = createDigest();
-                            }
-                            downloadPart(part.src, os, bytesAlreadyDownloaded,
-                                    part.size, digest);
-                            if (digest != null) {
-                                String hash = getHash(digest);
-                                if (!hash.equalsIgnoreCase(part.md5)) {
-                                    Log.e(LOG_TAG, "MD5 checksums don't match. "
-                                            + part.src + "\nExpected "
-                                            + part.md5 + "\n     got " + hash);
-                                    quietClose(os);
-                                    dest.delete();
-                                    throw new DownloaderException(
-                                          "Received bad data from web server");
+                downloadFile(file);
+            }
+        }
+
+        private void downloadFile(Config.File file) throws DownloaderException,
+                FileNotFoundException, IOException, ClientProtocolException {
+            boolean append = false;
+            File dest = new File(mDataDir, file.dest);
+            long bytesToSkip = 0;
+            if (dest.exists() && dest.isFile()) {
+                append = true;
+                bytesToSkip = dest.length();
+                mDownloadedSize += bytesToSkip;
+            }
+            FileOutputStream os = null;
+            long offsetOfCurrentPart = 0;
+            try {
+                for(Config.File.Part part : file.mParts) {
+                    // The part.size==0 check below allows us to download
+                    // zero-length files.
+                    if ((part.size > bytesToSkip) || (part.size == 0)) {
+                        MessageDigest digest = null;
+                        if (part.md5 != null) {
+                            digest = createDigest();
+                            if (bytesToSkip > 0) {
+                                FileInputStream is = openInput(file.dest);
+                                try {
+                                    is.skip(offsetOfCurrentPart);
+                                    readIntoDigest(is, bytesToSkip, digest);
+                                } finally {
+                                    quietClose(is);
                                 }
                             }
                         }
-                        if (bytesAlreadyDownloaded > 0) {
-                            bytesAlreadyDownloaded -= part.size;
+                        if (os == null) {
+                            os = openOutput(file.dest, append);
+                        }
+                        downloadPart(part.src, os, bytesToSkip,
+                                part.size, digest);
+                        if (digest != null) {
+                            String hash = getHash(digest);
+                            if (!hash.equalsIgnoreCase(part.md5)) {
+                                Log.e(LOG_TAG, "MD5 checksums don't match. "
+                                        + part.src + "\nExpected "
+                                        + part.md5 + "\n     got " + hash);
+                                quietClose(os);
+                                dest.delete();
+                                throw new DownloaderException(
+                                      "Received bad data from web server");
+                            }
                         }
                     }
-                } finally {
-                    quietClose(os);
+                    bytesToSkip -= Math.min(bytesToSkip, part.size);
+                    offsetOfCurrentPart += part.size;
                 }
+            } finally {
+                quietClose(os);
             }
         }
 
@@ -671,15 +712,7 @@ public class DownloaderActivity extends Activity {
                         continue;
                     }
                     MessageDigest digest = createDigest();
-                    long bytesToRead = part.size;
-                    while(bytesToRead > 0) {
-                        int bytesRead = is.read(mFileIOBuffer);
-                        if (bytesRead < 0) {
-                            break;
-                        }
-                        updateDigest(digest, bytesRead);
-                        bytesToRead -= bytesRead;
-                    }
+                    readIntoDigest(is, part.size, digest);
                     String hash = getHash(digest);
                     if (!hash.equalsIgnoreCase(part.md5)) {
                         Log.e(LOG_TAG, "MD5 checksums don't match. " +
@@ -696,6 +729,20 @@ public class DownloaderActivity extends Activity {
                 quietClose(is);
             }
             return true;
+        }
+
+        private void readIntoDigest(FileInputStream is, long bytesToRead,
+                MessageDigest digest) throws IOException {
+            while(bytesToRead > 0) {
+                int chunkSize = (int) Math.min(mFileIOBuffer.length,
+                        bytesToRead);
+                int bytesRead = is.read(mFileIOBuffer, 0, chunkSize);
+                if (bytesRead < 0) {
+                    break;
+                }
+                updateDigest(digest, bytesRead);
+                bytesToRead -= bytesRead;
+            }
         }
 
         private MessageDigest createDigest() throws DownloaderException {
@@ -794,7 +841,7 @@ public class DownloaderActivity extends Activity {
                     if (startOffset > 0) {
                         String range = "bytes=" + startOffset + "-";
                         if (expectedLength >= 0) {
-                            range += expectedLength;
+                            range += expectedLength-1;
                         }
                         Log.i(LOG_TAG, "requesting byte range " + range);
                         mHttpGet.addHeader("Range", range);
@@ -846,10 +893,20 @@ public class DownloaderActivity extends Activity {
         private void downloadPart(String src, FileOutputStream os,
                 long startOffset, long expectedLength, MessageDigest digest)
             throws ClientProtocolException, IOException, DownloaderException {
+            boolean lengthIsKnown = expectedLength >= 0;
+            if (startOffset < 0) {
+                throw new IllegalArgumentException("Negative startOffset:"
+                        + startOffset);
+            }
+            if (lengthIsKnown && (startOffset > expectedLength)) {
+                throw new IllegalArgumentException(
+                        "startOffset > expectedLength" + startOffset + " "
+                        + expectedLength);
+            }
             InputStream is = get(src, startOffset, expectedLength);
             try {
                 long bytesRead = downloadStream(is, os, digest);
-                if (expectedLength >= 0) {
+                if (lengthIsKnown) {
                     long expectedBytesRead = expectedLength - startOffset;
                     if (expectedBytesRead != bytesRead) {
                         Log.e(LOG_TAG, "Bad file transfer from server: " + src
@@ -878,6 +935,20 @@ public class DownloaderActivity extends Activity {
             }
             FileOutputStream os = new FileOutputStream(destFile, append);
             return os;
+        }
+
+        private FileInputStream openInput(String src)
+            throws FileNotFoundException, DownloaderException {
+            File srcFile = new File(mDataDir, src);
+            File parent = srcFile.getParentFile();
+            if (! parent.exists()) {
+                parent.mkdirs();
+            }
+            if (! parent.exists()) {
+                throw new DownloaderException("Could not create directory "
+                        + parent.toString());
+            }
+            return new FileInputStream(srcFile);
         }
 
         private long downloadStream(InputStream is, FileOutputStream os,

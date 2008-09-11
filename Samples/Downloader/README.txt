@@ -124,11 +124,34 @@ from the home-screen Settings menu item.
 
 10) Compile and run the application.
 
-Note: When run in the emulator there seems to be an issue where after the
-"Downloader" activity completes the Home screen is displayed rather than the
-"Download Test" activity. If this happens, you can long-press on the "Home"
-button to bring up a menu that lets you choose the "Download Test" activity.
+Note: When run under the Eclipse debugger there seems to be an issue where
+after the "Downloader" activity completes the Home screen is displayed rather
+than the "Download Test" activity. If this happens, you can long-press on the
+"Home" button to bring up a menu that lets you choose the "Download Test"
+activity.
 This behavior does not seem to occur on an actual device.
 
+Appendix: Extra files stored in the download directory
+
+The downloader activity writes three files to the data directory:
+
+.downloadConfig_temp
+This file holds the downloaded configuration file for the duration of the
+download process.
+
+.downloadConfig_filtered
+This file is only present during the download process. Its presence
+indicates that the download directory has been filtered to remove any
+files left over from earlier versions of the download data.
+
+.downloadConfig
+This file holds the downloaded configuration file after the download
+process completes successfully. It's checked each time the application
+starts to make sure the version number of the downloaded data matches
+the version number of the application.
+
+
+
+.
 
 
