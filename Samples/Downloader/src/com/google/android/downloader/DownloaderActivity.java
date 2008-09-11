@@ -31,6 +31,7 @@ import android.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -237,7 +238,12 @@ public class DownloaderActivity extends Activity {
             }
 
         });
-        alert.show();
+        try {
+            alert.show();
+        } catch (WindowManager.BadTokenException e) {
+            // Happens when the Back button is used to exit the activity.
+            // ignore.
+        }
     }
 
     private void onReportProgress(int progress) {
