@@ -11,6 +11,7 @@
         </activity>
         <activity android:name="DownloaderActivity"
             android:label="@string/download_activity_title"
-            android:configChanges="orientation|keyboardHidden" />
+            android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTask" />
     </application>
 </manifest>

@@ -16,24 +16,23 @@
 
 package com.google.android.downloader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.http.AndroidHttpClient;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
 import android.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import android.util.Log;
+import android.util.Xml;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.TextView;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -46,22 +45,21 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.http.AndroidHttpClient;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.SystemClock;
-import android.util.Log;
-import android.util.Xml;
-import android.view.View;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.TextView;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class DownloaderActivity extends Activity {
 
@@ -448,17 +446,15 @@ public class DownloaderActivity extends Activity {
                     download(config);
                     break;
                 } catch(java.net.SocketException e) {
-                    if ((!mSuppressErrorMessages)
-                            && e.getMessage().equalsIgnoreCase(
-                                 "The operation timed out")) {
-                        // This exception is a symptom of losing network
-                        // connectivity. Since the network might come back,
-                        // we should keep trying.
-                        Log.i(LOG_TAG, "Network connectivity issue, retrying.");
-                        continue;
+                    if (mSuppressErrorMessages) {
+                        throw e;
                     }
-                    throw e;
+                } catch(java.net.SocketTimeoutException e) {
+                    if (mSuppressErrorMessages) {
+                        throw e;
+                    }
                 }
+                Log.i(LOG_TAG, "Network connectivity issue, retrying.");
             }
         }
 
@@ -641,13 +637,15 @@ public class DownloaderActivity extends Activity {
                         if (digest != null) {
                             String hash = getHash(digest);
                             if (!hash.equalsIgnoreCase(part.md5)) {
-                                Log.e(LOG_TAG, "MD5 checksums don't match. "
+                                Log.e(LOG_TAG, "web MD5 checksums don't match. "
                                         + part.src + "\nExpected "
                                         + part.md5 + "\n     got " + hash);
                                 quietClose(os);
                                 dest.delete();
                                 throw new DownloaderException(
                                       "Received bad data from web server");
+                            } else {
+                               Log.i(LOG_TAG, "web MD5 checksum matches.");
                             }
                         }
                     }
@@ -798,31 +796,21 @@ public class DownloaderActivity extends Activity {
         }
 
         private long getSize(String url) throws ClientProtocolException,
-            IOException, DownloaderException {
+            IOException {
             url = normalizeUrl(url);
             Log.i(LOG_TAG, "Head " + url);
-            for(int retry = 0; retry < SOCKET_TIMEOUT_RETRY_COUNT; retry++) {
-                try {
-                    HttpHead httpGet = new HttpHead(url);
-                    HttpResponse response = mHttpClient.execute(httpGet);
-                    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                        throw new IOException("Unexpected Http status code "
-                            + response.getStatusLine().getStatusCode());
-                    }
-                    Header[] clHeaders = response.getHeaders("Content-Length");
-                    if (clHeaders.length > 0) {
-                        Header header = clHeaders[0];
-                        return Long.parseLong(header.getValue());
-                    }
-                    return -1;
-                } catch (SocketTimeoutException e) {
-                    if(retry < SOCKET_TIMEOUT_RETRY_COUNT-1) {
-                        Log.e(LOG_TAG, "Socket timeout, retrying...");
-                    }
-                    continue;
-                }
+            HttpHead httpGet = new HttpHead(url);
+            HttpResponse response = mHttpClient.execute(httpGet);
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                throw new IOException("Unexpected Http status code "
+                    + response.getStatusLine().getStatusCode());
             }
-            throw new DownloaderException("Timed out trying to open socket.");
+            Header[] clHeaders = response.getHeaders("Content-Length");
+            if (clHeaders.length > 0) {
+                Header header = clHeaders[0];
+                return Long.parseLong(header.getValue());
+            }
+            return -1;
         }
 
         private String normalizeUrl(String url) throws MalformedURLException {
@@ -831,51 +819,42 @@ public class DownloaderActivity extends Activity {
 
         private InputStream get(String url, long startOffset,
                 long expectedLength)
-            throws ClientProtocolException, IOException, DownloaderException {
+            throws ClientProtocolException, IOException {
             url = normalizeUrl(url);
             Log.i(LOG_TAG, "Get " + url);
-            for(int retry = 0; retry < SOCKET_TIMEOUT_RETRY_COUNT; retry++) {
-                try {
-                    mHttpGet = new HttpGet(url);
-                    int expectedStatusCode = HttpStatus.SC_OK;
-                    if (startOffset > 0) {
-                        String range = "bytes=" + startOffset + "-";
-                        if (expectedLength >= 0) {
-                            range += expectedLength-1;
-                        }
-                        Log.i(LOG_TAG, "requesting byte range " + range);
-                        mHttpGet.addHeader("Range", range);
-                        expectedStatusCode = HttpStatus.SC_PARTIAL_CONTENT;
-                    }
-                    HttpResponse response = mHttpClient.execute(mHttpGet);
-                    long bytesToSkip = 0;
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode != expectedStatusCode) {
-                        if ((statusCode == HttpStatus.SC_OK)
-                                && (expectedStatusCode
-                                        == HttpStatus.SC_PARTIAL_CONTENT)) {
-                            Log.i(LOG_TAG, "Byte range request ignored");
-                            bytesToSkip = startOffset;
-                        } else {
-                            throw new IOException("Unexpected Http status code "
-                                    + statusCode + " expected "
-                                    + expectedStatusCode);
-                        }
-                    }
-                    HttpEntity entity = response.getEntity();
-                    InputStream is = entity.getContent();
-                    if (bytesToSkip > 0) {
-                        is.skip(bytesToSkip);
-                    }
-                    return is;
-                } catch (SocketTimeoutException e) {
-                    if(retry < SOCKET_TIMEOUT_RETRY_COUNT-1) {
-                        Log.e(LOG_TAG, "Socket timeout, retrying...");
-                    }
-                    continue;
+
+            mHttpGet = new HttpGet(url);
+            int expectedStatusCode = HttpStatus.SC_OK;
+            if (startOffset > 0) {
+                String range = "bytes=" + startOffset + "-";
+                if (expectedLength >= 0) {
+                    range += expectedLength-1;
+                }
+                Log.i(LOG_TAG, "requesting byte range " + range);
+                mHttpGet.addHeader("Range", range);
+                expectedStatusCode = HttpStatus.SC_PARTIAL_CONTENT;
+            }
+            HttpResponse response = mHttpClient.execute(mHttpGet);
+            long bytesToSkip = 0;
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != expectedStatusCode) {
+                if ((statusCode == HttpStatus.SC_OK)
+                        && (expectedStatusCode
+                                == HttpStatus.SC_PARTIAL_CONTENT)) {
+                    Log.i(LOG_TAG, "Byte range request ignored");
+                    bytesToSkip = startOffset;
+                } else {
+                    throw new IOException("Unexpected Http status code "
+                            + statusCode + " expected "
+                            + expectedStatusCode);
                 }
             }
-            throw new DownloaderException("Timed out trying to open socket.");
+            HttpEntity entity = response.getEntity();
+            InputStream is = entity.getContent();
+            if (bytesToSkip > 0) {
+                is.skip(bytesToSkip);
+            }
+            return is;
         }
 
         private File download(String src, String dest)
@@ -1018,8 +997,6 @@ public class DownloaderActivity extends Activity {
     private final static String EXTRA_DATA_PATH = "DownloaderActivity_data_path";
     private final static String EXTRA_USER_AGENT = "DownloaderActivity_user_agent";
 
-    private final static int SOCKET_TIMEOUT_RETRY_COUNT = 5;
-
     private final static int MSG_DOWNLOAD_SUCCEEDED = 0;
     private final static int MSG_DOWNLOAD_FAILED = 1;
     private final static int MSG_REPORT_PROGRESS = 2;
@@ -1046,3 +1023,4 @@ public class DownloaderActivity extends Activity {
     };
 
 }
+
