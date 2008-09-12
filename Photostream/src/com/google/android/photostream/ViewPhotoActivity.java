@@ -19,6 +19,7 @@ package com.google.android.photostream;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.ImageView;
@@ -32,6 +33,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.animation.AnimationUtils;
 import android.net.Uri;
 
@@ -47,6 +50,10 @@ import java.io.FileNotFoundException;
  */
 public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         ViewTreeObserver.OnGlobalLayoutListener {
+
+    private static final String RADAR_ACTION = "com.google.android.radar.SHOW_RADAR";
+    private static final String RADAR_EXTRA_LATITUDE = "latitude";
+    private static final String RADAR_EXTRA_LONGITUDE = "longitude";
 
     private static final String EXTRA_PHOTO = "com.google.android.photostream.photo";
 
@@ -161,6 +168,26 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         }
 
         return photo;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.view_photo, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_radar:
+                onShowRadar();
+                break;
+        }
+        return super.onMenuItemSelected(featureId, item);
+    }
+
+    private void onShowRadar() {
+        new ShowRadarTask().execute(mPhoto);
     }
 
     public void onClick(View v) {
@@ -388,6 +415,31 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
             }
 
             mTask = null;
+        }
+    }
+
+    private class ShowRadarTask extends UserTask<Flickr.Photo, Void, Flickr.Location> {
+        public Flickr.Location doInBackground(Flickr.Photo... params) {
+            return Flickr.get().getLocation(params[0]);
+        }
+
+        @Override
+        public void onPostExecute(Flickr.Location location) {
+            if (location != null) {
+                final Intent intent = new Intent(RADAR_ACTION);
+                intent.putExtra(RADAR_EXTRA_LATITUDE, location.getLatitude());
+                intent.putExtra(RADAR_EXTRA_LONGITUDE, location.getLongitude());
+
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(ViewPhotoActivity.this, R.string.error_cannot_find_radar,
+                        Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(ViewPhotoActivity.this, R.string.error_cannot_find_location,
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

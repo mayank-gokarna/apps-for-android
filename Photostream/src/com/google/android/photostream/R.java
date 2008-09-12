@@ -50,27 +50,29 @@ containing a value of this type.
         public static final int background_vertical_gradient_green=0x7f020002;
         public static final int background_watermark=0x7f020003;
         public static final int default_buddyicon=0x7f020004;
-        public static final int not_found=0x7f020005;
-        public static final int not_found_small_1=0x7f020006;
-        public static final int not_found_small_2=0x7f020007;
-        public static final int watermark_flickr=0x7f020008;
-        public static final int window_background=0x7f020009;
+        public static final int ic_menu_radar=0x7f020005;
+        public static final int not_found=0x7f020006;
+        public static final int not_found_small_1=0x7f020007;
+        public static final int not_found_small_2=0x7f020008;
+        public static final int watermark_flickr=0x7f020009;
+        public static final int window_background=0x7f02000a;
     }
     public static final class id {
-        public static final int background=0x7f08000c;
-        public static final int caption_date=0x7f080005;
-        public static final int caption_title=0x7f080004;
-        public static final int container_photo=0x7f080002;
-        public static final int grid_photos=0x7f080009;
-        public static final int image_photo=0x7f080003;
-        public static final int input_username=0x7f080001;
-        public static final int menu_back=0x7f080008;
-        public static final int menu_next=0x7f08000b;
-        public static final int menu_separator=0x7f08000a;
-        public static final int menu_set=0x7f080007;
-        public static final int switcher_login=0x7f080000;
-        public static final int switcher_menu=0x7f080006;
-        public static final int watermark=0x7f08000d;
+        public static final int background=0x7f09000c;
+        public static final int caption_date=0x7f090005;
+        public static final int caption_title=0x7f090004;
+        public static final int container_photo=0x7f090002;
+        public static final int grid_photos=0x7f090009;
+        public static final int image_photo=0x7f090003;
+        public static final int input_username=0x7f090001;
+        public static final int menu_back=0x7f090008;
+        public static final int menu_item_radar=0x7f09000e;
+        public static final int menu_next=0x7f09000b;
+        public static final int menu_separator=0x7f09000a;
+        public static final int menu_set=0x7f090007;
+        public static final int switcher_login=0x7f090000;
+        public static final int switcher_menu=0x7f090006;
+        public static final int watermark=0x7f09000d;
     }
     public static final class layout {
         public static final int grid_item_photo=0x7f030000;
@@ -79,11 +81,17 @@ containing a value of this type.
         public static final int screen_photostream=0x7f030003;
         public static final int shared_progress=0x7f030004;
     }
+    public static final class menu {
+        public static final int view_photo=0x7f080000;
+    }
     public static final class string {
         public static final int activity_create_shortcut=0x7f070001;
         public static final int activity_set_wallpaper=0x7f070002;
         public static final int application_name=0x7f070000;
+        public static final int error_cannot_find_location=0x7f07000e;
+        public static final int error_cannot_find_radar=0x7f07000f;
         public static final int error_cannot_save_file=0x7f07000b;
+        public static final int menu_item_radar_label=0x7f07000d;
         public static final int screen_login_error=0x7f070004;
         public static final int screen_login_prompt=0x7f070003;
         public static final int screen_photo_back=0x7f07000a;

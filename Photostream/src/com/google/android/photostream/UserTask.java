@@ -204,7 +204,7 @@ public abstract class UserTask<Params, Progress, Result> {
                             e.getCause());
                 } catch (CancellationException e) {
                     message = sHandler.obtainMessage(MESSAGE_POST_CANCEL,
-                            new UserTaskResult<Result>(UserTask.this, null));
+                            new UserTaskResult<Result>(UserTask.this, (Result[]) null));
                     message.sendToTarget();
                     return;
                 } catch (Throwable t) {

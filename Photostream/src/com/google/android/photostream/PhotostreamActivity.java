@@ -351,7 +351,7 @@ public class PhotostreamActivity extends Activity implements
          * @param value The photo and its bitmap.
          */
         @Override
-        public void processProgress(LoadedPhoto... value) {
+        public void onProgressUpdate(LoadedPhoto... value) {
             addPhoto(value);
         }
 

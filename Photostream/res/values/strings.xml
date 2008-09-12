@@ -34,4 +34,8 @@
 
     <string name="error_cannot_save_file">Photo cannot be set as a wallpaper.</string>
     <string name="success_wallpaper_set">Photo set as wallpaper.</string>
+
+    <string name="menu_item_radar_label">Radar</string>
+    <string name="error_cannot_find_location">Could not find location.</string>
+    <string name="error_cannot_find_radar">Please install the Radar package.</string>
 </resources>

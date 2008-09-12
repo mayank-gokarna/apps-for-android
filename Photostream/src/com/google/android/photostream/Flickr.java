@@ -79,6 +79,7 @@ class Flickr {
     private static final String API_PEOPLE_FIND_BY_USERNAME = "flickr.people.findByUsername";
     private static final String API_PEOPLE_GET_INFO = "flickr.people.getInfo";
     private static final String API_PEOPLE_GET_PUBLIC_PHOTOS = "flickr.people.getPublicPhotos";
+    private static final String API_PEOPLE_GET_LOCATION = "flickr.photos.geo.getLocation";
 
     private static final String PARAM_API_KEY = "api_key";
     private static final String PARAM_METHOD= "method";
@@ -87,6 +88,7 @@ class Flickr {
     private static final String PARAM_PER_PAGE = "per_page";
     private static final String PARAM_PAGE = "page";
     private static final String PARAM_EXTRAS = "extras";
+    private static final String PARAM_PHOTO_ID = "photo_id";
 
     private static final String VALUE_DEFAULT_EXTRAS = "date_taken";
 
@@ -116,6 +118,8 @@ class Flickr {
     private static final String RESPONSE_TAG_USERNAME = "username";
     private static final String RESPONSE_TAG_REALNAME = "realname";
     private static final String RESPONSE_TAG_LOCATION = "location";
+    private static final String RESPONSE_ATTR_LATITUDE = "latitude";
+    private static final String RESPONSE_ATTR_LONGITUDE = "longitude";
     private static final String RESPONSE_TAG_PHOTOSURL = "photosurl";
     private static final String RESPONSE_TAG_PROFILEURL = "profileurl";
     private static final String RESPONSE_TAG_MOBILEURL = "mobileurl";
@@ -191,6 +195,27 @@ class Flickr {
         @Override
         public String toString() {
             return name() + ", longSide=" + mLongSide;
+        }
+    }
+
+    /**
+     * Represents the geographical location of a photo.
+     */
+    static class Location {
+        private float mLatitude;
+        private float mLongitude;
+
+        private Location(float latitude, float longitude) {
+            mLatitude = latitude;
+            mLongitude = longitude;
+        }
+
+        float getLatitude() {
+            return mLatitude;
+        }
+
+        float getLongitude() {
+            return mLongitude;
         }
     }
 
@@ -807,6 +832,43 @@ class Flickr {
     }
 
     /**
+     * Retrieves the geographical location of the specified photo. If the photo
+     * has no geodata associated with it, this method returns null.
+     *
+     * @param photo The photo to get the location of.
+     *
+     * @return The geo location of the photo, or null if the photo has no geodata
+     *         or the photo cannot be found.
+     *
+     * @see com.google.android.photostream.Flickr.Location
+     */
+    Location getLocation(Flickr.Photo photo) {
+        final Uri.Builder uri = buildGetMethod(API_PEOPLE_GET_LOCATION);
+        uri.appendQueryParameter(PARAM_PHOTO_ID, photo.mId);
+
+        final HttpGet get = new HttpGet(uri.build().toString());
+        final Location location = new Location(0.0f, 0.0f);
+
+        try {
+            executeRequest(get, new ResponseHandler() {
+                public void handleResponse(InputStream in) throws IOException {
+                    parseResponse(in, new ResponseParser() {
+                        public void parseResponse(XmlPullParser parser)
+                                throws XmlPullParserException, IOException {
+                            parsePhotoLocation(parser, location);
+                        }
+                    });
+                }
+            });
+            return location;
+        } catch (IOException e) {
+            android.util.Log.e(LOG_TAG, "Could not find location for photo: " + photo);
+        }
+
+        return null;
+    }
+
+    /**
      * Downloads the specified photo at the specified size in the specified destination.
      *
      * @param photo The photo to download.
@@ -877,6 +939,32 @@ class Flickr {
                 }
 
                 photos.add(photo);
+            }
+        }
+    }
+
+    private void parsePhotoLocation(XmlPullParser parser, Location location)
+            throws XmlPullParserException, IOException {
+        int type;
+        String name;
+        final int depth = parser.getDepth();
+
+        while (((type = parser.next()) != XmlPullParser.END_TAG ||
+                parser.getDepth() > depth) && type != XmlPullParser.END_DOCUMENT) {
+            if (type != XmlPullParser.START_TAG) {
+                continue;
+            }
+
+            name = parser.getName();
+            if (RESPONSE_TAG_LOCATION.equals(name)) {
+                try {
+                    location.mLatitude = Float.parseFloat(parser.getAttributeValue(null,
+                            RESPONSE_ATTR_LATITUDE));
+                    location.mLongitude = Float.parseFloat(parser.getAttributeValue(null,
+                            RESPONSE_ATTR_LONGITUDE));
+                } catch (NumberFormatException e) {
+                    throw new XmlPullParserException("Could not parse lat/lon", parser, e);
+                }
             }
         }
     }
