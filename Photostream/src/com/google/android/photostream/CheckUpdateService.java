@@ -26,9 +26,11 @@ import android.os.SystemClock;
 import android.content.Intent;
 import android.content.Context;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.Cursor;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import java.util.Date;
 
@@ -67,11 +69,20 @@ public class CheckUpdateService extends Service {
 
         final AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pending);
-        alarm.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
-                UPDATES_CHECK_INTERVAL, pending);
+        alarm.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() +
+                UPDATES_CHECK_INTERVAL, UPDATES_CHECK_INTERVAL, pending);
     }
 
     private class CheckForUpdatesTask extends UserTask<Void, Object, Void> {
+        private SharedPreferences mPreferences;
+        private NotificationManager mManager;
+
+        @Override
+        public void onPreExecute() {
+            mPreferences = getSharedPreferences(Preferences.NAME, MODE_PRIVATE);
+            mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        }
+
         public Void doInBackground(Void... params) {
             final UserDatabase helper = new UserDatabase(CheckUpdateService.this);
             final SQLiteDatabase database = helper.getWritableDatabase();
@@ -122,15 +133,21 @@ public class CheckUpdateService extends Service {
             Notification notification = new Notification(R.drawable.stat_notify,
                     getString(R.string.notification_new_photos, values[1]),
                     System.currentTimeMillis());
-            notification.defaults = Notification.DEFAULT_ALL;
             notification.setLatestEventInfo(CheckUpdateService.this,
                     getString(R.string.notification_title),
                     getString(R.string.notification_contact_has_new_photos, values[1]),
                     PendingIntent.getActivity(CheckUpdateService.this, 0, intent, 0));
 
-            NotificationManager manager = (NotificationManager)
-                    getSystemService(Context.NOTIFICATION_SERVICE);
-            manager.notify((Integer) values[2], notification);
+            if (mPreferences.getBoolean(Preferences.KEY_ENABLE_NOTIFICATIONS, true)) {
+                if (mPreferences.getBoolean(Preferences.KEY_VIBRATE, true)) {
+                    notification.defaults |= Notification.DEFAULT_VIBRATE;
+                }
+
+                String ringtoneUri = mPreferences.getString(Preferences.KEY_RINGTONE, null);
+                notification.sound = TextUtils.isEmpty(ringtoneUri) ? null : Uri.parse(ringtoneUri);
+            }
+
+            mManager.notify((Integer) values[2], notification);
         }
 
         @Override

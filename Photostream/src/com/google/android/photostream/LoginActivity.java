@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.ContextMenu;
 import android.view.MenuItem;
+import android.view.Menu;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Animation;
 import android.widget.TextView;
@@ -72,7 +73,7 @@ public class LoginActivity extends Activity implements View.OnClickListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        CheckUpdateService.schedule(this);
+        schedule();
 
         // If the activity was started with the "create shortcut" action, we
         // remember this to change the behavior upon successful login
@@ -84,6 +85,14 @@ public class LoginActivity extends Activity implements View.OnClickListener,
 
         setContentView(R.layout.screen_login);
         setupViews();
+    }
+
+    private void schedule() {
+        //SharedPreferences preferences = getSharedPreferences(Preferences.NAME, MODE_PRIVATE);
+        //if (!preferences.getBoolean(Preferences.KEY_ALARM_SCHEDULED, false)) {
+        CheckUpdateService.schedule(this);
+        //    preferences.edit().putBoolean(Preferences.KEY_ALARM_SCHEDULED, true).commit();
+        //}
     }
 
     private void setupViews() {
@@ -111,6 +120,23 @@ public class LoginActivity extends Activity implements View.OnClickListener,
         startManagingCursor(cursor);
 
         return cursor;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.login, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_settings:
+                SettingsActivity.show(this);
+                return true;
+        }
+
+        return super.onMenuItemSelected(featureId, item);
     }
 
     public void onClick(View v) {

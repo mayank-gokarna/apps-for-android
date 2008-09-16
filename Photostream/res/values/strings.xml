@@ -20,6 +20,7 @@
     <string name="application_name">Photostream</string>
     <string name="activity_create_shortcut">Flickr photos</string>
     <string name="activity_set_wallpaper">Flickr</string>
+    <string name="activity_preferences">Settings</string>
 
     <string name="screen_login_prompt">Username</string>
     <string name="screen_login_error">Unknown user or network error</string>
@@ -38,11 +39,25 @@
     <string name="error_cannot_save_file">Photo cannot be set as a wallpaper.</string>
     <string name="success_wallpaper_set">Photo set as wallpaper.</string>
 
+    <string name="menu_item_settings_label">Settings</string>
     <string name="menu_item_radar_label">Radar</string>
+
     <string name="error_cannot_find_location">Could not find location.</string>
     <string name="error_cannot_find_radar">Please install the Radar package.</string>
 
     <string name="notification_title">New photos</string>
     <string name="notification_new_photos">%s has new photos</string>
     <string name="notification_contact_has_new_photos">%s has updated photos</string>
+
+    <string name="preferences_notifications">Notification settings</string>
+    <string name="preferences_notifications_enable">New photos notifications</string>
+    <string name="preferences_notifications_summary">Notify in status bar when new photos are available</string>
+
+    <string name="preferences_vibrate_enable">Vibrate</string>
+    <string name="preferences_vibrate_summary">Also vibrate when new photos are available</string>
+
+    <string name="preferences_ring_enable">Sound</string>
+    <string name="preferences_ring_summary">Also play ringtone when new photos are available</string>
+
+    <string name="preferences_ringtone">Select ringtone</string>
 </resources>

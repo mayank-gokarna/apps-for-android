@@ -35,14 +35,14 @@ containing a value of this type.
         public static final int numRows=0x7f010001;
     }
     public static final class color {
-        public static final int eden_dark=0x7f050004;
-        public static final int eden_dark_green=0x7f050003;
-        public static final int eden_green=0x7f050002;
-        public static final int eden_light=0x7f050000;
-        public static final int eden_light_green=0x7f050001;
-        public static final int eden_red=0x7f050005;
-        public static final int eden_text_menu_entry=0x7f050007;
-        public static final int translucent_white=0x7f050006;
+        public static final int eden_dark=0x7f060004;
+        public static final int eden_dark_green=0x7f060003;
+        public static final int eden_green=0x7f060002;
+        public static final int eden_light=0x7f060000;
+        public static final int eden_light_green=0x7f060001;
+        public static final int eden_red=0x7f060005;
+        public static final int eden_text_menu_entry=0x7f060007;
+        public static final int translucent_white=0x7f060006;
     }
     public static final class drawable {
         public static final int application_icon=0x7f020000;
@@ -67,22 +67,23 @@ containing a value of this type.
         public static final int window_background=0x7f020013;
     }
     public static final class id {
-        public static final int background=0x7f09000d;
-        public static final int caption_date=0x7f090006;
-        public static final int caption_title=0x7f090005;
-        public static final int container_photo=0x7f090003;
-        public static final int grid_photos=0x7f09000a;
-        public static final int image_photo=0x7f090004;
-        public static final int input_username=0x7f090001;
-        public static final int list_users=0x7f090000;
-        public static final int menu_back=0x7f090009;
-        public static final int menu_item_radar=0x7f09000f;
-        public static final int menu_next=0x7f09000c;
-        public static final int menu_separator=0x7f09000b;
-        public static final int menu_set=0x7f090008;
-        public static final int progress=0x7f090002;
-        public static final int switcher_menu=0x7f090007;
-        public static final int watermark=0x7f09000e;
+        public static final int background=0x7f0a000d;
+        public static final int caption_date=0x7f0a0006;
+        public static final int caption_title=0x7f0a0005;
+        public static final int container_photo=0x7f0a0003;
+        public static final int grid_photos=0x7f0a000a;
+        public static final int image_photo=0x7f0a0004;
+        public static final int input_username=0x7f0a0001;
+        public static final int list_users=0x7f0a0000;
+        public static final int menu_back=0x7f0a0009;
+        public static final int menu_item_radar=0x7f0a0010;
+        public static final int menu_item_settings=0x7f0a000f;
+        public static final int menu_next=0x7f0a000c;
+        public static final int menu_separator=0x7f0a000b;
+        public static final int menu_set=0x7f0a0008;
+        public static final int progress=0x7f0a0002;
+        public static final int switcher_menu=0x7f0a0007;
+        public static final int watermark=0x7f0a000e;
     }
     public static final class layout {
         public static final int grid_item_photo=0x7f030000;
@@ -93,37 +94,51 @@ containing a value of this type.
         public static final int shared_progress=0x7f030005;
     }
     public static final class menu {
-        public static final int view_photo=0x7f080000;
+        public static final int login=0x7f090000;
+        public static final int view_photo=0x7f090001;
     }
     public static final class string {
-        public static final int activity_create_shortcut=0x7f070001;
-        public static final int activity_set_wallpaper=0x7f070002;
-        public static final int application_name=0x7f070000;
-        public static final int context_menu_delete_user=0x7f070005;
-        public static final int context_menu_show_photostream=0x7f070006;
-        public static final int error_cannot_find_location=0x7f070010;
-        public static final int error_cannot_find_radar=0x7f070011;
-        public static final int error_cannot_save_file=0x7f07000d;
-        public static final int menu_item_radar_label=0x7f07000f;
-        public static final int notification_contact_has_new_photos=0x7f070014;
-        public static final int notification_new_photos=0x7f070013;
-        public static final int notification_title=0x7f070012;
-        public static final int screen_login_error=0x7f070004;
-        public static final int screen_login_prompt=0x7f070003;
-        public static final int screen_photo_back=0x7f07000c;
-        public static final int screen_photo_separator=0x7f07000b;
-        public static final int screen_photo_set=0x7f07000a;
-        public static final int screen_photostream_back=0x7f070009;
-        public static final int screen_photostream_next=0x7f070007;
-        public static final int screen_photostream_separator=0x7f070008;
-        public static final int success_wallpaper_set=0x7f07000e;
+        public static final int activity_create_shortcut=0x7f080001;
+        public static final int activity_preferences=0x7f080003;
+        public static final int activity_set_wallpaper=0x7f080002;
+        public static final int application_name=0x7f080000;
+        public static final int context_menu_delete_user=0x7f080006;
+        public static final int context_menu_show_photostream=0x7f080007;
+        public static final int error_cannot_find_location=0x7f080012;
+        public static final int error_cannot_find_radar=0x7f080013;
+        public static final int error_cannot_save_file=0x7f08000e;
+        public static final int menu_item_radar_label=0x7f080011;
+        public static final int menu_item_settings_label=0x7f080010;
+        public static final int notification_contact_has_new_photos=0x7f080016;
+        public static final int notification_new_photos=0x7f080015;
+        public static final int notification_title=0x7f080014;
+        public static final int preferences_notifications=0x7f080017;
+        public static final int preferences_notifications_enable=0x7f080018;
+        public static final int preferences_notifications_summary=0x7f080019;
+        public static final int preferences_ring_enable=0x7f08001c;
+        public static final int preferences_ring_summary=0x7f08001d;
+        public static final int preferences_ringtone=0x7f08001e;
+        public static final int preferences_vibrate_enable=0x7f08001a;
+        public static final int preferences_vibrate_summary=0x7f08001b;
+        public static final int screen_login_error=0x7f080005;
+        public static final int screen_login_prompt=0x7f080004;
+        public static final int screen_photo_back=0x7f08000d;
+        public static final int screen_photo_separator=0x7f08000c;
+        public static final int screen_photo_set=0x7f08000b;
+        public static final int screen_photostream_back=0x7f08000a;
+        public static final int screen_photostream_next=0x7f080008;
+        public static final int screen_photostream_separator=0x7f080009;
+        public static final int success_wallpaper_set=0x7f08000f;
     }
     public static final class style {
-        public static final int LoginSwitcher=0x7f060001;
-        public static final int PhotoGrid=0x7f060002;
-        public static final int TextMenu=0x7f060003;
-        public static final int TextMenuEntry=0x7f060000;
-        public static final int Theme=0x7f060004;
+        public static final int LoginSwitcher=0x7f070001;
+        public static final int PhotoGrid=0x7f070002;
+        public static final int TextMenu=0x7f070003;
+        public static final int TextMenuEntry=0x7f070000;
+        public static final int Theme=0x7f070004;
+    }
+    public static final class xml {
+        public static final int preferences=0x7f050000;
     }
     public static final class styleable {
         /** Attributes that can be used with a GridLayout.

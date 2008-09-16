@@ -67,6 +67,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:theme="@android:style/Theme"
+            android:name=".SettingsActivity"
+            android:label="@string/activity_preferences" />
+
         <receiver android:name=".BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
