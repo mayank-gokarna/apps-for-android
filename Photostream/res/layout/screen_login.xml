@@ -16,22 +16,32 @@
 */
 -->
 
-<ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/LoginSwitcher"
-    android:id="@+id/switcher_login"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="fill_parent">
 
-    android:inAnimation="@anim/fade_in"
-    android:outAnimation="@anim/fade_out">
-
-    <LinearLayout
-        style="@style/LoginContainer"
+    <ListView
+        android:id="@+id/list_users"
 
         android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+
+        android:paddingBottom="55dip"
+        android:paddingTop="55dip"
+        android:paddingLeft="30dip"
+        android:paddingRight="30dip"
+
+        android:dividerHeight="0dip"
+        android:divider="@null"
+
+        android:listSelector="@drawable/selector_glow"
+        android:cacheColorHint="#00000000" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
 
         android:paddingLeft="8dip"
         android:paddingRight="8dip"
@@ -45,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dip"
 
-            android:textSize="18px"
+            android:textSize="22sp"
             android:text="@string/screen_login_prompt"
             android:textColor="@color/eden_dark_green" />
 
@@ -56,11 +66,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.0"
 
+            android:nextFocusDown="@id/list_users"
+
             android:background="@android:color/transparent"
             android:drawablePadding="4dip"
 
             android:gravity="right"
-            android:textSize="18px"
+            android:textSize="22sp"
             android:textColor="@color/eden_dark"
 
             android:fadingEdge="horizontal"
@@ -68,6 +80,10 @@
 
     </LinearLayout>
 
-    <include layout="@layout/shared_progress" />
+    <include
+        android:id="@+id/progress"
+        layout="@layout/shared_progress"
 
-</ViewAnimator>
+        android:visibility="gone" />
+
+</FrameLayout>

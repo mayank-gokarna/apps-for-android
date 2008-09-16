@@ -24,6 +24,9 @@
     <string name="screen_login_prompt">Username</string>
     <string name="screen_login_error">Unknown user or network error</string>
 
+    <string name="context_menu_delete_user">Remove</string>
+    <string name="context_menu_show_photostream">Show photos</string>    
+
     <string name="screen_photostream_next">Next</string>
     <string name="screen_photostream_separator">|</string>
     <string name="screen_photostream_back">Back</string>
@@ -38,4 +41,8 @@
     <string name="menu_item_radar_label">Radar</string>
     <string name="error_cannot_find_location">Could not find location.</string>
     <string name="error_cannot_find_radar">Please install the Radar package.</string>
+
+    <string name="notification_title">New photos</string>
+    <string name="notification_new_photos">%s has new photos</string>
+    <string name="notification_contact_has_new_photos">%s has updated photos</string>
 </resources>

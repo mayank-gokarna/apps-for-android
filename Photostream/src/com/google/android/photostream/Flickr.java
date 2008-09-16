@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.net.URL;
@@ -75,6 +76,7 @@ class Flickr {
 
     private static final String API_REST_HOST = "api.flickr.com";
     private static final String API_REST_URL = "/services/rest/";
+    private static final String API_FEED_URL = "/services/feeds/photos_public.gne";
 
     private static final String API_PEOPLE_FIND_BY_USERNAME = "flickr.people.findByUsername";
     private static final String API_PEOPLE_GET_INFO = "flickr.people.getInfo";
@@ -89,8 +91,11 @@ class Flickr {
     private static final String PARAM_PAGE = "page";
     private static final String PARAM_EXTRAS = "extras";
     private static final String PARAM_PHOTO_ID = "photo_id";
+    private static final String PARAM_FEED_ID = "id";
+    private static final String PARAM_FEED_FORMAT = "format";
 
     private static final String VALUE_DEFAULT_EXTRAS = "date_taken";
+    private static final String VALUE_DEFAULT_FORMAT = "atom";
 
     private static final String RESPONSE_TAG_RSP = "rsp";
     private static final String RESPONSE_ATTR_STAT = "stat";
@@ -123,6 +128,9 @@ class Flickr {
     private static final String RESPONSE_TAG_PHOTOSURL = "photosurl";
     private static final String RESPONSE_TAG_PROFILEURL = "profileurl";
     private static final String RESPONSE_TAG_MOBILEURL = "mobileurl";
+
+    private static final String RESPONSE_TAG_FEED = "feed";
+    private static final String RESPONSE_TAG_UPDATED = "updated";
 
     private static final String PHOTO_IMAGE_URL = "http://farm%s.static.flickr.com/%s/%s_%s%s.jpg";
     private static final String BUDDY_ICON_URL =
@@ -869,6 +877,42 @@ class Flickr {
     }
 
     /**
+     * Checks the specified user's feed to see if any updated occured after the
+     * specified date.
+     *
+     * @param user The user whose feed must be checked.
+     * @param reference The date after which to check for updates.
+     *
+     * @return True if any update occured after the reference date, false otherwise.
+     */
+    boolean hasUpdates(User user, final Date reference) {
+        final Uri.Builder uri = new Uri.Builder();
+        uri.path(API_FEED_URL);
+        uri.appendQueryParameter(PARAM_FEED_ID, user.getId());
+        uri.appendQueryParameter(PARAM_FEED_FORMAT, VALUE_DEFAULT_FORMAT);
+
+        final HttpGet get = new HttpGet(uri.build().toString());
+        final boolean[] updated = new boolean[1];
+
+        try {
+            executeRequest(get, new ResponseHandler() {
+                public void handleResponse(InputStream in) throws IOException {
+                    parseFeedResponse(in, new ResponseParser() {
+                        public void parseResponse(XmlPullParser parser)
+                                throws XmlPullParserException, IOException {
+                            updated[0] = parseUpdated(parser, reference);
+                        }
+                    });
+                }
+            });
+        } catch (IOException e) {
+            android.util.Log.e(LOG_TAG, "Could not find feed for user: " + user);
+        }
+
+        return updated[0];
+    }
+
+    /**
      * Downloads the specified photo at the specified size in the specified destination.
      *
      * @param photo The photo to download.
@@ -896,6 +940,38 @@ class Flickr {
             }
         }
     }
+
+    private boolean parseUpdated(XmlPullParser parser, Date reference) throws IOException,
+            XmlPullParserException {
+
+        int type;
+        String name;
+        final int depth = parser.getDepth();
+
+        while (((type = parser.next()) != XmlPullParser.END_TAG ||
+                parser.getDepth() > depth) && type != XmlPullParser.END_DOCUMENT) {
+            if (type != XmlPullParser.START_TAG) {
+                continue;
+            }
+
+            name = parser.getName();
+            if (RESPONSE_TAG_UPDATED.equals(name)) {
+                if (parser.next() == XmlPullParser.TEXT) {
+                    final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    try {
+                        final String text = parser.getText().replace('T', ' ').replace('Z', ' ');
+                        if (format.parse(text).after(reference)) {
+                            return true;
+                        }
+                    } catch (ParseException e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
+
+        return false;
+    }    
 
     private void parsePhotos(XmlPullParser parser, PhotoList photos)
             throws XmlPullParserException, IOException {
@@ -1067,6 +1143,46 @@ class Flickr {
             }
 
             responseParser.parseResponse(parser);
+
+        } catch (XmlPullParserException e) {
+            final IOException ioe = new IOException("Could not parser the response");
+            ioe.initCause(e);
+            throw ioe;
+        }
+    }
+
+    /**
+     * Parses a valid Flickr Atom feed response from the specified input stream.
+     *
+     * @param in The input stream containing the response sent by Flickr.
+     * @param responseParser The parser to use when the response is valid.
+     *
+     * @throws IOException
+     */
+    private void parseFeedResponse(InputStream in, ResponseParser responseParser)
+            throws IOException {
+
+        final XmlPullParser parser = Xml.newPullParser();
+        try {
+            parser.setInput(new InputStreamReader(in));
+
+            int type;
+            while ((type = parser.next()) != XmlPullParser.START_TAG &&
+                    type != XmlPullParser.END_DOCUMENT) {
+                // Empty
+            }
+
+            if (type != XmlPullParser.START_TAG) {
+                throw new InflateException(parser.getPositionDescription()
+                        + ": No start tag found!");
+            }
+
+            String name = parser.getName();
+            if (RESPONSE_TAG_FEED.equals(name)) {
+                responseParser.parseResponse(parser);
+            } else {
+                throw new IOException("Wrong start tag: " + name);                
+            }
 
         } catch (XmlPullParserException e) {
             final IOException ioe = new IOException("Could not parser the response");

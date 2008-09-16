@@ -16,19 +16,16 @@
 */
 -->
 
-<resources>
-    <style name="LoginSwitcher">
-        <item name="android:paddingTop">174dip</item>
-    </style>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="68px"
 
-    <style name="PhotoGrid">
-        <item name="com.google.android.photostream:numColumns">2</item>
-        <item name="com.google.android.photostream:numRows">3</item>
-    </style>
+    android:paddingLeft="10px"
+    android:drawablePadding="12dip"
 
-    <style name="TextMenu">
-        <item name="android:layout_marginTop">420px</item>
-        <item name="android:layout_marginLeft">126dip</item>
-        <item name="android:layout_gravity">right</item>
-    </style>
-</resources>
+    android:textSize="24sp"
+    android:textColor="@android:color/white"
+
+    android:gravity="center_vertical"
+    android:singleLine="true"
+    android:ellipsize="end" />

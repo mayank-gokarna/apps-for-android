@@ -16,19 +16,6 @@
 */
 -->
 
-<resources>
-    <style name="LoginSwitcher">
-        <item name="android:paddingTop">174dip</item>
-    </style>
-
-    <style name="PhotoGrid">
-        <item name="com.google.android.photostream:numColumns">2</item>
-        <item name="com.google.android.photostream:numRows">3</item>
-    </style>
-
-    <style name="TextMenu">
-        <item name="android:layout_marginTop">420px</item>
-        <item name="android:layout_marginLeft">126dip</item>
-        <item name="android:layout_gravity">right</item>
-    </style>
-</resources>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/glow_yellow"
+    android:gravity="left" />

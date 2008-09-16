@@ -21,11 +21,6 @@
         <item name="android:paddingTop">120dip</item>
     </style>
 
-    <style name="LoginContainer">
-        <item name="android:layout_marginLeft">80dip</item>
-        <item name="android:layout_marginRight">80dip</item>
-    </style>
-
     <style name="PhotoGrid">
         <item name="com.google.android.photostream:numColumns">3</item>
         <item name="com.google.android.photostream:numRows">2</item>

@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.android.photostream">
 
-    <uses-permission android:name="android.permission.INTERNET" />    
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:label="@string/application_name"
@@ -64,6 +66,14 @@
                 <data android:scheme="flickr" android:host="photo" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".CheckUpdateService" />
 
     </application>
 </manifest>
