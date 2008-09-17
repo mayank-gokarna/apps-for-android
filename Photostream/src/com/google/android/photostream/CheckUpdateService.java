@@ -32,7 +32,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 /**
  * CheckUpdateService checks every 24 hours if updates have been made to the photostreams
@@ -40,6 +42,8 @@ import java.util.Date;
  * modification timestamp with the one stored in the database.
  */
 public class CheckUpdateService extends Service {
+    private static boolean DEBUG = false;
+
     // Check interval: every 24 hours
     private static long UPDATES_CHECK_INTERVAL = 24 * 60 * 60 * 1000;
 
@@ -67,10 +71,22 @@ public class CheckUpdateService extends Service {
         final Intent intent = new Intent(context, CheckUpdateService.class);
         final PendingIntent pending = PendingIntent.getService(context, 0, intent, 0);
 
+        Calendar c = new GregorianCalendar();
+        c.add(Calendar.DAY_OF_YEAR, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
         final AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pending);
-        alarm.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() +
-                UPDATES_CHECK_INTERVAL, UPDATES_CHECK_INTERVAL, pending);
+        if (DEBUG) {
+            alarm.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(),
+                    30 * 1000, pending);
+        } else {
+            alarm.setRepeating(AlarmManager.RTC, c.getTimeInMillis(),
+                    UPDATES_CHECK_INTERVAL, pending);
+        }
     }
 
     private class CheckForUpdatesTask extends UserTask<Void, Object, Void> {
@@ -101,11 +117,18 @@ public class CheckUpdateService extends Service {
 
                 final Flickr flickr = Flickr.get();
 
-                while (!isCancelled() && cursor.moveToNext()) {
-                    Date lastUpdate = new Date(cursor.getLong(lastUpdateIndex));
-                    final String nsid = cursor.getString(nsidIndex);
+                final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+                final Calendar reference = Calendar.getInstance();
 
-                    if (flickr.hasUpdates(Flickr.User.fromId(nsid), lastUpdate)) {
+                while (!isCancelled() && cursor.moveToNext()) {
+                    final String nsid = cursor.getString(nsidIndex);
+                    calendar.setTimeInMillis(cursor.getLong(lastUpdateIndex));
+
+                    reference.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                            calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+
+                    if (flickr.hasUpdates(Flickr.User.fromId(nsid), reference)) {
                         publishProgress(nsid, cursor.getString(realNameIndex),
                                 cursor.getInt(idIndex));
                     }
@@ -125,10 +148,12 @@ public class CheckUpdateService extends Service {
 
         @Override
         public void onProgressUpdate(Object... values) {
+            final Integer id = (Integer) values[2];
             final Uri uri = Uri.parse(String.format("%s://%s/%s", Flickr.URI_SCHEME,
                     Flickr.URI_PHOTOS_AUTHORITY, values[0]));
             final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(PhotostreamActivity.EXTRA_NOTIFICATION, id);
 
             Notification notification = new Notification(R.drawable.stat_notify,
                     getString(R.string.notification_new_photos, values[1]),
@@ -136,10 +161,11 @@ public class CheckUpdateService extends Service {
             notification.setLatestEventInfo(CheckUpdateService.this,
                     getString(R.string.notification_title),
                     getString(R.string.notification_contact_has_new_photos, values[1]),
-                    PendingIntent.getActivity(CheckUpdateService.this, 0, intent, 0));
+                    PendingIntent.getActivity(CheckUpdateService.this, 0, intent,
+                            PendingIntent.FLAG_CANCEL_CURRENT));
 
             if (mPreferences.getBoolean(Preferences.KEY_ENABLE_NOTIFICATIONS, true)) {
-                if (mPreferences.getBoolean(Preferences.KEY_VIBRATE, true)) {
+                if (mPreferences.getBoolean(Preferences.KEY_VIBRATE, false)) {
                     notification.defaults |= Notification.DEFAULT_VIBRATE;
                 }
 
@@ -147,7 +173,7 @@ public class CheckUpdateService extends Service {
                 notification.sound = TextUtils.isEmpty(ringtoneUri) ? null : Uri.parse(ringtoneUri);
             }
 
-            mManager.notify((Integer) values[2], notification);
+            mManager.notify(id, notification);
         }
 
         @Override

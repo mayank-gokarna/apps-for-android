@@ -43,7 +43,8 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.net.URL;
@@ -885,7 +886,7 @@ class Flickr {
      *
      * @return True if any update occured after the reference date, false otherwise.
      */
-    boolean hasUpdates(User user, final Date reference) {
+    boolean hasUpdates(User user, final Calendar reference) {
         final Uri.Builder uri = new Uri.Builder();
         uri.path(API_FEED_URL);
         uri.appendQueryParameter(PARAM_FEED_ID, user.getId());
@@ -941,7 +942,7 @@ class Flickr {
         }
     }
 
-    private boolean parseUpdated(XmlPullParser parser, Date reference) throws IOException,
+    private boolean parseUpdated(XmlPullParser parser, Calendar reference) throws IOException,
             XmlPullParserException {
 
         int type;
@@ -960,9 +961,10 @@ class Flickr {
                     final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     try {
                         final String text = parser.getText().replace('T', ' ').replace('Z', ' ');
-                        if (format.parse(text).after(reference)) {
-                            return true;
-                        }
+                        final Calendar calendar = new GregorianCalendar();
+                        calendar.setTimeInMillis(format.parse(text).getTime());
+
+                        return calendar.after(reference);
                     } catch (ParseException e) {
                         // Ignore
                     }

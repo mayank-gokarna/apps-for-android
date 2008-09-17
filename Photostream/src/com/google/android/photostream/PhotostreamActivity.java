@@ -17,6 +17,7 @@
 package com.google.android.photostream;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.os.Bundle;
 import android.content.Intent;
 import android.content.Context;
@@ -45,6 +46,7 @@ import java.util.Random;
 public class PhotostreamActivity extends Activity implements
         View.OnClickListener, Animation.AnimationListener {
 
+    static final String EXTRA_NOTIFICATION = "com.google.android.photostream.extra_nid";
     private static final String EXTRA_USER = "com.google.android.photostream.extra_user";
 
     private static final String STATE_USER = "com.google.android.photostream.state_user";
@@ -74,6 +76,8 @@ public class PhotostreamActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        clearNotification();
+
         // Try to find a user name in the saved instance state or the intent
         // that launched the activity. If no valid user NSID can be found, we
         // just close the activity.
@@ -86,6 +90,15 @@ public class PhotostreamActivity extends Activity implements
         setupViews();
 
         loadPhotos();
+    }
+
+    private void clearNotification() {
+        final int notification = getIntent().getIntExtra(EXTRA_NOTIFICATION, -1);
+        if (notification != -1) {
+            NotificationManager manager = (NotificationManager)
+                    getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.cancel(notification);
+        }
     }
 
     /**

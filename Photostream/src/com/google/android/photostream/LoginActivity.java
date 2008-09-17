@@ -24,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.Menu;
+import android.view.KeyEvent;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Animation;
 import android.widget.TextView;
@@ -55,7 +56,7 @@ import java.util.HashMap;
  * The shortcut Intent contains the real name of the user, his buddy icon, the action
  * {@link android.content.Intent#ACTION_VIEW} and the URI flickr://photos/nsid.
  */
-public class LoginActivity extends Activity implements View.OnClickListener,
+public class LoginActivity extends Activity implements View.OnKeyListener,
         AdapterView.OnItemClickListener {
 
     private static final int MENU_ID_SHOW = 1;
@@ -97,7 +98,7 @@ public class LoginActivity extends Activity implements View.OnClickListener,
 
     private void setupViews() {
         mUsername = (TextView) findViewById(R.id.input_username);
-        mUsername.setOnClickListener(this);
+        mUsername.setOnKeyListener(this);
         mUsername.requestFocus();
 
         mAdapter = new UsersAdapter(this, initializeCursor());
@@ -139,12 +140,16 @@ public class LoginActivity extends Activity implements View.OnClickListener,
         return super.onMenuItemSelected(featureId, item);
     }
 
-    public void onClick(View v) {
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
         switch (v.getId()) {
             case R.id.input_username:
-                onAddUser(mUsername.getText().toString());
+                if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                    onAddUser(mUsername.getText().toString());
+                    return true;
+                }
                 break;
         }
+        return false;
     }
 
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -303,6 +308,8 @@ public class LoginActivity extends Activity implements View.OnClickListener,
 
         public Flickr.User doInBackground(String... params) {
             final String name = params[0].trim();
+            if (name.length() == 0) return null;
+
             final Flickr.User user = Flickr.get().findByUserName(name);
             if (user == null) return null;
 
