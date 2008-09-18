@@ -148,32 +148,32 @@ public class CheckUpdateService extends Service {
 
         @Override
         public void onProgressUpdate(Object... values) {
-            final Integer id = (Integer) values[2];
-            final Uri uri = Uri.parse(String.format("%s://%s/%s", Flickr.URI_SCHEME,
-                    Flickr.URI_PHOTOS_AUTHORITY, values[0]));
-            final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(PhotostreamActivity.EXTRA_NOTIFICATION, id);
-
-            Notification notification = new Notification(R.drawable.stat_notify,
-                    getString(R.string.notification_new_photos, values[1]),
-                    System.currentTimeMillis());
-            notification.setLatestEventInfo(CheckUpdateService.this,
-                    getString(R.string.notification_title),
-                    getString(R.string.notification_contact_has_new_photos, values[1]),
-                    PendingIntent.getActivity(CheckUpdateService.this, 0, intent,
-                            PendingIntent.FLAG_CANCEL_CURRENT));
-
             if (mPreferences.getBoolean(Preferences.KEY_ENABLE_NOTIFICATIONS, true)) {
+                final Integer id = (Integer) values[2];
+                final Uri uri = Uri.parse(String.format("%s://%s/%s", Flickr.URI_SCHEME,
+                        Flickr.URI_PHOTOS_AUTHORITY, values[0]));
+                final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(PhotostreamActivity.EXTRA_NOTIFICATION, id);
+
+                Notification notification = new Notification(R.drawable.stat_notify,
+                        getString(R.string.notification_new_photos, values[1]),
+                        System.currentTimeMillis());
+                notification.setLatestEventInfo(CheckUpdateService.this,
+                        getString(R.string.notification_title),
+                        getString(R.string.notification_contact_has_new_photos, values[1]),
+                        PendingIntent.getActivity(CheckUpdateService.this, 0, intent,
+                                PendingIntent.FLAG_CANCEL_CURRENT));
+
                 if (mPreferences.getBoolean(Preferences.KEY_VIBRATE, false)) {
                     notification.defaults |= Notification.DEFAULT_VIBRATE;
                 }
 
                 String ringtoneUri = mPreferences.getString(Preferences.KEY_RINGTONE, null);
                 notification.sound = TextUtils.isEmpty(ringtoneUri) ? null : Uri.parse(ringtoneUri);
-            }
 
-            mManager.notify(id, notification);
+                mManager.notify(id, notification);
+            }
         }
 
         @Override
