@@ -20,6 +20,7 @@ import com.google.android.maps.GeoPoint;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -47,6 +48,8 @@ public class ViewImage extends Activity {
     private static final int MENU_AUTHOR = Menu.FIRST + 3;
 
     private static final int MENU_VIEW = Menu.FIRST + 4;
+
+    private static final int DIALOG_NO_RADAR = 1;
 
     PanoramioItem mItem;
 
@@ -122,11 +125,7 @@ public class ViewImage extends Activity {
             try {
                 startActivity(i);
             } catch (ActivityNotFoundException ex) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.no_radar_title)
-                    .setMessage(R.string.no_radar)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setPositiveButton(android.R.string.ok, null).show();
+                showDialog(DIALOG_NO_RADAR);
             }
             return true;
         }
@@ -160,6 +159,20 @@ public class ViewImage extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+    
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+        case DIALOG_NO_RADAR:
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            return builder.setTitle(R.string.no_radar_title)
+                .setMessage(R.string.no_radar)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.ok, null).create();
+        }
+        return null;
+    }
+
 
     /**
      * Utility to load a larger version of the image in a separate thread.
