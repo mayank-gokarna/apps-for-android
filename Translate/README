@@ -10,5 +10,4 @@ Note: this application reuses existing work by:
 Todo:
 
 - Asynchronous HTTP queries
-- Respond to a "TRANSLATE" intent so that other application can request translations
 - Interface with other applications (Talk, Gmail, etc...)

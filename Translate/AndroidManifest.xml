@@ -14,6 +14,16 @@
             </intent-filter>
         </activity>
 
+        <service android:name="TranslateService" android:label="Translate">
+            <intent-filter>
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <action android:name="android.intent.action.PICK" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.ALTERNATIVE" />
+            </intent-filter>
+        </service>
+
         <activity android:name="HistoryActivity" android:label="History">
         </activity>
     </application>

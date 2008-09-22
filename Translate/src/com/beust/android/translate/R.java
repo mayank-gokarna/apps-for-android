@@ -300,22 +300,23 @@ public final class R {
         public static final int about_title=0x7f050006;
         /**   History 
          */
-        public static final int clear_history=0x7f05000c;
+        public static final int clear_history=0x7f05000d;
         public static final int error=0x7f050001;
         public static final int found_translation=0x7f050003;
-        public static final int languages=0x7f05000f;
-        public static final int most_recent=0x7f05000e;
-        public static final int random_word=0x7f05000b;
+        public static final int languages=0x7f050010;
+        public static final int most_recent=0x7f05000f;
+        public static final int random_word=0x7f05000c;
         public static final int retrieving_translation=0x7f050002;
         public static final int send_email=0x7f050008;
         public static final int show_history=0x7f050004;
-        public static final int sort=0x7f05000d;
+        public static final int sort=0x7f05000e;
         public static final int text_to_translate=0x7f050009;
         /**   TranslateActivity 
          */
         public static final int translate_activity=0x7f050000;
-        public static final int translate_from=0x7f050010;
-        public static final int translate_to=0x7f050011;
+        public static final int translate_from=0x7f050011;
+        public static final int translate_to=0x7f050012;
         public static final int translation=0x7f05000a;
+        public static final int translation_failed=0x7f05000b;
     }
 }

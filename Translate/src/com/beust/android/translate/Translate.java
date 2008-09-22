@@ -35,11 +35,11 @@ import org.json.JSONObject;
  * @author Richard Midwinter
  * @author Emeric Vernat
  * @author Juan B Cabral
+ * @author Cedric Beust
  */
 public class Translate {
     
     private static final String ENCODING = "UTF-8";
-//    private static final String INTERMEDIATE_LANGUAGE = Language.ENGLISH;
     private static final String URL_STRING = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&langpair=";
     private static final String TEXT_VAR = "&q=";
 
@@ -54,15 +54,9 @@ public class Translate {
      * @throws IOException
      */
     public static String translate(String text, String from, String to) throws Exception {
-//        if (Language.isValidLanguagePair(from, to)) {
             return retrieveTranslation(text, from, to);
-//        } 
-//        else {
-//            String intermediary = retrieveTranslation(text, from, INTERMEDIATE_LANGUAGE);
-//            String result = retrieveTranslation(intermediary, INTERMEDIATE_LANGUAGE, to);
-//            return (text.equals(intermediary) || intermediary.equals(result)) ? text : result;
-//        }
     }
+
     /**
      * Forms an HTTP request and parses the response for a translation.
      *
@@ -78,12 +72,12 @@ public class Translate {
             url.append(URL_STRING).append(from).append("%7C").append(to);
             url.append(TEXT_VAR).append(URLEncoder.encode(text, ENCODING));
 
-            Log.d(TranslateActivity.TAG, "Connecting to " + url.toString());
+            Log.d(TranslateService.TAG, "Connecting to " + url.toString());
             HttpURLConnection uc = (HttpURLConnection) new URL(url.toString()).openConnection();
             uc.setDoInput(true);
             uc.setDoOutput(true);
             try {
-                Log.d(TranslateActivity.TAG, "getInputStream()");
+                Log.d(TranslateService.TAG, "getInputStream()");
                 InputStream is= uc.getInputStream();
                 String result = toString(is);
                 
@@ -109,13 +103,14 @@ public class Translate {
         try {
             String string;
             if (inputStream != null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, ENCODING));
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(inputStream, ENCODING));
                 while (null != (string = reader.readLine())) {
                     outputBuilder.append(string).append('\n');
                 }
             }
         } catch (Exception ex) {
-            throw new Exception("[google-api-translate-java] Error reading translation stream.", ex);
+            Log.e(TranslateService.TAG, "Error reading translation stream.", ex);
         }
         return outputBuilder.toString();
     }

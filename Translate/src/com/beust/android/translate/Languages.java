@@ -73,7 +73,7 @@ public final class Languages {
 //        INDONESIAN("id", "Indonesian", R.drawable.id),
 //        INUKTITUT("iu", "Inuktitut", R.drawable.iu),
         ITALIAN("it", "Italian", R.drawable.it),
-//        JAPANESE("ja", "Japanese", R.drawable.ja),
+        JAPANESE("ja", "Japanese", R.drawable.jp),
 //        KANNADA("kn", "Kannada", R.drawable.kn),
 //        KAZAKH("kk", "Kazakh", R.drawable.kk),
 //        KHMER("km", "Khmer", R.drawable.km),

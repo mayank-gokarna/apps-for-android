@@ -23,14 +23,17 @@ import com.beust.android.translate.Languages.Language;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -49,11 +52,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-
 /**
  * Main activity for the Translate application.
+ *
+ * @author Cedric Beust
+ * @author Daniel Rall
  */
 public class TranslateActivity extends Activity implements OnClickListener {
     static final String TAG = "Translate";
@@ -61,6 +64,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
     private EditText mInput;
     private Button mFrom;
     private Button mTo;
+    private Button mTranslate;
     private Handler mHandler = new Handler();
     private ProgressBar mProgressBar;
     private TextView mStatusView;
@@ -93,7 +97,37 @@ public class TranslateActivity extends Activity implements OnClickListener {
             showDialog(LANGUAGE_DIALOG_ID);
         }
     };
-    
+
+    // Translation service handle.
+    private ITranslate mTranslateService;
+
+    // ServiceConnection implementation for translation.
+    private ServiceConnection mTranslateConn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mTranslateService = ITranslate.Stub.asInterface(service);
+            /* TODO(dlr): Register a callback to assure we don't lose our svc.
+            try {
+                mTranslateervice.registerCallback(mTranslateCallback);
+            } catch (RemoteException e) {
+                log("Failed to establish Translate service connection: " + e);
+                return;
+            }
+            */
+            if (mTranslateService != null) {
+                mTranslate.setEnabled(true);
+            } else {
+                mTranslate.setEnabled(false);
+                mStatusView.setText(getString(R.string.error));
+                log("Unable to acquire TranslateService");
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName name) {
+            mTranslate.setEnabled(false);
+            mTranslateService = null;
+        }
+    };
+
     // Dictionary
     private static byte[] mWordBuffer;
     private static int mWordCount;
@@ -108,6 +142,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
         mOutput = (EditText) findViewById(R.id.translation);
         mFrom = (Button) findViewById(R.id.from);
         mTo = (Button) findViewById(R.id.to);
+        mTranslate = (Button) findViewById(R.id.translate);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mStatusView = (TextView) findViewById(R.id.status);
         
@@ -119,10 +154,17 @@ public class TranslateActivity extends Activity implements OnClickListener {
 
         mHistory = new History(getPrefs(this));
 
-        ((Button) findViewById(R.id.translate)).setOnClickListener(this);
+        mTranslate.setOnClickListener(this);
         mInput.selectAll();
+
+        connectToTranslateService();
     }
     
+    private void connectToTranslateService() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        bindService(intent, mTranslateConn, Context.BIND_AUTO_CREATE);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -151,7 +193,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
     }
     
     private void setOutputText(String string) {
-        log("SETTING OUTPUT TO " + string);
+        log("Setting output to " + string);
         mOutput.setText(new Entities().unescape(string));
     }
 
@@ -199,7 +241,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
     }
     
     public void onClick(View v) {
-        doTranslate();
+        maybeTranslate();
     }
     
     private void doTranslate() {
@@ -215,9 +257,10 @@ public class TranslateActivity extends Activity implements OnClickListener {
                     String toShortName = to.getShortName();
                     String input = mInput.getText().toString();
                     log("Translating from " + fromShortName + " to " + toShortName);
-                    result = Translate.translate(input,
-                            fromShortName,
-                            toShortName);
+                    result = mTranslateService.translate(input, fromShortName, toShortName);
+                    if (result == null) {
+                        throw new Exception(getString(R.string.translation_failed));
+                    }
                     mHistory.addHistoryRecord(from, to, input, result);
                     mStatusView.setText(R.string.found_translation);
                     setOutputText(result);
@@ -301,9 +344,9 @@ public class TranslateActivity extends Activity implements OnClickListener {
             mInput.setText(randomWord);
             updateButton(mFrom, Language.findLanguageByShortName(Language.ENGLISH.getShortName()));
         } catch (FileNotFoundException e) {
-            Log.d(TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
-            Log.d(TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
         
     }

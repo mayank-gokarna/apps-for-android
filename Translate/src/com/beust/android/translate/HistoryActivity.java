@@ -35,6 +35,9 @@ import java.util.Map;
 
 /**
  * This activity displays the history of past translations.
+ *
+ * @author Cedric Beust
+ * @author Daniel Rall
  */
 public class HistoryActivity extends ListActivity implements OnItemClickListener {
     private SimpleAdapter mAdapter;
@@ -113,7 +116,6 @@ public class HistoryActivity extends ListActivity implements OnItemClickListener
         TranslateActivity.savePreferences(edit,
                 data.get(FROM_SHORT_NAME), data.get(TO_SHORT_NAME), 
                 data.get(INPUT), data.get(OUTPUT));
-        edit.commit();
         finish();
     }
 }

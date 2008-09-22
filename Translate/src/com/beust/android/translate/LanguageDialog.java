@@ -82,7 +82,7 @@ public class LanguageDialog extends AlertDialog implements OnClickListener {
     }
 
     public void setFrom(boolean from) {
-        log("FROM SET TO " + from);
+        log("From set to " + from);
         mFrom = from;
         setTitle(from ? mActivity.getString(R.string.translate_from) : mActivity.getString(R.string.translate_to)); 
     }
