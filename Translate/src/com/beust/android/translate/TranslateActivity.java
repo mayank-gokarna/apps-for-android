@@ -225,7 +225,6 @@ public class TranslateActivity extends Activity implements OnClickListener {
         String input = mInput.getText().toString();
         String output = mOutput.getText().toString();
         savePreferences(edit, f, t, input, output);
-        edit.commit();
     }
     
     static void savePreferences(Editor edit, String from, String to, String input, String output) {
@@ -234,12 +233,19 @@ public class TranslateActivity extends Activity implements OnClickListener {
         edit.putString(TO, to);
         edit.putString(INPUT, input);
         edit.putString(OUTPUT, output);
+        edit.commit();
     }
     
     static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(TAG, Context.MODE_PRIVATE);
     }
     
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mTranslateConn);
+    }
+
     public void onClick(View v) {
         maybeTranslate();
     }
