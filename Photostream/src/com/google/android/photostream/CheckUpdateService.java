@@ -150,11 +150,11 @@ public class CheckUpdateService extends Service {
         public void onProgressUpdate(Object... values) {
             if (mPreferences.getBoolean(Preferences.KEY_ENABLE_NOTIFICATIONS, true)) {
                 final Integer id = (Integer) values[2];
-                final Uri uri = Uri.parse(String.format("%s://%s/%s", Flickr.URI_SCHEME,
-                        Flickr.URI_PHOTOS_AUTHORITY, values[0]));
-                final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                final Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(PhotostreamActivity.EXTRA_NOTIFICATION, id);
+                intent.putExtra(PhotostreamActivity.EXTRA_NSID, values[0].toString());
+                intent.setType(PhotostreamActivity.MIME_TYPE);
 
                 Notification notification = new Notification(R.drawable.stat_notify,
                         getString(R.string.notification_new_photos, values[1]),

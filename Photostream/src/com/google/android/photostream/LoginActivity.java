@@ -38,7 +38,6 @@ import android.content.ContentValues;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -69,6 +68,8 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
 
     private SQLiteDatabase mDatabase;
     private UsersAdapter mAdapter;
+
+    private UserTask<String, Void, Flickr.User> mTask;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -141,13 +142,16 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
     }
 
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        switch (v.getId()) {
-            case R.id.input_username:
-                if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                    onAddUser(mUsername.getText().toString());
-                    return true;
-                }
-                break;
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            switch (v.getId()) {
+                case R.id.input_username:
+                    if (keyCode == KeyEvent.KEYCODE_ENTER ||
+                            keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                        onAddUser(mUsername.getText().toString());
+                        return true;
+                    }
+                    break;
+            }
         }
         return false;
     }
@@ -207,6 +211,10 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
     protected void onDestroy() {
         super.onDestroy();
 
+        if (mTask != null && mTask.getStatus() == UserTask.Status.RUNNING) {
+            mTask.cancel(true);
+        }
+
         mAdapter.cleanup();
         mDatabase.close();
     }
@@ -214,7 +222,7 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
     private void onAddUser(String username) {
         // When the user enters his user name, we need to find his NSID before
         // adding it to the list.
-        new FindUserTask().execute(username);
+        mTask = new FindUserTask().execute(username);
     }
 
     private void onRemoveUser(String id) {
@@ -264,11 +272,10 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
                 new String[] { user.getId() }, null, null, UserDatabase.SORT_DEFAULT);
         cursor.moveToFirst();
 
-        final Uri uri = Uri.parse(String.format("%s://%s/%s", Flickr.URI_SCHEME,
-                Flickr.URI_PHOTOS_AUTHORITY, user.getId()));
-
-        final Intent shortcutIntent = new Intent(Intent.ACTION_VIEW, uri);
+        final Intent shortcutIntent = new Intent(Intent.ACTION_VIEW);
         shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        shortcutIntent.putExtra(PhotostreamActivity.EXTRA_NSID, user.getId());
+        shortcutIntent.setType(PhotostreamActivity.MIME_TYPE);
 
         // Sets the custom shortcut's title to the real name of the user. If no
         // real name was found, use the user name instead.
@@ -311,21 +318,27 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
             if (name.length() == 0) return null;
 
             final Flickr.User user = Flickr.get().findByUserName(name);
-            if (user == null) return null;
+            if (isCancelled() || user == null) return null;
 
             Flickr.UserInfo info = Flickr.get().getUserInfo(user);
-            if (info == null) return null;
+            if (isCancelled() || info == null) return null;
+
+            String realname = info.getRealName();
+            if (realname == null) realname = name;
 
             final ContentValues values = new ContentValues();
             values.put(UserDatabase.COLUMN_USERNAME, name);
-            values.put(UserDatabase.COLUMN_REALNAME, info.getRealName());
+            values.put(UserDatabase.COLUMN_REALNAME, realname);
             values.put(UserDatabase.COLUMN_NSID, user.getId());
             values.put(UserDatabase.COLUMN_LAST_UPDATE, System.currentTimeMillis());
             UserDatabase.writeBitmap(values, UserDatabase.COLUMN_BUDDY_ICON,
                     info.loadBuddyIcon());
 
-            long result = mDatabase.insert(UserDatabase.TABLE_USERS,
-                    UserDatabase.COLUMN_REALNAME, values);
+            long result = -1;
+            if (!isCancelled()) {
+                result = mDatabase.insert(UserDatabase.TABLE_USERS,
+                        UserDatabase.COLUMN_REALNAME, values);
+            }
 
             return result != -1 ? user : null;
         }
@@ -380,7 +393,9 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
             Drawable icon = mIcons.get(description.nsid);
             if (icon == null) {
                 final byte[] data = cursor.getBlob(mBuddyIcon);
-                final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+                Bitmap bitmap = null;
+                if (data != null) bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
                 if (bitmap != null) {
                     icon = new FastBitmapDrawable(bitmap);

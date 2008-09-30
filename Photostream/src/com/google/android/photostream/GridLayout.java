@@ -96,8 +96,8 @@ public class GridLayout extends ViewGroup {
             throw new RuntimeException("GridLayout cannot have UNSPECIFIED dimensions");
         }
 
-        final int width = widthSpecSize - mPaddingLeft - mPaddingRight;
-        final int height = heightSpecSize - mPaddingTop- mPaddingBottom;
+        final int width = widthSpecSize - getPaddingLeft() - getPaddingRight();
+        final int height = heightSpecSize - getPaddingTop() - getPaddingBottom();
 
         final int columnWidth = mColumnWidth = width / mNumColumns;
         final int rowHeight = mRowHeight = height / mNumRows;
@@ -119,8 +119,8 @@ public class GridLayout extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         final int columns = mNumColumns;
-        final int paddingLeft = mPaddingLeft;
-        final int paddingTop = mPaddingTop;
+        final int paddingLeft = getPaddingLeft();
+        final int paddingTop = getPaddingTop();
         final int columnWidth = mColumnWidth;
         final int rowHeight = mRowHeight;
         final int count = getChildCount();

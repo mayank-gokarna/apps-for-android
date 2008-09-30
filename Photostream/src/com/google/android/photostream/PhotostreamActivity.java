@@ -21,7 +21,6 @@ import android.app.NotificationManager;
 import android.os.Bundle;
 import android.content.Intent;
 import android.content.Context;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
@@ -46,8 +45,11 @@ import java.util.Random;
 public class PhotostreamActivity extends Activity implements
         View.OnClickListener, Animation.AnimationListener {
 
-    static final String EXTRA_NOTIFICATION = "com.google.android.photostream.extra_nid";
-    private static final String EXTRA_USER = "com.google.android.photostream.extra_user";
+    static final String MIME_TYPE = "vnd.com.google.android.photostream/photos";
+
+    static final String EXTRA_NOTIFICATION = "com.google.android.photostream.extra_notify_id";
+    static final String EXTRA_NSID = "com.google.android.photostream.extra_nsid";
+    static final String EXTRA_USER = "com.google.android.photostream.extra_user";
 
     private static final String STATE_USER = "com.google.android.photostream.state_user";
     private static final String STATE_PAGE = "com.google.android.photostream.state_page";
@@ -154,14 +156,11 @@ public class PhotostreamActivity extends Activity implements
 
         if (extras != null) {
             user = extras.getParcelable(EXTRA_USER);
-        }
 
-        if (user == null) {
-            final Uri uri = intent.getData();
-            if (uri != null) {
-                if (Flickr.URI_SCHEME.equals(uri.getScheme()) &&
-                        Flickr.URI_PHOTOS_AUTHORITY.equals(uri.getAuthority())) {
-                    user = Flickr.User.fromId(uri.getLastPathSegment());
+            if (user == null) {
+                final String nsid = extras.getString(EXTRA_NSID);
+                if (nsid != null) {
+                    user = Flickr.User.fromId(nsid);
                 }
             }
         }

@@ -69,9 +69,6 @@ import android.graphics.BitmapFactory;
 class Flickr {
     static final String LOG_TAG = "Photostream";
 
-    static final String URI_SCHEME = "flickr";
-    static final String URI_PHOTOS_AUTHORITY = "photos";
-
     // IMPORTANT: Replace this Flickr API key with your own
     private static final String API_KEY = "730e3a4f253b30adf30177df803d38c4";    
 

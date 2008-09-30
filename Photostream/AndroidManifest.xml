@@ -43,7 +43,7 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- action: VIEW, data: flickr://photos/nsid -->
+        <!-- action: VIEW, extra: com.google.android.photostream.extra_nsid, String -->
         <!-- action: VIEW, extra: com.google.android.photostream.extra_user, Flickr.User -->
         <activity
             android:name=".PhotostreamActivity"
@@ -51,11 +51,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="flickr" android:host="photos" />
+                <data android:mimeType="vnd.com.google.android.photostream/photos"/>
             </intent-filter>
         </activity>
 
-        <!-- action: VIEW, data: flickr://photo/id (NOT IMPLEMENTED) -->
         <!-- action: VIEW, extra: com.google.android.photostream.extra_photo, Flickr.Photo -->
         <activity
             android:name=".ViewPhotoActivity"
@@ -63,7 +62,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="flickr" android:host="photo" />
+                <data android:mimeType="vnd.com.google.android.photostream/photo"/>
             </intent-filter>
         </activity>
 
