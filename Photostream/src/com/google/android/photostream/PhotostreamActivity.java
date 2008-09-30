@@ -45,7 +45,7 @@ import java.util.Random;
 public class PhotostreamActivity extends Activity implements
         View.OnClickListener, Animation.AnimationListener {
 
-    static final String MIME_TYPE = "vnd.com.google.android.photostream/photos";
+    static final String ACTION = "com.google.android.photostream.FLICKR_STREAM";
 
     static final String EXTRA_NOTIFICATION = "com.google.android.photostream.extra_notify_id";
     static final String EXTRA_NSID = "com.google.android.photostream.extra_nsid";

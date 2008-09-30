@@ -272,10 +272,9 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
                 new String[] { user.getId() }, null, null, UserDatabase.SORT_DEFAULT);
         cursor.moveToFirst();
 
-        final Intent shortcutIntent = new Intent(Intent.ACTION_VIEW);
+        final Intent shortcutIntent = new Intent(PhotostreamActivity.ACTION);
         shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         shortcutIntent.putExtra(PhotostreamActivity.EXTRA_NSID, user.getId());
-        shortcutIntent.setType(PhotostreamActivity.MIME_TYPE);
 
         // Sets the custom shortcut's title to the real name of the user. If no
         // real name was found, use the user name instead.

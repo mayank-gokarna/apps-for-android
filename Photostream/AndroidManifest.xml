@@ -43,26 +43,27 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- action: VIEW, extra: com.google.android.photostream.extra_nsid, String -->
-        <!-- action: VIEW, extra: com.google.android.photostream.extra_user, Flickr.User -->
+        <!-- action: com.google.android.photostream.FLICKR_STREAM,
+             extra: com.google.android.photostream.extra_nsid, String -->
+        <!-- action: com.google.android.photostream.FLICKR_STREAM,
+             extra: com.google.android.photostream.extra_user, Flickr.User -->
         <activity
             android:name=".PhotostreamActivity"
             android:label="@string/application_name">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.com.google.android.photostream/photos"/>
             </intent-filter>
         </activity>
 
-        <!-- action: VIEW, extra: com.google.android.photostream.extra_photo, Flickr.Photo -->
+        <!-- action: com.google.android.photostream.FLICKR_PHOTO,
+             extra: com.google.android.photostream.extra_photo, Flickr.Photo -->
         <activity
             android:name=".ViewPhotoActivity"
             android:label="@string/application_name">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.com.google.android.photostream/photo"/>
             </intent-filter>
         </activity>
 

@@ -51,6 +51,8 @@ import java.io.FileNotFoundException;
 public class ViewPhotoActivity extends Activity implements View.OnClickListener,
         ViewTreeObserver.OnGlobalLayoutListener {
 
+    static final String ACTION = "com.google.android.photostream.FLICKR_PHOTO";
+
     private static final String RADAR_ACTION = "com.google.android.radar.SHOW_RADAR";
     private static final String RADAR_EXTRA_LATITUDE = "latitude";
     private static final String RADAR_EXTRA_LONGITUDE = "longitude";
