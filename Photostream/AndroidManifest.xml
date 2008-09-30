@@ -51,7 +51,7 @@
             android:name=".PhotostreamActivity"
             android:label="@string/application_name">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+                <action android:name="com.google.android.photostream.FLICKR_STREAM" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -62,7 +62,7 @@
             android:name=".ViewPhotoActivity"
             android:label="@string/application_name">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+                <action android:name="com.google.android.photostream.FLICKR_PHOTO" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
