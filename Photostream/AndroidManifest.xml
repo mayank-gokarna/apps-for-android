@@ -54,6 +54,16 @@
                 <action android:name="com.google.android.photostream.FLICKR_STREAM" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="http"
+                      android:host="flickr.com"
+                      android:pathPrefix="/photos/" />
+                <data android:scheme="http"
+                      android:host="www.flickr.com"
+                      android:pathPrefix="/photos/" />
+            </intent-filter>
         </activity>
 
         <!-- action: com.google.android.photostream.FLICKR_PHOTO,

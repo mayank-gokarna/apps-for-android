@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.ViewAnimator;
 
 import java.util.Random;
+import java.util.List;
 
 /**
  * Activity used to display a Flickr user's photostream. This activity shows a fixed
@@ -73,6 +74,7 @@ public class PhotostreamActivity extends Activity implements
     private LayoutAnimationController mBackAnimation;
 
     private UserTask<?, ?, ?> mTask;
+    private String mUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,36 +134,40 @@ public class PhotostreamActivity extends Activity implements
             mPageCount = savedInstanceState.getInt(STATE_PAGE_COUNT);
         } else {
             user = getUser();
-            if (user == null) {
-                return false;
-            }
         }
         mUser = user;
-        return mUser != null;
+        return mUser != null || mUsername != null;
     }
 
     /**
      * Creates a {@link com.google.android.photostream.Flickr.User} instance
-     * from the intent used to start this activity. The user can either be
-     * a parceled instance, or created from a flickr://photos/nsid URI.
+     * from the intent used to start this activity.
      *
      * @return The user whose photos will be displayed, or null if no
      *         user was found.
      */
     private Flickr.User getUser() {
         final Intent intent = getIntent();
-        final Bundle extras = intent.getExtras();
+        final String action = intent.getAction();
 
         Flickr.User user = null;
 
-        if (extras != null) {
-            user = extras.getParcelable(EXTRA_USER);
+        if (ACTION.equals(action)) {
+            final Bundle extras = intent.getExtras();
+            if (extras != null) {
+                user = extras.getParcelable(EXTRA_USER);
 
-            if (user == null) {
-                final String nsid = extras.getString(EXTRA_NSID);
-                if (nsid != null) {
-                    user = Flickr.User.fromId(nsid);
+                if (user == null) {
+                    final String nsid = extras.getString(EXTRA_NSID);
+                    if (nsid != null) {
+                        user = Flickr.User.fromId(nsid);
+                    }
                 }
+            }
+        } else if (Intent.ACTION_VIEW.equals(action)) {
+            final List<String> segments = intent.getData().getPathSegments();
+            if (segments.size() > 1) {
+                mUsername = segments.get(1);
             }
         }
 
@@ -382,6 +388,10 @@ public class PhotostreamActivity extends Activity implements
      */
     private class GetPhotoListTask extends UserTask<Integer, Void, Flickr.PhotoList> {
         public Flickr.PhotoList doInBackground(Integer... params) {
+            if (mUsername != null) {
+                mUser = Flickr.get().findByUserName(mUsername);
+                mUsername = null;
+            }
             return Flickr.get().getPublicPhotos(mUser, PHOTOS_COUNT_PER_PAGE, params[0]);
         }
 
