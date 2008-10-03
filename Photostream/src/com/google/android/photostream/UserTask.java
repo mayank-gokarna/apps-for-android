@@ -59,11 +59,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *         }
  *     }
  *
- *     public void processProgress(Integer... progress) {
+ *     public void onProgressUpdate(Integer... progress) {
  *         setProgressPercent(progress[0]);
  *     }
  *
- *     public void end(Long result) {
+ *     public void onPostExecute(Long result) {
  *         showDialog("Downloaded " + result + " bytes");
  *     }
  * }
