@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.angryredplanet.android.rings_extended;
+package com.example.android.rings_extended;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -42,6 +42,9 @@ import android.widget.AbsListView.OnScrollListener;
  * quickly to indexed sections of the list in touch-mode. Only one child can be added to this 
  * view group and it must be a {@link ListView}, with an adapter that is derived from 
  * {@link BaseAdapter}.
+ * 
+ * <p>This file was copied from the Contacts application.  In the future it
+ * should be provided as a standard part of the Android framework.
  */
 public class FastScrollView extends FrameLayout 
         implements OnScrollListener, OnHierarchyChangeListener {

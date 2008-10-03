@@ -1,10 +1,15 @@
-package com.angryredplanet.android.rings_extended;
+package com.example.android.rings_extended;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.RelativeLayout;
 
+/**
+ * A special variation of RelativeLayout that can be used as a checkable object.
+ * This allows it to be used as the top-level view of a list view item, which
+ * also supports checking.  Otherwise, it works identically to a RelativeLayout.
+ */
 public class CheckableRelativeLayout extends RelativeLayout implements Checkable {
     private boolean mChecked;
 

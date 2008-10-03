@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.angryredplanet.android.rings_extended;
+package com.example.android.rings_extended;
 
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -27,6 +27,9 @@ import android.util.SparseIntArray;
  * perform a binary search to identify the first row that begins with a 
  * particular letter. The search is case-insensitive. The class caches the index 
  * such that subsequent queries for the same letter will return right away.
+ * 
+ * <p>This file was copied from the Contacts application.  In the future it
+ * should be provided as a standard part of the Android framework.
  */
 public class AlphabetIndexer extends DataSetObserver {
 
