@@ -90,7 +90,7 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
      * @param photo The photo to display and optionally set as a wallpaper.
      */
     static void show(Context context, Flickr.Photo photo) {
-        final Intent intent = new Intent(context, ViewPhotoActivity.class);
+        final Intent intent = new Intent(ACTION);
         intent.putExtra(EXTRA_PHOTO, photo);
         context.startActivity(intent);
     }

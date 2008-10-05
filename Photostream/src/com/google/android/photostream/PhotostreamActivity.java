@@ -112,7 +112,7 @@ public class PhotostreamActivity extends Activity implements
      * @param user The user whose photos to display with a PhotostreamActivity.
      */
     static void show(Context context, Flickr.User user) {
-        final Intent intent = new Intent(context, PhotostreamActivity.class);
+        final Intent intent = new Intent(ACTION);
         intent.putExtra(EXTRA_USER, user);
         context.startActivity(intent);
     }
