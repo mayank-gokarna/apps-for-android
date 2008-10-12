@@ -28,80 +28,90 @@ import android.widget.EditText;
 import com.google.android.wikinotes.db.WikiNote;
 
 /**
- * Wikinote editor activity. This is a very simple activity that allows 
- * the user to edit a wikinote using a text editor and confirm or cancel 
- * the changes. The title and body for the wikinote to edit are passed 
- * in using the extras bundle and the onFreeze() method provisions for 
- * those values to be stored in the icicle on a lifecycle event, so that 
- * the user retains control over whether the changes are committed to 
- * the database.
+ * Wikinote editor activity. This is a very simple activity that allows the user
+ * to edit a wikinote using a text editor and confirm or cancel the changes. The
+ * title and body for the wikinote to edit are passed in using the extras bundle
+ * and the onFreeze() method provisions for those values to be stored in the
+ * icicle on a lifecycle event, so that the user retains control over whether
+ * the changes are committed to the database.
  */
 public class WikiNoteEditor extends Activity {
 
-    protected static final String ACTIVITY_RESULT = "com.google.android.wikinotes.EDIT";
-	private EditText mNoteEdit;
+    protected static final String ACTIVITY_RESULT =
+	    "com.google.android.wikinotes.EDIT";
+    private EditText mNoteEdit;
     private String mWikiNoteTitle;
-    
+
     @Override
     protected void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
-        setContentView(R.layout.wiki_note_edit);
-        
-        mNoteEdit = (EditText) findViewById(R.id.noteEdit);
-        
-        // Check to see if the icicle has body and title values to restore
-        String wikiNoteText = icicle == null ? null : icicle.getString(WikiNote.Notes.BODY);
-        String wikiNoteTitle = icicle == null ? null : icicle.getString(WikiNote.Notes.TITLE);
-        
-        // If not, check to see if the extras bundle has these values passed in
-        if (wikiNoteTitle == null) {
-            Bundle extras = getIntent().getExtras();
-            wikiNoteText = extras == null ? null : extras.getString(WikiNote.Notes.BODY);
-            wikiNoteTitle = extras == null ? null : extras.getString(WikiNote.Notes.TITLE);
-        }
-        
-        // If we have no title information, this is an invalid intent request
-        if (TextUtils.isEmpty(wikiNoteTitle)) {
-            // no note title - bail
-            setResult(RESULT_CANCELED);
-            finish();
-            return;
-        }
-        
-        mWikiNoteTitle = wikiNoteTitle;
-        
-        // but if the body is null, just set it to empty - first edit of this note
-        wikiNoteText = wikiNoteText == null ? "" : wikiNoteText;
-        
-        // set the title so we know which note we are editing
-        setTitle(getString(R.string.wiki_editing, wikiNoteTitle));
+	super.onCreate(icicle);
+	setContentView(R.layout.wiki_note_edit);
 
-        // set the note body to edit
-        mNoteEdit.setText(wikiNoteText);
-        
-        // set listeners for the confirm and cancel buttons
-        ((Button) findViewById(R.id.confirmButton)).setOnClickListener(new OnClickListener() {
-            public void onClick(View view) {
-            	Intent i = new Intent();
-            	i.putExtra(ACTIVITY_RESULT, mNoteEdit.getText().toString());
-            	setResult(RESULT_OK, i);
-            	finish();
-            }
-        });
-        
-        ((Button) findViewById(R.id.cancelButton)).setOnClickListener(new OnClickListener() {
-            public void onClick(View view) {
-                setResult(RESULT_CANCELED);
-                finish();
-            }
-        });
+	mNoteEdit = (EditText) findViewById(R.id.noteEdit);
+
+	// Check to see if the icicle has body and title values to restore
+	String wikiNoteText =
+	        icicle == null ? null : icicle.getString(WikiNote.Notes.BODY);
+	String wikiNoteTitle =
+	        icicle == null ? null : icicle.getString(WikiNote.Notes.TITLE);
+
+	// If not, check to see if the extras bundle has these values passed in
+	if (wikiNoteTitle == null) {
+	    Bundle extras = getIntent().getExtras();
+	    wikiNoteText =
+		    extras == null ? null : extras
+		            .getString(WikiNote.Notes.BODY);
+	    wikiNoteTitle =
+		    extras == null ? null : extras
+		            .getString(WikiNote.Notes.TITLE);
+	}
+
+	// If we have no title information, this is an invalid intent request
+	if (TextUtils.isEmpty(wikiNoteTitle)) {
+	    // no note title - bail
+	    setResult(RESULT_CANCELED);
+	    finish();
+	    return;
+	}
+
+	mWikiNoteTitle = wikiNoteTitle;
+
+	// but if the body is null, just set it to empty - first edit of this
+	// note
+	wikiNoteText = wikiNoteText == null ? "" : wikiNoteText;
+
+	// set the title so we know which note we are editing
+	setTitle(getString(R.string.wiki_editing, wikiNoteTitle));
+
+	// set the note body to edit
+	mNoteEdit.setText(wikiNoteText);
+
+	// set listeners for the confirm and cancel buttons
+	((Button) findViewById(R.id.confirmButton))
+	        .setOnClickListener(new OnClickListener() {
+		    public void onClick(View view) {
+		        Intent i = new Intent();
+		        i.putExtra(ACTIVITY_RESULT, mNoteEdit.getText()
+		                .toString());
+		        setResult(RESULT_OK, i);
+		        finish();
+		    }
+	        });
+
+	((Button) findViewById(R.id.cancelButton))
+	        .setOnClickListener(new OnClickListener() {
+		    public void onClick(View view) {
+		        setResult(RESULT_CANCELED);
+		        finish();
+		    }
+	        });
 
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(WikiNote.Notes.TITLE, mWikiNoteTitle);
-        outState.putString(WikiNote.Notes.BODY, mNoteEdit.getText().toString());
+	super.onSaveInstanceState(outState);
+	outState.putString(WikiNote.Notes.TITLE, mWikiNoteTitle);
+	outState.putString(WikiNote.Notes.BODY, mNoteEdit.getText().toString());
     }
 }

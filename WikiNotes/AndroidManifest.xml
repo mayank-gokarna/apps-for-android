@@ -17,7 +17,7 @@
  
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.android.wikinotes">
-    <application android:icon="@drawable/icon">
+    <application android:icon="@drawable/icon" android:label="WikiNotes">
         <meta-data android:name="android.app.default_searchable" android:value=".WikiNotesList"/>
         <provider android:name="com.google.android.wikinotes.db.WikiNotesProvider"
                 android:authorities="com.google.android.wikinotes.db.wikinotes" />    

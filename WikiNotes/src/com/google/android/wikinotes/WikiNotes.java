@@ -45,191 +45,205 @@ import java.util.regex.Pattern;
  * to place the user into edit mode for a new wiki note with the given name.
  */
 public class WikiNotes extends Activity {
-	/**
-	 * The view URL which is prepended to a matching wikiword in order to fire
-	 * the WikiNotes activity again through Linkify
-	 */
+    /**
+     * The view URL which is prepended to a matching wikiword in order to fire
+     * the WikiNotes activity again through Linkify
+     */
 
-	private static final String KEY_URL = "wikiNotesURL";
+    private static final String KEY_URL = "wikiNotesURL";
 
-	public static final int EDIT_ID = Menu.FIRST;
-	public static final int HOME_ID = Menu.FIRST + 1;
-	public static final int LIST_ID = Menu.FIRST + 3;
-	public static final int DELETE_ID = Menu.FIRST + 4;
+    public static final int EDIT_ID = Menu.FIRST;
+    public static final int HOME_ID = Menu.FIRST + 1;
+    public static final int LIST_ID = Menu.FIRST + 3;
+    public static final int DELETE_ID = Menu.FIRST + 4;
 
-	private TextView mNoteView;
-	Cursor mCursor;
-	private Uri mURI;
-	String mNoteName;
-	private static final Pattern WIKI_WORD_MATCHER;
-	private WikiActivityHelper mHelper;
+    private TextView mNoteView;
+    Cursor mCursor;
+    private Uri mURI;
+    String mNoteName;
+    private static final Pattern WIKI_WORD_MATCHER;
+    private WikiActivityHelper mHelper;
 
-	static {
-		// Compile the regular expression pattern that will be used to
-		// match WikiWords in the body of the note
-		WIKI_WORD_MATCHER = Pattern
-				.compile("\\b[A-Z]+[a-z0-9]+[A-Z][A-Za-z0-9]+\\b");
+    static {
+	// Compile the regular expression pattern that will be used to
+	// match WikiWords in the body of the note
+	WIKI_WORD_MATCHER =
+	        Pattern.compile("\\b[A-Z]+[a-z0-9]+[A-Z][A-Za-z0-9]+\\b");
+    }
+
+    @Override
+    public void onCreate(Bundle icicle) {
+	super.onCreate(icicle);
+	setContentView(R.layout.main);
+
+	mNoteView = (TextView) findViewById(R.id.noteview);
+
+	// get the URL we are being asked to view
+	Uri uri = getIntent().getData();
+
+	if ((uri == null) && (icicle != null)) {
+	    // perhaps we have the URI in the icicle instead?
+	    uri = Uri.parse(icicle.getString(KEY_URL));
 	}
 
-	@Override
-	public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		setContentView(R.layout.main);
-
-		mNoteView = (TextView) findViewById(R.id.noteview);
-
-		// get the URL we are being asked to view
-		Uri uri = getIntent().getData();
-
-		if ((uri == null) && (icicle != null)) {
-			// perhaps we have the URI in the icicle instead?
-			uri = Uri.parse(icicle.getString(KEY_URL));
-		}
-
-		// do we have a correct URI including the note name?
-		if ((uri == null) || (uri.getPathSegments().size() < 2)) {
-			// if not, build one using the default StartPage name
-			uri = Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI,
-					getResources().getString(R.string.start_page));
-		}
-
-		// can we find a matching note?
-		Cursor cursor = managedQuery(uri, WikiNote.WIKI_NOTES_PROJECTION, null,
-				null);
-
-		boolean newNote = false;
-		if ((cursor == null) || (cursor.getCount() == 0)) {
-			// no matching wikinote, so create it
-			uri = getContentResolver().insert(uri, null);
-			if (uri == null) {
-				Log.e("WikiNotes", "Failed to insert new wikinote into "
-						+ getIntent().getData());
-				finish();
-				return;
-			}
-			// make sure that the new note was created successfully, and select
-			// it
-			cursor = managedQuery(uri, WikiNote.WIKI_NOTES_PROJECTION, null,
-					null);
-			if ((cursor == null) || (cursor.getCount() == 0)) {
-				Log.e("WikiNotes", "Failed to open new wikinote: "
-						+ getIntent().getData());
-				finish();
-				return;
-			}
-			newNote = true;
-		}
-
-		mURI = uri;
-		mCursor = cursor;
-		cursor.moveToFirst();
-		mHelper = new WikiActivityHelper(this, cursor);
-
-		// get the note name
-		String noteName = cursor.getString(cursor
-				.getColumnIndexOrThrow(WikiNote.Notes.TITLE));
-		mNoteName = noteName;
-
-		// set the title to the name of the page
-		setTitle(getResources().getString(R.string.wiki_title, noteName));
-
-		// If a new note was created, jump straight into editing it
-		if (newNote) {
-			mHelper.editNote(noteName);
-		}
-
-		// Set the menu shortcut keys to be default keys for the activity as
-		// well
-		setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
+	// do we have a correct URI including the note name?
+	if ((uri == null) || (uri.getPathSegments().size() < 2)) {
+	    // if not, build one using the default StartPage name
+	    uri =
+		    Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI,
+		            getResources().getString(R.string.start_page));
 	}
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		// Put the URL currently being viewed into the icicle
-		outState.putString(KEY_URL, mURI.toString());
+	// can we find a matching note?
+	Cursor cursor =
+	        managedQuery(uri, WikiNote.WIKI_NOTES_PROJECTION, null, null,
+	                null);
+
+	boolean newNote = false;
+	if ((cursor == null) || (cursor.getCount() == 0)) {
+	    // no matching wikinote, so create it
+	    uri = getContentResolver().insert(uri, null);
+	    if (uri == null) {
+		Log.e("WikiNotes", "Failed to insert new wikinote into "
+		        + getIntent().getData());
+		finish();
+		return;
+	    }
+	    // make sure that the new note was created successfully, and select
+	    // it
+	    cursor =
+		    managedQuery(uri, WikiNote.WIKI_NOTES_PROJECTION, null,
+		            null, null);
+	    if ((cursor == null) || (cursor.getCount() == 0)) {
+		Log.e("WikiNotes", "Failed to open new wikinote: "
+		        + getIntent().getData());
+		finish();
+		return;
+	    }
+	    newNote = true;
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Cursor c = mCursor;
-		c.requery();
-		c.moveToFirst();
-		showWikiNote(c.getString(c.getColumnIndexOrThrow(WikiNote.Notes.BODY)));
+	mURI = uri;
+	mCursor = cursor;
+	cursor.moveToFirst();
+	mHelper = new WikiActivityHelper(this);
+
+	// get the note name
+	String noteName =
+	        cursor.getString(cursor
+	                .getColumnIndexOrThrow(WikiNote.Notes.TITLE));
+	mNoteName = noteName;
+
+	// set the title to the name of the page
+	setTitle(getResources().getString(R.string.wiki_title, noteName));
+
+	// If a new note was created, jump straight into editing it
+	if (newNote) {
+	    mHelper.editNote(noteName, null);
 	}
 
-	/**
-	 * Show the wiki note in the text edit view with both the default Linkify
-	 * options and the regular expression for WikiWords matched and turned into
-	 * live links.
-	 * 
-	 * @param body
-	 *            The plain text to linkify and put into the edit view.
-	 */
-	private void showWikiNote(CharSequence body) {
-		TextView noteView = mNoteView;
-		noteView.setText(body);
+	// Set the menu shortcut keys to be default keys for the activity as
+	// well
+	setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
+    }
 
-		// Add default links first - phone numbers, URLs, etc.
-		Linkify.addLinks(noteView, Linkify.ALL);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+	super.onSaveInstanceState(outState);
+	// Put the URL currently being viewed into the icicle
+	outState.putString(KEY_URL, mURI.toString());
+    }
 
-		// Now add in the custom linkify match for WikiWords
-		Linkify.addLinks(noteView, WIKI_WORD_MATCHER,
-				WikiNote.Notes.ALL_NOTES_URI.toString() + "/");
+    @Override
+    protected void onResume() {
+	super.onResume();
+	Cursor c = mCursor;
+	c.requery();
+	c.moveToFirst();
+	showWikiNote(c.getString(c.getColumnIndexOrThrow(WikiNote.Notes.BODY)));
+    }
+
+    /**
+     * Show the wiki note in the text edit view with both the default Linkify
+     * options and the regular expression for WikiWords matched and turned into
+     * live links.
+     * 
+     * @param body
+     *        The plain text to linkify and put into the edit view.
+     */
+    private void showWikiNote(CharSequence body) {
+	TextView noteView = mNoteView;
+	noteView.setText(body);
+
+	// Add default links first - phone numbers, URLs, etc.
+	Linkify.addLinks(noteView, Linkify.ALL);
+
+	// Now add in the custom linkify match for WikiWords
+	Linkify.addLinks(noteView, WIKI_WORD_MATCHER,
+	        WikiNote.Notes.ALL_NOTES_URI.toString() + "/");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+	super.onCreateOptionsMenu(menu);
+	menu.add(0, EDIT_ID, 0, R.string.menu_edit).setShortcut('1', 'e')
+	        .setIcon(R.drawable.icon_delete);
+	menu.add(0, HOME_ID, 0, R.string.menu_start).setShortcut('4', 'h')
+	        .setIcon(R.drawable.icon_start);
+	menu.add(0, LIST_ID, 0, R.string.menu_recent).setShortcut('3', 'r')
+	        .setIcon(R.drawable.icon_recent);
+	menu.add(0, DELETE_ID, 0, R.string.menu_delete).setShortcut('2', 'd')
+	        .setIcon(R.drawable.icon_delete);
+	return true;
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+	switch (item.getItemId()) {
+	case EDIT_ID:
+	    mHelper.editNote(mNoteName, mCursor);
+	    return true;
+	case HOME_ID:
+	    mHelper.goHome();
+	    return true;
+	case DELETE_ID:
+	    mHelper.deleteNote(mCursor);
+	    return true;
+	case LIST_ID:
+	    mHelper.listNotes();
+	    return true;
+	default:
+	    return false;
 	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		menu.add(0, EDIT_ID, 0, R.string.menu_edit).setShortcut('1', 'e').setIcon(R.drawable.icon_delete);
-		menu.add(0, HOME_ID, 0, R.string.menu_start).setShortcut('4', 'h').setIcon(R.drawable.icon_start);
-		menu.add(0, LIST_ID, 0, R.string.menu_recent).setShortcut('3', 'r').setIcon(R.drawable.icon_recent);
-		menu.add(0, DELETE_ID, 0, R.string.menu_delete).setShortcut('2', 'd').setIcon(R.drawable.icon_delete);
-		return true;
+    /**
+     * If the note was edited and not canceled, commit the update to the
+     * database and then refresh the current view of the linkified note.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+	    Intent result) {
+	super.onActivityResult(requestCode, resultCode, result);
+	if ((requestCode == WikiActivityHelper.ACTIVITY_EDIT)
+	        && (resultCode == RESULT_OK)) {
+	    // edit was confirmed - store the update
+	    Cursor c = mCursor;
+	    c.requery();
+	    c.moveToFirst();
+	    Uri noteUri =
+		    ContentUris.withAppendedId(WikiNote.Notes.ALL_NOTES_URI, c
+		            .getInt(0));
+	    ContentValues values = new ContentValues();
+	    values.put(WikiNote.Notes.BODY, result
+		    .getStringExtra(WikiNoteEditor.ACTIVITY_RESULT));
+	    values
+		    .put(WikiNote.Notes.MODIFIED_DATE, System
+		            .currentTimeMillis());
+	    getContentResolver().update(noteUri, values,
+		    "_id = " + c.getInt(0), null);
+	    showWikiNote(c.getString(c
+		    .getColumnIndexOrThrow(WikiNote.Notes.BODY)));
 	}
-
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		switch (item.getItemId()) {
-		case EDIT_ID:
-			mHelper.editNote(mNoteName);
-			return true;
-		case HOME_ID:
-			mHelper.goHome();
-			return true;
-		case DELETE_ID:
-			mHelper.deleteNote();
-			return true;
-		case LIST_ID:
-			mHelper.listNotes();
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * If the note was edited and not canceled, commit the update to the
-	 * database and then refresh the current view of the linkified note.
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode,
-			Intent result) {
-		super.onActivityResult(requestCode, resultCode, result);
-		if ((requestCode == WikiActivityHelper.ACTIVITY_EDIT) && (resultCode == RESULT_OK)) {
-			// edit was confirmed - store the update
-			Cursor c = mCursor;
-			c.requery();
-			c.moveToFirst();
-			Uri noteUri = ContentUris.withAppendedId(WikiNote.Notes.ALL_NOTES_URI, c.getInt(0));
-			ContentValues values = new ContentValues();
-			values.put(WikiNote.Notes.BODY, result
-					.getStringExtra(WikiNoteEditor.ACTIVITY_RESULT));
-			values.put(WikiNote.Notes.MODIFIED_DATE, System
-					.currentTimeMillis());
-			getContentResolver().update(noteUri, values, "_id = " + c.getInt(0), null);
-			showWikiNote(c.getString(c.getColumnIndexOrThrow(WikiNote.Notes.BODY)));
-		}
-	}
+    }
 }

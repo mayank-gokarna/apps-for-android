@@ -34,4 +34,5 @@
     <string name="menu_start">Go To Start Note</string>
     <string name="menu_recent">List All Notes</string>
     <string name="menu_delete">Delete Note</string>
+    <string name="menu_export">Export All Notes</string>
 </resources>

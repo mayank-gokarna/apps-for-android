@@ -27,62 +27,71 @@ public class WikiNote {
      * Notes table
      */
     public static final class Notes implements BaseColumns {
-        /**
-         * The content:// style URI for this table - this to see all 
-         * notes or append a note name to see just the matching note.
-         */
-        public static final Uri ALL_NOTES_URI = Uri.parse(
-                "content://com.google.android.wikinotes.db.wikinotes/wikinotes");
-        
-        /**
-         * This URI can be used to search the bodies of notes for 
-         * an appended search term.
-         */
-        public static final Uri SEARCH_URI = Uri.parse(
-                "content://com.google.android.wikinotes.db.wikinotes/wiki/search");
+	/**
+	 * The content:// style URI for this table - this to see all notes or
+	 * append a note name to see just the matching note.
+	 */
+	public static final Uri ALL_NOTES_URI =
+	        Uri
+	                .parse("content://com.google.android.wikinotes.db.wikinotes/wikinotes");
 
-        /**
-         * The default sort order for this table - 
-         * most recently modified first
-         */
-        public static final String DEFAULT_SORT_ORDER = "modified DESC";
+	/**
+	 * This URI can be used to search the bodies of notes for an appended
+	 * search term.
+	 */
+	public static final Uri SEARCH_URI =
+	        Uri
+	                .parse("content://com.google.android.wikinotes.db.wikinotes/wiki/search");
 
-        /**
-         * The title of the note
-         * <P>Type: TEXT</P>
-         */
-        public static final String TITLE = "title";
+	/**
+	 * The default sort order for this table - most recently modified first
+	 */
+	public static final String DEFAULT_SORT_ORDER = "modified DESC";
 
-        /**
-         * The note body
-         * <P>Type: TEXT</P>
-         */
-        public static final String BODY = "body";
+	/**
+	 * The title of the note
+	 * <P>
+	 * Type: TEXT
+	 * </P>
+	 */
+	public static final String TITLE = "title";
 
-        /**
-         * The timestamp for when the note was created
-         * <P>Type: INTEGER (long)</P>
-         */
-        public static final String CREATED_DATE = "created";
+	/**
+	 * The note body
+	 * <P>
+	 * Type: TEXT
+	 * </P>
+	 */
+	public static final String BODY = "body";
 
-        /**
-         * The timestamp for when the note was last modified
-         * <P>Type: INTEGER (long)</P>
-         */
-        public static final String MODIFIED_DATE = "modified";
-        
+	/**
+	 * The timestamp for when the note was created
+	 * <P>
+	 * Type: INTEGER (long)
+	 * </P>
+	 */
+	public static final String CREATED_DATE = "created";
+
+	/**
+	 * The timestamp for when the note was last modified
+	 * <P>
+	 * Type: INTEGER (long)
+	 * </P>
+	 */
+	public static final String MODIFIED_DATE = "modified";
+
     }
-    
+
     /**
-     * Convenience definition for the projection we will use to retrieve
-     * columns from the wikinotes
+     * Convenience definition for the projection we will use to retrieve columns
+     * from the wikinotes
      */
-    public static final String[] WIKI_NOTES_PROJECTION = {
-        Notes._ID, Notes.TITLE, Notes.BODY, Notes.MODIFIED_DATE
-    };
-    
+    public static final String[] WIKI_NOTES_PROJECTION =
+	    {Notes._ID, Notes.TITLE, Notes.BODY, Notes.MODIFIED_DATE};
+
     /**
      * The root authority for the WikiNotesProvider
      */
-    public static final String WIKINOTES_AUTHORITY = "com.google.android.wikinotes.db.wikinotes";
+    public static final String WIKINOTES_AUTHORITY =
+	    "com.google.android.wikinotes.db.wikinotes";
 }
