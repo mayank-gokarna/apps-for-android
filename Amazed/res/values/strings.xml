@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, AmazedActivity</string>
+    <string name="app_name">Amazed</string>
+    <string name="lives">Lives</string>
+    <string name="level">Level</string>
+    <string name="time">Time</string>
+    <string name="tap_screen">TAP SCREEN TO START</string>
+    <string name="game_complete">GAME COMPLETE</string>
+    <string name="game_over">GAME OVER</string>
+    <string name="total_time">TOTAL TIME</string>
+    <string name="game_over_msg_a">YOU COMPLETED</string>
+    <string name="game_over_msg_b">LEVELS, KEEP TRYING</string>
+    <string name="restart">TOUCH SCREEN TO RESTART</string>
+    <string name="landscape_mode">PLEASE ROTATE BACK TO PORTRAIT MODE</string>
+</resources>
