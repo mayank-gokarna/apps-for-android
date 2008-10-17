@@ -75,6 +75,8 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Eula.show(this);
+
         schedule();
 
         // If the activity was started with the "create shortcut" action, we

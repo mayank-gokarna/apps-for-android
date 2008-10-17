@@ -107,6 +107,11 @@ containing a value of this type.
         public static final int error_cannot_find_location=0x7f080012;
         public static final int error_cannot_find_radar=0x7f080013;
         public static final int error_cannot_save_file=0x7f08000e;
+        public static final int eula_accept=0x7f080020;
+        public static final int eula_refuse=0x7f080021;
+        /**  EULA 
+         */
+        public static final int eula_title=0x7f08001f;
         public static final int menu_item_radar_label=0x7f080011;
         public static final int menu_item_settings_label=0x7f080010;
         public static final int notification_contact_has_new_photos=0x7f080016;
