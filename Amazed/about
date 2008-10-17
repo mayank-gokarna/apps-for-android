@@ -1,50 +1,17 @@
 Amazed
 
-When I was younger I received a strange wooden box containing a labyrinth as a present.  The aim was
-to navigate a marble through the labyrinth by tilting it in various directions.  Needless to say I 
-was quickly addicted.  I wanted to build a similar style game using the Accelerometer provided by 
-Android.  The aim is to navigate the white marble through a maze to the exit.  The exit area
-is represented with light blue tiles.  If your marble falls off the paved path into the "void" you
-will loose a life.  The marble follows whatever direction the device is tilted, for example tilting 
-the device left will cause the marble to roll left.
+When I was younger I received a strange wooden box containing a labyrinth as a present.  The aim was to navigate a marble through the labyrinth by tilting it in various directions.  Needless to say I was quickly addicted.  I wanted to build a similar style game using the Accelerometer provided by Android.  The aim is to navigate the white marble through a maze to the exit.  The exit area is represented with light blue tiles.  If your marble falls off the paved path into the "void" you will loose a life.  The marble follows whatever direction the device is tilted, for example tilting  the device left will cause the marble to roll left.
 
-In its current state the game has 10 levels with progressive difficulty.  You will notice the marble
-can hover over the edge of the void, it won't fall off the paved path until half the marble is
-over the edge.  Pressing the back key will exit the application from any screen.  Only portrait mode
-is currently supported, in landscape mode a message is displayed asking you to rotate the screen 
-back to portrait mode.
+In its current state the game has 10 levels with progressive difficulty.  You will notice the marble can hover over the edge of the void, it won't fall off the paved path until half the marble is over the edge.  Pressing the back key will exit the application from any screen.  Only portrait mode is currently supported, in landscape mode a message is displayed asking you to rotate the screen back to portrait mode.
 
 Amazed is available now as on open source project on apps-for-android, enjoy.
 
 <insert screen shot>
 
-AmazedAcitivity is a custom Activity which serves as the entry point into the application.  Upon 
-Starting, AmazedView is initialized, given focus and then displayed to the user.
+AmazedAcitivity is a custom Activity which serves as the entry point into the application.  Upon starting, AmazedView is initialized, given focus and then displayed to the user.
 
-AmazedView is a custom View that implements its own onDraw using Canvas methods.  Gesture events are
-handled using onTouchEvent and onKeyDown methods.  If the device orientation is changed the event
-triggers onSizeChanged which determines if we are in portrait or landscape mode.  A SensorManager is
-used to register a custom SensorListener named sensorAccelerometer.  Registering a SensorListener
-signifies to the OS that the application would like to be informed when the sensor changes.  In this
-case Accelerometer values (represented by x,y and z) are reported whenever the device is moved.  
-Using these values we know which direction the marble should be rolling to coincide with the users 
-movement of the device.  It is important to note you should always unregister listeners when you no
-longer require their service.
+AmazedView is a custom View that implements its own onDraw using Canvas methods.  Gesture events are handled using onTouchEvent and onKeyDown methods.  If the device orientation is changed the event triggers onSizeChanged which determines if we are in portrait or landscape mode.  A SensorManager is used to register a custom SensorListener named sensorAccelerometer.  Registering a SensorListener signifies to the OS that the application would like to be informed when the sensor changes.  In this case Accelerometer values (represented by x,y and z) are reported whenever the device is moved.  Using these values we know which direction the marble should be rolling to coincide with the users movement of the device.  It is important to note you should always unregister listeners when you no longer require their service.
 
-The Marble class represents the marble drawn in the maze.  The x,y co-ordinate are tracked so we 
-know where the marble should be drawn as well as other useful information such as the number of 
-lives.  At the moment the marble is drawn using the Canvas method drawCircle.  If you possess any 
-form of graphical talent I would recommend creating a custom Bitmap for a more aesthetically 
-pleasing result.
+The Marble class represents the marble drawn in the maze.  The x,y co-ordinate are tracked so we know where the marble should be drawn as well as other useful information such as the number of lives.  At the moment the marble is drawn using the Canvas method drawCircle.  If you possess any  form of graphical talent I would recommend creating a custom Bitmap for a more aesthetically pleasing result.
 
-The Maze class is used to load and draw each level as the user progresses through the game.  Level
-data is loaded via an InpustStream, the actual level data can be found in the /res/raw directory.  
-If you open up one of the level text files you will see list of numbers.  These numbers correspond 
-to a tile type, currently the 3 types of tiles are PATH_TILE, VOID_TILE and EXIT_TILE.  When drawing
-the maze the application knows if the tile value is 0 then it should draw a PATH_TILE, if the value 
-is 1 draw a VOID_TILE and if the value 2 draw an EXIT_TILE tile.  The comma's and whitespace in the
-level file are present so us humans can read the file without too much trouble.  You can actually
-alter the level data and create your own custom levels with out any code changes, provided you adhere
-to the MAZE_COLS and MAZE_ROWS attributes.  Both the path and exit tiles are custom Bitmaps drawn 
-using drawBitmap while the exit tile is a simple black square drawn using drawRect after setting up
-a Rect with the correct parameters.
+The Maze class is used to load and draw each level as the user progresses through the game.  Level data is loaded via an InpustStream, the actual level data can be found in the /res/raw directory.  If you open up one of the level text files you will see list of numbers.  These numbers correspond to a tile type, currently the 3 types of tiles are PATH_TILE, VOID_TILE and EXIT_TILE.  When drawing the maze the application knows if the tile value is 0 then it should draw a PATH_TILE, if the value is 1 draw a VOID_TILE and if the value 2 draw an EXIT_TILE tile.  The comma's and whitespace in the level file are present so us humans can read the file without too much trouble.  You can actually alter the level data and create your own custom levels with out any code changes, provided you adhere to the MAZE_COLS and MAZE_ROWS attributes.  Both the path and exit tiles are custom Bitmaps drawn using drawBitmap while the exit tile is a simple black square drawn using drawRect after setting up a Rect with the correct parameters.
