@@ -68,7 +68,7 @@ class Eula {
                     refuse(activity);
                 }
             });
-            builder.setMessage(readFile(activity, ASSET_EULA));
+            builder.setMessage(readFile(activity, R.raw.eula));
             builder.create().show();
         }
     }
@@ -83,17 +83,17 @@ class Eula {
 
     static void showDisclaimer(Activity activity) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setMessage(readFile(activity, ASSET_DISCLAIMER));
+        builder.setMessage(readFile(activity, R.raw.disclaimer));
         builder.setCancelable(true);
         builder.setTitle(R.string.disclaimer_title);
         builder.setPositiveButton(R.string.disclaimer_accept, null);
         builder.create().show();
     }
 
-    private static CharSequence readFile(Activity activity, String fileName) {
+    private static CharSequence readFile(Activity activity, int id) {
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new InputStreamReader(activity.getAssets().open(fileName)));
+            in = new BufferedReader(activity.getResources().openRawResource(id));
             String line;
             StringBuilder buffer = new StringBuilder();
             while ((line = in.readLine()) != null) buffer.append(line).append('\n');
