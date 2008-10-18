@@ -23,8 +23,8 @@ import android.content.SharedPreferences;
 
 import java.io.IOException;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.Closeable;
+import java.io.InputStreamReader;
 
 /**
  * Displays an EULA ("End User License Agreement") that the user has to accept before
@@ -34,11 +34,8 @@ import java.io.Closeable;
  * on your activity.
  */
 class Eula {
-    private static final String ASSET_EULA = "EULA";
     private static final String PREFERENCE_EULA_ACCEPTED = "eula.accepted";
     private static final String PREFERENCES_EULA = "eula";
-
-    private static final String ASSET_DISCLAIMER = "DISCLAIMER";
 
     /**
      * Displays the EULA if necessary. This method should be called from the onCreate()
@@ -93,7 +90,8 @@ class Eula {
     private static CharSequence readFile(Activity activity, int id) {
         BufferedReader in = null;
         try {
-            in = new BufferedReader(activity.getResources().openRawResource(id));
+            in = new BufferedReader(new InputStreamReader(
+                    activity.getResources().openRawResource(id)));
             String line;
             StringBuilder buffer = new StringBuilder();
             while ((line = in.readLine()) != null) buffer.append(line).append('\n');
