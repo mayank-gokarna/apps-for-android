@@ -75,7 +75,7 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Eula.show(this);
+        Eula.showEula(this);
 
         schedule();
 
@@ -137,6 +137,9 @@ public class LoginActivity extends Activity implements View.OnKeyListener,
         switch (item.getItemId()) {
             case R.id.menu_item_settings:
                 SettingsActivity.show(this);
+                return true;
+            case R.id.menu_item_info:
+                Eula.showDisclaimer(this);
                 return true;
         }
 

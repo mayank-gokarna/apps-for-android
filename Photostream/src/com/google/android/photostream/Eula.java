@@ -28,7 +28,7 @@ import java.io.Closeable;
 
 /**
  * Displays an EULA ("End User License Agreement") that the user has to accept before
- * using the application. Your application should call {@link Eula#show(android.app.Activity)}
+ * using the application. Your application should call {@link Eula#showEula(android.app.Activity)}
  * in the onCreate() method of the first activity. If the user accepts the EULA, it will never
  * be shown again. If the user refuses, {@link android.app.Activity#finish()} is invoked
  * on your activity.
@@ -38,13 +38,15 @@ class Eula {
     private static final String PREFERENCE_EULA_ACCEPTED = "eula.accepted";
     private static final String PREFERENCES_EULA = "eula";
 
+    private static final String ASSET_DISCLAIMER = "DISCLAIMER";
+
     /**
      * Displays the EULA if necessary. This method should be called from the onCreate()
      * method of your main Activity.
      *
      * @param activity The Activity to finish if the user rejects the EULA.
      */
-    static void show(final Activity activity) {
+    static void showEula(final Activity activity) {
         final SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES_EULA,
                 Activity.MODE_PRIVATE);
         if (!preferences.getBoolean(PREFERENCE_EULA_ACCEPTED, false)) {
@@ -66,7 +68,7 @@ class Eula {
                     refuse(activity);
                 }
             });
-            builder.setMessage(readEula(activity));
+            builder.setMessage(readFile(activity, ASSET_EULA));
             builder.create().show();
         }
     }
@@ -79,10 +81,19 @@ class Eula {
         activity.finish();
     }
 
-    private static CharSequence readEula(Activity activity) {
+    static void showDisclaimer(Activity activity) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setMessage(readFile(activity, ASSET_DISCLAIMER));
+        builder.setCancelable(true);
+        builder.setTitle(R.string.disclaimer_title);
+        builder.setPositiveButton(R.string.disclaimer_accept, null);
+        builder.create().show();
+    }
+
+    private static CharSequence readFile(Activity activity, String fileName) {
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new InputStreamReader(activity.getAssets().open(ASSET_EULA)));
+            in = new BufferedReader(new InputStreamReader(activity.getAssets().open(fileName)));
             String line;
             StringBuilder buffer = new StringBuilder();
             while ((line = in.readLine()) != null) buffer.append(line).append('\n');
