@@ -23,12 +23,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Vibrator;
-import android.view.Window;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.preference.PreferenceManager;
 
 import java.util.Stack;
 
@@ -40,7 +40,11 @@ import java.util.Stack;
 public class DivideAndConquerActivity extends Activity
         implements DivideAndConquerView.BallEventCallBack,
         NewGameCallback,
-        DialogInterface.OnCancelListener {
+        DialogInterface.OnCancelListener,
+        Eula.OnEulaAgreedTo {
+
+    private boolean mAlreadyAgreedToEula = false;
+    private boolean mEngineReady = false;
 
     /**
      * Each level has a different background color and ball color.
@@ -50,8 +54,8 @@ public class DivideAndConquerActivity extends Activity
         private final int mBallColor;
 
         LevelStyle(int bgColor, int ballColor) {
-            mBgColor = bgColor;
-            mBallColor = ballColor;
+            mBgColor = 0xFF000000 | bgColor;
+            mBallColor = 0xFF000000 |ballColor;
         }
     }
 
@@ -61,14 +65,9 @@ public class DivideAndConquerActivity extends Activity
     static LevelStyle[] LEVEL_STYLES = new LevelStyle[] {
             new LevelStyle(0xFFD162FF, 0xFF76A7FF),
             new LevelStyle(0xFF76A7FF, 0xFF75FFE9),
-            new LevelStyle(0xFF75FFE9, 0xFF63FF86),
-            new LevelStyle(0xFF63FF86, 0xFF49FF48),
-            new LevelStyle(0xFF49FF48, 0xFF689799),
-            new LevelStyle(0xFF689799, 0xFF4F3C37),
-            new LevelStyle(0xFF4F3C37, 0xFFA3754E),
-            new LevelStyle(0xFFA3754E, 0xFF90D1BB),
-            new LevelStyle(0xFF90D1BB, 0xFF374F47),
-            new LevelStyle(0xFF374F47, 0xFFD162FF),
+            new LevelStyle(0xFF7E33, 0x8DBDD9),
+            new LevelStyle(0x61FF6E, 0xD9B4D6),
+            new LevelStyle(0x2BA7FF, 0xFF842B),
     };
 
     private static final int NEW_GAME_NUM_BALLS = 1;
@@ -96,9 +95,33 @@ public class DivideAndConquerActivity extends Activity
 
     private Toast mCurrentToast;
 
+// usefull for playing around with colors
+//    private int theindex = 0;
+//    public boolean onKeyUp(int i, KeyEvent event) {
+//        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+//            theindex++;
+//            theindex = theindex % LEVEL_STYLES.length;
+//            mBallsView.setColors(
+//                    LEVEL_STYLES[theindex].mBgColor,
+//                    LEVEL_STYLES[theindex].mBallColor
+//                    );
+//            return true;
+//        } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+//            theindex--;
+//            if (theindex < 0) theindex = LEVEL_STYLES.length - 1;
+//            mBallsView.setColors(
+//                    LEVEL_STYLES[theindex].mBgColor,
+//                    LEVEL_STYLES[theindex].mBallColor
+//                    );
+//            return true;
+//        }
+//        return false;
+//    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAlreadyAgreedToEula = Eula.show(this);
 
         // Turn off the title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -125,8 +148,19 @@ public class DivideAndConquerActivity extends Activity
                 );
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
 
+        mEngineReady = true;
+
         // show the welcome dialog
-        showDialog(WELCOME_DIALOG);
+        if (mAlreadyAgreedToEula) {
+            showDialog(WELCOME_DIALOG);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void onEulaAgreedTo() {
+        if (mEngineReady) {
+            showDialog(WELCOME_DIALOG);
+        } 
     }
 
     @Override
@@ -321,7 +355,8 @@ public class DivideAndConquerActivity extends Activity
         final int index = (mNumBalls - 1) % LEVEL_STYLES.length;
         mBallsView.setColors(
                 LEVEL_STYLES[index].mBgColor,
-                LEVEL_STYLES[index].mBallColor);
+                LEVEL_STYLES[index].mBallColor
+                );
     }
 
     /**

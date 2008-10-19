@@ -27,4 +27,8 @@
     <string name="settings_three_lives">3 lives</string>
     <string name="settings_one_life">1 life</string>
 
+    <string name="eula_title">License Agreement</string>
+    <string name="eula_accept">Accept</string>
+    <string name="eula_refuse">Don't Accept</string>
+
 </resources>
