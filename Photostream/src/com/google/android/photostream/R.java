@@ -95,7 +95,6 @@ containing a value of this type.
     }
     public static final class raw {
         public static final int disclaimer=0x7f060000;
-        public static final int eula=0x7f060001;
     }
     public static final class string {
         public static final int activity_create_shortcut=0x7f090001;
