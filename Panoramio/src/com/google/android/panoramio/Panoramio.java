@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.android.panoramio;
 
+import com.google.android.panoramio.Eula;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
@@ -45,7 +47,7 @@ public class Panoramio extends MapActivity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         setContentView(R.layout.main);
         
         mImageManager = ImageManager.getInstance(this);
@@ -72,6 +74,8 @@ public class Panoramio extends MapActivity implements OnClickListener {
         mMapView.setSatellite(true);
         
         addZoomControls(frame);
+        
+        Eula.showEula(this);
     }
 
     @Override
