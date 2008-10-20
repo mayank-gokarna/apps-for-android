@@ -65,7 +65,8 @@ class Eula {
                     refuse(activity);
                 }
             });
-            builder.setMessage(readFile(activity, R.raw.eula));
+            // UNCOMMENT TO ENABLE EULA
+            //builder.setMessage(readFile(activity, R.raw.eula));
             builder.create().show();
         }
     }
