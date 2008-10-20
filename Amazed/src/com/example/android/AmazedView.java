@@ -344,15 +344,19 @@ public class AmazedView extends View {
         mPaint.setTextAlign(Paint.Align.LEFT);
         mCanvas.drawText(mStrings[TXT_TIME] + ": " + (mTotalTime / 1000), mTextPadding, mHudTextY,
                 mPaint);
+        mPaint.setTextAlign(Paint.Align.CENTER);
         mCanvas.drawText(mStrings[TXT_LEVEL] + ": " + mlevel, mCanvasHalfWidth, mHudTextY, mPaint);
-        mCanvas.drawText(mStrings[TXT_LIVES] + ": " + mMarble.getLives(), mCanvasHalfWidth,
+        mPaint.setTextAlign(Paint.Align.RIGHT);
+        mCanvas.drawText(mStrings[TXT_LIVES] + ": " + mMarble.getLives(), mCanvasWidth - mTextPadding,
                 mHudTextY, mPaint);
 
         // do we need to display the warning message to save the user from
         // possibly dying instantly.
         if (mWarning) {
             mPaint.setColor(Color.BLUE);
-            mCanvas.drawRect(0, mCanvasHalfHeight - 15, mCanvasWidth, mCanvasHalfHeight + 5, mPaint);
+            mCanvas
+                    .drawRect(0, mCanvasHalfHeight - 15, mCanvasWidth, mCanvasHalfHeight + 5,
+                            mPaint);
             mPaint.setColor(Color.WHITE);
             mPaint.setTextAlign(Paint.Align.CENTER);
             mCanvas.drawText(mStrings[TXT_TAP_SCREEN], mCanvasHalfWidth, mCanvasHalfHeight, mPaint);
