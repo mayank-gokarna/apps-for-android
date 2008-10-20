@@ -16,7 +16,6 @@
 
 package com.google.android.panoramio;
 
-import com.google.android.panoramio.Eula;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
@@ -74,8 +73,6 @@ public class Panoramio extends MapActivity implements OnClickListener {
         mMapView.setSatellite(true);
         
         addZoomControls(frame);
-        
-        Eula.showEula(this);
     }
 
     @Override
