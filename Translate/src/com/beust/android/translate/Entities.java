@@ -17,8 +17,6 @@
 
 package com.beust.android.translate;
 
-import com.google.android.collect.Maps;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;

@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.beust.android.translate">
+      package="com.beust.android.translate"
+      android:versionName="1.5"
+      android:versionCode="15"
+  >
 
     <uses-permission android:name="android.permission.INTERNET" />
 

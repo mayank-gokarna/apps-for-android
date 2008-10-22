@@ -16,8 +16,6 @@
 
 package com.beust.android.translate;
 
-import com.google.android.collect.Lists;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;

@@ -16,8 +16,6 @@
 
 package com.beust.android.translate;
 
-import com.google.android.collect.Lists;
-
 import com.beust.android.translate.Languages.Language;
 
 import android.app.Activity;

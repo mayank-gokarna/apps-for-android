@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <project name="TranslateActivity" default="debug">
     <!-- SDK Locations -->
-    <property name="sdk-folder" value="/usr/local/cbeust/java/android-sdk-linux_x86-0.9_beta" />
+    <property name="sdk-folder" value="/usr/local/cbeust/java/android-sdk" />
     <property name="android-tools" value="${sdk-folder}/tools" />
     
     <!-- Application Package Name -->

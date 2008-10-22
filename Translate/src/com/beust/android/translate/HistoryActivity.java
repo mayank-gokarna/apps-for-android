@@ -16,9 +16,6 @@
 
 package com.beust.android.translate;
 
-import com.google.android.collect.Lists;
-import com.google.android.collect.Maps;
-
 import android.app.ListActivity;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;

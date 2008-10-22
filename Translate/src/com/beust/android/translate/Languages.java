@@ -16,8 +16,6 @@
 
 package com.beust.android.translate;
 
-import com.google.android.collect.Maps;
-
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
