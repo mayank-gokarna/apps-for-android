@@ -21,8 +21,6 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.widget.Button;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -64,7 +62,7 @@ public final class Languages {
 //        GREEK("el", "Greek", R.drawable.el),
 //        GUARANI("gn", "Guarani", R.drawable.gn),
 //        GUJARATI("gu", "Gujarati", R.drawable.gu),
-//        HEBREW("iw", "Hebrew", R.drawable.iw),
+//        HEBREW("iw", "Hebrew", R.drawable.il),
 //        HINDI("hi", "Hindi", R.drawable.hi),
 //        HUNGARIAN("hu", "Hungarian", R.drawable.hu),
 //        ICELANDIC("is", "Icelandic", R.drawable.is),
@@ -75,7 +73,7 @@ public final class Languages {
 //        KANNADA("kn", "Kannada", R.drawable.kn),
 //        KAZAKH("kk", "Kazakh", R.drawable.kk),
 //        KHMER("km", "Khmer", R.drawable.km),
-//        KOREAN("ko", "Korean", R.drawable.ko),
+        KOREAN("ko", "Korean", R.drawable.kr),
 //        KURDISH("ky", "Kurdish", R.drawable.ky),
 //        LAOTHIAN("Laothian", "lo", R.drawable.lo),
 //        LATVIAN("Latvian", "la", R.drawable.la),
