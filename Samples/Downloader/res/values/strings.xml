@@ -7,6 +7,7 @@
     <string name="download_activity_title">Downloading</string>
     <string name="download_activity_cancel">Cancel Download</string>
     <string name="download_activity_progress">Progress:</string>
+    <string name="download_activity_verifying">Verifying...</string>
     <string name="download_activity_time_remaining">Time Remaining:</string>
     <string name="download_activity_time_remaining_unknown">unknown</string>
     <string name="download_activity_time_remaining_minutes">minutes</string>

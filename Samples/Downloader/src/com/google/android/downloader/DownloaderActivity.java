@@ -21,12 +21,12 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.http.AndroidHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.security.MessageDigest;
+import java.security.MessageDigest;
 import android.util.Log;
 import android.util.Xml;
 import android.view.View;
@@ -282,6 +282,11 @@ public class DownloaderActivity extends Activity {
         mTimeRemaining.setText(timeRemaining);
     }
 
+    private void onReportVerifying() {
+        mProgress.setText(getString(R.string.download_activity_verifying));
+        mTimeRemaining.setText("");
+    }
+
     private static void quietClose(InputStream is) {
         try {
             if (is != null) {
@@ -429,17 +434,13 @@ public class DownloaderActivity extends Activity {
 
             try {
                 // Download files.
-                mHttpClient = AndroidHttpClient.newInstance(mUserAgent);
-                try {
-                    Config config = getConfig();
-                    filter(config);
-                    persistantDownload(config);
-                    verify(config);
-                    cleanup();
-                    reportSuccess();
-                } finally {
-                    mHttpClient.close();
-                }
+                mHttpClient = new DefaultHttpClient();
+                Config config = getConfig();
+                filter(config);
+                persistantDownload(config);
+                verify(config);
+                cleanup();
+                reportSuccess();
             } catch (Exception e) {
                 reportFailure(e.toString() + "\n" + Log.getStackTraceString(e));
             }
@@ -543,6 +544,11 @@ public class DownloaderActivity extends Activity {
         private void reportProgress(int progress) {
             mHandler.sendMessage(
                     Message.obtain(mHandler, MSG_REPORT_PROGRESS, progress, 0));
+        }
+
+        private void reportVerifying() {
+            mHandler.sendMessage(
+                    Message.obtain(mHandler, MSG_REPORT_VERIFYING));
         }
 
         private Config getConfig() throws DownloaderException,
@@ -694,6 +700,7 @@ public class DownloaderActivity extends Activity {
         private boolean verifyFile(Config.File file, boolean deleteInvalid)
                 throws FileNotFoundException, DownloaderException, IOException {
             Log.i(LOG_TAG, "verifying " + file.dest);
+            reportVerifying();
             File dest = new File(mDataDir, file.dest);
             if (! dest.exists()) {
                 Log.e(LOG_TAG, "File does not exist: " + dest.toString());
@@ -967,7 +974,7 @@ public class DownloaderActivity extends Activity {
             return totalBytesRead;
         }
 
-        private AndroidHttpClient mHttpClient;
+        private DefaultHttpClient mHttpClient;
         private HttpGet mHttpGet;
         private String mFileConfigUrl;
         private String mConfigVersion;
@@ -1006,6 +1013,7 @@ public class DownloaderActivity extends Activity {
     private final static int MSG_DOWNLOAD_SUCCEEDED = 0;
     private final static int MSG_DOWNLOAD_FAILED = 1;
     private final static int MSG_REPORT_PROGRESS = 2;
+    private final static int MSG_REPORT_VERIFYING = 3;
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -1019,6 +1027,9 @@ public class DownloaderActivity extends Activity {
                 break;
             case MSG_REPORT_PROGRESS:
                 onReportProgress(msg.arg1);
+                break;
+            case MSG_REPORT_VERIFYING:
+                onReportVerifying();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown message id "

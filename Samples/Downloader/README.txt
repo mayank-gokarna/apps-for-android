@@ -30,6 +30,14 @@ Any web server should work.
 + Does not provide a way of automatically uninstalling the data files when
  the application is uninstalled.
 
+Known Issues:
+
++ The current Android implementation of java.security.MessageDigest is slow.
++ The USER_AGENT string is not currently actually used in requests sent
+  to the HTTP server.
+
+Using Downloader in your own application
+
 To use the downloader in your own application:
 
 1) Copy the sources and resources to your project:
