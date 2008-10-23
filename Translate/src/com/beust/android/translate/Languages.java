@@ -29,8 +29,9 @@ import java.util.Map;
 public final class Languages {
     
     static enum Language {
+        
 //        AFRIKAANS("af", "Afrikaans", R.drawable.af),
-//        ALBANIAN("sq", "Albanian")
+//        ALBANIAN("sq", "Albanian"),
 //        AMHARIC("am", "Amharic", R.drawable.am),
 //        ARABIC("ar", "Arabic", R.drawable.ar),
 //        ARMENIAN("hy", "Armenian"),
@@ -39,45 +40,59 @@ public final class Languages {
 //        BELARUSIAN("be", "Belarusian", R.drawable.be),
 //        BENGALI("bn", "Bengali", R.drawable.bn),
 //        BIHARI("bh", "Bihari", R.drawable.bh),
+        
         BULGARIAN("bg", "Bulgarian", R.drawable.bg),
+
 //        BURMESE("my", "Burmese", R.drawable.my),
-//        CATALAN("ca", "Catalan", R.drawable.ca),
+        CATALAN("ca", "Catalan", R.drawable.ca),
+        
         CHINESE("zh", "Chinese", R.drawable.cn),
         CHINESE_SIMPLIFIED("zh-CN", "Chinese simplified", R.drawable.cn),
         CHINESE_TRADITIONAL("zh-TW", "Chinese traditional", R.drawable.tw),
         CROATIAN("hr", "Croatian", R.drawable.hr),
         CZECH("cs", "Czech", R.drawable.cs),
-//        DANISH("da", "Danish"),
+        
+        DANISH("da", "Danish", R.drawable.dk),
 //        DHIVEHI("dv", "Dhivehi"),
+        
         DUTCH("nl", "Dutch", R.drawable.nl),
         ENGLISH("en", "English", R.drawable.us),
-//        ESPERANTO("eo", "Esperanto", R.drawable.eo),
+        
+//        ESPERANTO("eo", "Esperanto"),
 //        ESTONIAN("et", "Estonian", R.drawable.et),
-//        FILIPINO("tl", "Filipino", R.drawable.tl),
+        FILIPINO("tl", "Filipino", R.drawable.tl),
+
         FINNISH("fi", "Finnish", R.drawable.fi),
         FRENCH("fr", "French", R.drawable.fr),
+        
 //        GALICIAN("gl", "Galician", R.drawable.gl),
-//        GEORGIAN("ka", "Georgian", R.drawable.ka),
+//        GEORGIAN("ka", "Georgian"),
+        
         GERMAN("de", "German", R.drawable.de),
-//        GREEK("el", "Greek", R.drawable.el),
+        
+        GREEK("el", "Greek", R.drawable.gr),
 //        GUARANI("gn", "Guarani", R.drawable.gn),
 //        GUJARATI("gu", "Gujarati", R.drawable.gu),
 //        HEBREW("iw", "Hebrew", R.drawable.il),
-//        HINDI("hi", "Hindi", R.drawable.hi),
+//        HINDI("hi", "Hindi"),
 //        HUNGARIAN("hu", "Hungarian", R.drawable.hu),
 //        ICELANDIC("is", "Icelandic", R.drawable.is),
-//        INDONESIAN("id", "Indonesian", R.drawable.id),
-//        INUKTITUT("iu", "Inuktitut", R.drawable.iu),
+        INDONESIAN("id", "Indonesian", R.drawable.id),
+//        INUKTITUT("iu", "Inuktitut"),
+        
         ITALIAN("it", "Italian", R.drawable.it),
         JAPANESE("ja", "Japanese", R.drawable.jp),
+        
 //        KANNADA("kn", "Kannada", R.drawable.kn),
-//        KAZAKH("kk", "Kazakh", R.drawable.kk),
+//        KAZAKH("kk", "Kazakh"),
 //        KHMER("km", "Khmer", R.drawable.km),
+        
         KOREAN("ko", "Korean", R.drawable.kr),
+        
 //        KURDISH("ky", "Kurdish", R.drawable.ky),
-//        LAOTHIAN("Laothian", "lo", R.drawable.lo),
-//        LATVIAN("Latvian", "la", R.drawable.la),
-//        LITHUANIAN("lt", "Lithuanian", R.drawable.lt),
+//        LAOTHIAN("lo", "Laothian"),
+//        LATVIAN("la", "Latvian", R.drawable.la),
+        LITHUANIAN("lt", "Lithuanian", R.drawable.lt),
 //        MACEDONIAN("mk", "Macedonian", R.drawable.mk),
 //        MALAY("ms", "Malay", R.drawable.ms),
 //        MALAYALAM("ml", "Malayalam", R.drawable.ml),
@@ -85,53 +100,49 @@ public final class Languages {
 //        MARATHI("mr", "Marathi", R.drawable.mr),
 //        MONGOLIAN("mn", "Mongolian", R.drawable.mn),
 //        NEPALI("ne", "Nepali", R.drawable.ne),
+        
         NORWEGIAN("no", "Norwegian", R.drawable.no),
-//        ORIYA("or", "Oriya", R.drawable.or),
+        
+//        ORIYA("or", "Oriya"),
 //        PASHTO("ps", "Pashto", R.drawable.ps),
-//        PERSIAN("fa", "Persian", R.drawable.fa),
+//        PERSIAN("fa", "Persian"),
+        
         POLISH("pl", "Polish", R.drawable.pl),
         PORTUGUESE("pt", "Portuguese", R.drawable.pt),
+        
 //        PUNJABI("pa", "Punjabi", R.drawable.pa),
+        
         ROMANIAN("ro", "Romanian", R.drawable.ro),
         RUSSIAN("ru", "Russian", R.drawable.ru),
+        
 //        SANSKRIT("sa", "Sanskrit", R.drawable.sa),
-//        SERBIAN("sr", "Serbian", R.drawable.sr),
+        SERBIAN("sr", "Serbian", R.drawable.sr),
 //        SINDHI("sd", "Sindhi", R.drawable.sd),
 //        SINHALESE("si", "Sinhalese", R.drawable.si),
-//        SLOVAK("sk", "Slovak", R.drawable.sk),
-//        SLOVENIAN("sl", "Slovenian", R.drawable.sl),
+        SLOVAK("sk", "Slovak", R.drawable.sk),
+        SLOVENIAN("sl", "Slovenian", R.drawable.sl),
+        
         SPANISH("es", "Spanish", R.drawable.es),
-//        SWAHILI("sw", "Swahili", R.drawable.sw),
+        
+//        SWAHILI("sw", "Swahili"),
+        
         SWEDISH("sv", "Swedish", R.drawable.sv),
+        
 //        TAJIK("tg", "Tajik", R.drawable.tg),
-//        TAMIL("ta", "Tamil", R.drawable.ta),
-//        TAGALOG("tl", "Tagalog", R.drawable.tl),
-//        TELUGU("te", "Telugu", R.drawable.te),
+//        TAMIL("ta", "Tamil"),
+        
+        TAGALOG("tl", "Tagalog", R.drawable.tl),
+        
+//        TELUGU("te", "Telugu"),
 //        THAI("th", "Thai", R.drawable.th),
 //        TIBETAN("bo", "Tibetan", R.drawable.bo),
 //        TURKISH("tr", "Turkish", R.drawable.tr),
-//        UKRAINIAN("uk", "Ukrainian", R.drawable.uk),
-//        URDU("ur", "Urdu", R.drawable.ur),
+        UKRAINIAN("uk", "Ukrainian"),
+//        URDU("ur", "Urdu"),
 //        UZBEK("uz", "Uzbek", R.drawable.uz),
-//        UIGHUR("ug", "Uighur", R.drawable.ug)
-        ;
+//        UIGHUR("ug", "Uighur", R.drawable.ug),
 
-////        ARABIC("ar", "Arabic"), 
-//        CHINESE("zh", "Chinese", R.drawable.cn), 
-//        CHINESE_SIMPLIFIED("zh-CN", "Chinese simplified", R.drawable.cn),
-//        CHINESE_TRADITIONAL ("zh-TW", "Chinese traditional", R.drawable.tw),
-//        DUTCH("nl", "Dutch", R.drawable.nl),
-//        ENGLISH("en", "English", R.drawable.us),
-//        FRENCH("fr", "French", R.drawable.fr), 
-//        GERMAN("de", "German", R.drawable.de), 
-//        GREEK("el", "Greek", R.drawable.gr), 
-//        ITALIAN("it", "Italian", R.drawable.it), 
-//        JAPANESE("ja", "Japanese", R.drawable.jp), 
-//        KOREAN("ko", "Korean", R.drawable.kr), 
-//        PORTUGUESE("pt", "Portuguese", R.drawable.pt),
-//        ROMANIAN("ro", "Romanian", R.drawable.ro),
-//        RUSSIAN("ru", "Russian", R.drawable.ru), 
-//        SPANISH("es", "Spanish", R.drawable.es);
+        ;
         
         private String mShortName;
         private String mLongName;
@@ -151,6 +162,10 @@ public final class Languages {
             init(shortName, longName, flag);
         }
         
+        private Language(String shortName, String longName) {
+            init(shortName, longName, -1);
+        }
+
         private void init(String shortName, String longName, int flag) {
             mShortName = shortName;
             mLongName = longName;
@@ -182,9 +197,12 @@ public final class Languages {
         public void configureButton(Activity activity, Button button) {
             button.setTag(this);
             button.setText(getLongName());
-            Drawable flag = activity.getResources().getDrawable(getFlag());
-            button.setCompoundDrawablesWithIntrinsicBounds(flag, null, null, null);
-            button.setCompoundDrawablePadding(5);
+            int f = getFlag();
+            if (f != -1) {
+                Drawable flag = activity.getResources().getDrawable(f);
+                button.setCompoundDrawablesWithIntrinsicBounds(flag, null, null, null);
+                button.setCompoundDrawablePadding(5);
+            }
         }
     }
 

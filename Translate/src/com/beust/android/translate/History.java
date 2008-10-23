@@ -16,6 +16,9 @@
 
 package com.beust.android.translate;
 
+import com.beust.android.translate.Languages.Language;
+
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
@@ -23,8 +26,6 @@ import android.util.Log;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import com.beust.android.translate.Languages.Language;
 
 /**
  * This class handles the history of past translations.
@@ -120,6 +121,18 @@ public class History {
             Collections.sort(mHistoryRecords, comparator);
         }
         return mHistoryRecords;
+    }
+
+    public void clear(Context context) {
+        int size = mHistoryRecords.size();
+        mHistoryRecords = Lists.newArrayList();
+        Editor edit = TranslateActivity.getPrefs(context).edit();
+        for (int i = 0; i < size; i++) {
+            String key = HISTORY + "-" + i;
+            log("Removing key " + key);
+            edit.remove(key);
+        }
+        edit.commit();
     }
 
 

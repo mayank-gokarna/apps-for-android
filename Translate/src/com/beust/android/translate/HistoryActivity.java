@@ -102,6 +102,11 @@ public class HistoryActivity extends ListActivity implements OnItemClickListener
         case R.id.languages:
             initializeAdapter(mHistory.getHistoryRecordsByLanguages());
             break;
+
+        case R.id.clear_history:
+            mHistory.clear(this);
+            initializeAdapter(mHistory.getHistoryRecordsByLanguages());
+            break;
         }
         
         return true;
