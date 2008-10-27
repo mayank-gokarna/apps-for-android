@@ -137,7 +137,7 @@ public final class Languages {
 //        THAI("th", "Thai", R.drawable.th),
 //        TIBETAN("bo", "Tibetan", R.drawable.bo),
 //        TURKISH("tr", "Turkish", R.drawable.tr),
-        UKRAINIAN("uk", "Ukrainian"),
+        UKRAINIAN("uk", "Ukrainian", R.drawable.ua),
 //        URDU("ur", "Urdu"),
 //        UZBEK("uz", "Uzbek", R.drawable.uz),
 //        UIGHUR("ug", "Uighur", R.drawable.ug),

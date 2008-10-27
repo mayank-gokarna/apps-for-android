@@ -21,18 +21,23 @@
 
     <!--  TranslateActivity -->
     <string name="translate_activity">Translate</string>
+    <string name="button_translate">Translate</string>
+    <string name="button_swap">Swap languages</string>
     <string name="error">Unable to translate</string>
     <string name="retrieving_translation">Translating...</string>
     <string name="found_translation">Translation found</string>
     <string name="show_history">History</string>
     <string name="about">About</string>
-    <string name="about_title">Translate 1.4</string>
+    <string name="about_title">Translate 1.5</string>
     <string name="about_message">Written by C&#xe9;dric Beust</string>
     <string name="send_email">Email C&#xe9;dric</string>
     <string name="text_to_translate">Enter the text to translate</string>
     <string name="translation">The translation will appear here</string>
     <string name="translation_failed">Translation failed</string>
     <string name="random_word">Random word</string>
+    <string name="languages_swapped">Swapped languages</string>
+    <string name="send_with_sms">SMS</string>
+    <string name="send_with_email">Email</string>
 
     <!--  History -->
     <string name="clear_history">Clear history</string>

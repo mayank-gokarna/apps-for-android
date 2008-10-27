@@ -58,11 +58,12 @@ import java.util.zip.GZIPInputStream;
  */
 public class TranslateActivity extends Activity implements OnClickListener {
     static final String TAG = "Translate";
-    private EditText mOutput;
-    private EditText mInput;
-    private Button mFrom;
-    private Button mTo;
-    private Button mTranslate;
+    private EditText mToEditText;
+    private EditText mFromEditText;
+    private Button mFromButton;
+    private Button mToButton;
+    private Button mTranslateButton;
+    private Button mSwapButton;
     private Handler mHandler = new Handler();
     private ProgressBar mProgressBar;
     private TextView mStatusView;
@@ -112,16 +113,16 @@ public class TranslateActivity extends Activity implements OnClickListener {
             }
             */
             if (mTranslateService != null) {
-                mTranslate.setEnabled(true);
+                mTranslateButton.setEnabled(true);
             } else {
-                mTranslate.setEnabled(false);
+                mTranslateButton.setEnabled(false);
                 mStatusView.setText(getString(R.string.error));
                 log("Unable to acquire TranslateService");
             }
         }
 
         public void onServiceDisconnected(ComponentName name) {
-            mTranslate.setEnabled(false);
+            mTranslateButton.setEnabled(false);
             mTranslateService = null;
         }
     };
@@ -136,24 +137,26 @@ public class TranslateActivity extends Activity implements OnClickListener {
         super.onCreate(icicle);
 
         setContentView(R.layout.translate_activity);
-        mInput = (EditText) findViewById(R.id.input);
-        mOutput = (EditText) findViewById(R.id.translation);
-        mFrom = (Button) findViewById(R.id.from);
-        mTo = (Button) findViewById(R.id.to);
-        mTranslate = (Button) findViewById(R.id.translate);
+        mFromEditText = (EditText) findViewById(R.id.input);
+        mToEditText = (EditText) findViewById(R.id.translation);
+        mFromButton = (Button) findViewById(R.id.from);
+        mToButton = (Button) findViewById(R.id.to);
+        mTranslateButton = (Button) findViewById(R.id.button_translate);
+        mSwapButton = (Button) findViewById(R.id.button_swap);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mStatusView = (TextView) findViewById(R.id.status);
         
         //
         // Install the language adapters on both the From and To spinners.
         //
-        mFrom.setOnClickListener(mClickListener);
-        mTo.setOnClickListener(mClickListener);
+        mFromButton.setOnClickListener(mClickListener);
+        mToButton.setOnClickListener(mClickListener);
 
         mHistory = new History(getPrefs(this));
 
-        mTranslate.setOnClickListener(this);
-        mInput.selectAll();
+        mTranslateButton.setOnClickListener(this);
+        mSwapButton.setOnClickListener(this);
+        mFromEditText.selectAll();
 
         connectToTranslateService();
     }
@@ -173,26 +176,26 @@ public class TranslateActivity extends Activity implements OnClickListener {
         // See if we have any saved preference for From
         //
         Language from = Language.findLanguageByShortName(prefs.getString(FROM, DEFAULT_FROM));
-        updateButton(mFrom, from);
+        updateButton(mFromButton, from);
 
         //
         // See if we have any saved preference for To
         //
         //
         Language to = Language.findLanguageByShortName(prefs.getString(TO, DEFAULT_TO));
-        updateButton(mTo, to);
+        updateButton(mToButton, to);
         
         //
         // Restore input and output, if any
         //
-        mInput.setText(prefs.getString(INPUT, ""));
+        mFromEditText.setText(prefs.getString(INPUT, ""));
         setOutputText(prefs.getString(OUTPUT, ""));
         mDoTranslate = true;
     }
     
     private void setOutputText(String string) {
         log("Setting output to " + string);
-        mOutput.setText(new Entities().unescape(string));
+        mToEditText.setText(new Entities().unescape(string));
     }
 
     private void updateButton(Button button, Language language) {
@@ -204,7 +207,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
      * Launch the translation if the input text field is not empty.
      */
     private void maybeTranslate() {
-        if (mDoTranslate && !TextUtils.isEmpty(mInput.getText().toString())) {
+        if (mDoTranslate && !TextUtils.isEmpty(mFromEditText.getText().toString())) {
             doTranslate();
         }
     }
@@ -218,10 +221,10 @@ public class TranslateActivity extends Activity implements OnClickListener {
         //
         Editor edit = getPrefs(this).edit();
         mHistory.saveHistory(edit);
-        String f = ((Language) mFrom.getTag()).getShortName();
-        String t = ((Language) mTo.getTag()).getShortName();
-        String input = mInput.getText().toString();
-        String output = mOutput.getText().toString();
+        String f = ((Language) mFromButton.getTag()).getShortName();
+        String t = ((Language) mToButton.getTag()).getShortName();
+        String input = mFromEditText.getText().toString();
+        String output = mToEditText.getText().toString();
         savePreferences(edit, f, t, input, output);
     }
     
@@ -245,7 +248,18 @@ public class TranslateActivity extends Activity implements OnClickListener {
     }
 
     public void onClick(View v) {
-        maybeTranslate();
+        if (v == mTranslateButton) {
+            maybeTranslate();
+        } else if (v == mSwapButton) {
+            Object newFrom = mToButton.getTag();
+            Object newTo = mFromButton.getTag();
+            mFromEditText.setText(mToEditText.getText());
+            mToEditText.setText("");
+            setNewLanguage((Language) newFrom, true /* from */);
+            setNewLanguage((Language) newTo, false /* to */);
+            mFromEditText.requestFocus();
+            mStatusView.setText(R.string.languages_swapped);
+        }
     }
     
     private void doTranslate() {
@@ -255,11 +269,11 @@ public class TranslateActivity extends Activity implements OnClickListener {
                 mProgressBar.setVisibility(View.VISIBLE);
                 String result = "";
                 try {
-                    Language from = (Language) mFrom.getTag();
-                    Language to = (Language) mTo.getTag();
+                    Language from = (Language) mFromButton.getTag();
+                    Language to = (Language) mToButton.getTag();
                     String fromShortName = from.getShortName();
                     String toShortName = to.getShortName();
-                    String input = mInput.getText().toString();
+                    String input = mFromEditText.getText().toString();
                     log("Translating from " + fromShortName + " to " + toShortName);
                     result = mTranslateService.translate(input, fromShortName, toShortName);
                     if (result == null) {
@@ -269,7 +283,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
                     mStatusView.setText(R.string.found_translation);
                     setOutputText(result);
                     mProgressBar.setVisibility(View.INVISIBLE);
-                    mInput.selectAll();
+                    mFromEditText.selectAll();
                 } catch (Exception e) {
                     mProgressBar.setVisibility(View.INVISIBLE);
                     mStatusView.setText("Error:" + e.getMessage());
@@ -281,7 +295,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
     @Override
     protected void onPrepareDialog(int id, Dialog d) {
         if (id == LANGUAGE_DIALOG_ID) {
-            boolean from = mLatestButton == mFrom;
+            boolean from = mLatestButton == mFromButton;
             ((LanguageDialog) d).setFrom(from);
         }
     }
@@ -345,8 +359,8 @@ public class TranslateActivity extends Activity implements OnClickListener {
             byte[] b = new byte[end - start - 2];
             System.arraycopy(mWordBuffer, start + 1, b, 0, (end - start - 2)); 
             String randomWord = new String(b);
-            mInput.setText(randomWord);
-            updateButton(mFrom, Language.findLanguageByShortName(Language.ENGLISH.getShortName()));
+            mFromEditText.setText(randomWord);
+            updateButton(mFromButton, Language.findLanguageByShortName(Language.ENGLISH.getShortName()));
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
@@ -356,7 +370,7 @@ public class TranslateActivity extends Activity implements OnClickListener {
     }
 
     public void setNewLanguage(Language language, boolean from) {
-        updateButton(from ? mFrom : mTo, language);
+        updateButton(from ? mFromButton : mToButton, language);
         maybeTranslate();
     }
     
@@ -377,9 +391,24 @@ public class TranslateActivity extends Activity implements OnClickListener {
         case R.id.show_history:
             showHistory();
             break;
-        
+
         case R.id.random_word:
             selectRandomWord();
+            break;
+
+//        case R.id.send_with_sms: {
+//            Intent intent = new Intent(Intent.ACTION_SENDTO,
+//                    Uri.parse("smsto://"));
+//            intent.putExtra("sms_body", mToEditText.getText().toString());
+//            startActivity(intent);
+//            break;
+//        }
+
+        case R.id.send_with_email:
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, mToEditText.getText());
+            startActivity(Intent.createChooser(intent, null));
             break;
         }
 

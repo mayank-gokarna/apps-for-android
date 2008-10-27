@@ -39,16 +39,16 @@
             android:textAppearance="?android:attr/textAppearanceMediumInverse"
 	          android:layout_weight="0.5"
             android:gravity="left"
-	          android:layout_height="fill_parent"
-	          android:layout_width="wrap_content" />
+	          android:layout_height="wrap_content"
+	          android:layout_width="0dip" />
 		    
         <Button
             android:id="@+id/to"
             android:textAppearance="?android:attr/textAppearanceMediumInverse"
             android:layout_weight="0.5"
             android:gravity="left"
-            android:layout_height="fill_parent"
-            android:layout_width="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_width="0dip" />
 		</LinearLayout>
 		
     <LinearLayout
@@ -57,32 +57,22 @@
         android:layout_width="fill_parent">
 
 		    <Button
-		        android:id="@+id/translate"
-		        android:text="@string/translate_activity"
+		        android:id="@+id/button_translate"
             android:textAppearance="?android:attr/textAppearanceMediumInverse"
+		        android:text="@string/button_translate"
+            android:gravity="left"
+            android:layout_weight="0.5"
 		        android:layout_height="wrap_content"
-		        android:layout_width="wrap_content" />
+		        android:layout_width="0dip" />
 
-	       <LinearLayout
-	           android:orientation="vertical"
-	           android:layout_height="wrap_content"
-	           android:layout_width="fill_parent">
-
-            <ProgressBar android:id="@+id/progress_bar"
-                style="?android:attr/progressBarStyleHorizontal"
-		            android:visibility="invisible"
-		            android:indeterminate="true"
-		            android:layout_gravity="center"
-		            android:layout_width="fill_parent"
-		            android:layout_height="wrap_content" />
-
-            <TextView 
-				        android:id="@+id/status"
-				        android:textAppearance="?android:attr/textAppearanceSmall"
-				        android:singleLine="false"
-				        android:layout_height="wrap_content"
-				        android:layout_width="fill_parent" />
-		     </LinearLayout>
+        <Button
+            android:id="@+id/button_swap"
+            android:textAppearance="?android:attr/textAppearanceMediumInverse"
+            android:text="@string/button_swap"
+            android:gravity="left"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+            android:layout_width="0dip" />
 		</LinearLayout>
 
     <EditText
@@ -91,10 +81,34 @@
         android:gravity="top"
         android:hint="@string/translation"
         android:background="#ffffffff"
+        android:layout_weight="1.0"
         android:textAppearance="?android:attr/textAppearanceLargeInverse"
         android:layout_height="fill_parent"
         android:layout_width="fill_parent" />
         
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent" >
+
+        <ProgressBar android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:visibility="invisible"
+            android:indeterminate="true"
+            android:layout_gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+
+        <TextView 
+            android:id="@+id/status"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:singleLine="false"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent" />
+
+    </LinearLayout>
+
         
 
 </LinearLayout>
