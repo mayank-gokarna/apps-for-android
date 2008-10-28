@@ -26,6 +26,7 @@ import android.util.Log;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class handles the history of past translations.
@@ -69,37 +70,61 @@ public class History {
         List<HistoryRecord> result = Lists.newArrayList();
         boolean done = false;
         int i = 0;
-        while (! done) {
-            String history = prefs.getString(HISTORY + "-" + i++, null);
-            if (history != null) {
-                HistoryRecord hr = HistoryRecord.decode(history);
-                addHistoryRecord(result, hr);
-            } else {
-                done = true;
+        Map<String, ?> allKeys = prefs.getAll();
+        for (String key : allKeys.keySet()) {
+            if (key.startsWith(HISTORY)) {
+                String value = (String) allKeys.get(key);
+                result.add(HistoryRecord.decode(value));
             }
         }
+//        while (! done) {
+//            String history = prefs.getString(HISTORY + "-" + i++, null);
+//            if (history != null) {
+//                result.add(HistoryRecord.decode(history));
+//            } else {
+//                done = true;
+//            }
+//        }
 
         return result;
     }
 
-    public void saveHistory(Editor edit) {
-        log("Saving history");
-        for (int i = 0; i < mHistoryRecords.size(); i++) {
-            HistoryRecord hr = mHistoryRecords.get(i);
-            edit.putString(HISTORY + "-" + i, hr.encode());
-        }
-    }
+//    public void saveHistory(Editor edit) {
+//        log("Saving history");
+//        for (int i = 0; i < mHistoryRecords.size(); i++) {
+//            HistoryRecord hr = mHistoryRecords.get(i);
+//            edit.putString(HISTORY + "-" + i, hr.encode());
+//        }
+//    }
     
-    public void addHistoryRecord(Language from, Language to, String input, String output) {
+    public static void addHistoryRecord(Context context,
+        Language from, Language to, String input, String output) {
+        History historyRecord = new History(TranslateActivity.getPrefs(context));
         HistoryRecord hr = new HistoryRecord(from, to, input, output, System.currentTimeMillis());
-        addHistoryRecord(mHistoryRecords, hr);
-    }
-    
-    public static void addHistoryRecord(List<HistoryRecord> result, HistoryRecord hr) {
-        if (! result.contains(hr)) {
-            result.add(hr);
+        
+        // Find an empty key to add this history record
+        SharedPreferences prefs = TranslateActivity.getPrefs(context);
+        int i = 0;
+        while (true) {
+            String key = HISTORY + "-" + i; 
+            if (!prefs.contains(key)) {
+                Editor edit = prefs.edit();
+                edit.putString(key, hr.encode());
+                log("Committing " + key + " " + hr.encode());
+                edit.commit();
+                return;
+            } else {
+                i++;
+            }
         }
     }
+    
+//    public static void addHistoryRecord(Context context, List<HistoryRecord> result, HistoryRecord hr) {
+//        if (! result.contains(hr)) {
+//            result.add(hr);
+//        }
+//        Editor edit = getPrefs(context).edit();
+//    }
 
     private static void log(String s) {
         Log.d(TranslateActivity.TAG, "[History] " + s);

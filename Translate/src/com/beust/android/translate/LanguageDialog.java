@@ -77,7 +77,7 @@ public class LanguageDialog extends AlertDialog implements OnClickListener {
     }
 
     public void onClick(View v) {
-        mActivity.setNewLanguage((Language) v.getTag(), mFrom);
+        mActivity.setNewLanguage((Language) v.getTag(), mFrom, true /* translate */);
         dismiss();
     }
 
