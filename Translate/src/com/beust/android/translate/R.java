@@ -261,25 +261,26 @@ public final class R {
         public static final int zw=0x7f0200f7;
     }
     public static final class id {
-        public static final int about=0x7f070013;
-        public static final int button_swap=0x7f070007;
-        public static final int button_translate=0x7f070006;
-        public static final int clear_history=0x7f07000e;
-        public static final int from=0x7f070001;
-        public static final int input=0x7f070002;
-        public static final int languages=0x7f070005;
-        public static final int menu_group_layers=0x7f07000c;
-        public static final int most_recent=0x7f07000d;
-        public static final int output=0x7f070004;
-        public static final int progress_bar=0x7f070009;
-        public static final int random_word=0x7f070010;
-        public static final int send_with_email=0x7f070012;
-        public static final int send_with_sms=0x7f070011;
-        public static final int show_history=0x7f07000f;
-        public static final int sort=0x7f07000b;
-        public static final int status=0x7f07000a;
-        public static final int to=0x7f070003;
-        public static final int translation=0x7f070008;
+        public static final int about=0x7f070014;
+        public static final int button_swap=0x7f070008;
+        public static final int button_translate=0x7f070007;
+        public static final int clear_history=0x7f07000f;
+        public static final int empty=0x7f070001;
+        public static final int from=0x7f070002;
+        public static final int input=0x7f070003;
+        public static final int languages=0x7f070006;
+        public static final int menu_group_layers=0x7f07000d;
+        public static final int most_recent=0x7f07000e;
+        public static final int output=0x7f070005;
+        public static final int progress_bar=0x7f07000a;
+        public static final int random_word=0x7f070011;
+        public static final int send_with_email=0x7f070013;
+        public static final int send_with_sms=0x7f070012;
+        public static final int show_history=0x7f070010;
+        public static final int sort=0x7f07000c;
+        public static final int status=0x7f07000b;
+        public static final int to=0x7f070004;
+        public static final int translation=0x7f070009;
         public static final int webview=0x7f070000;
     }
     public static final class layout {
@@ -307,6 +308,7 @@ public final class R {
         /**   History 
          */
         public static final int clear_history=0x7f050012;
+        public static final int empty=0x7f050018;
         public static final int error=0x7f050003;
         public static final int found_translation=0x7f050005;
         public static final int languages=0x7f050015;

@@ -59,6 +59,7 @@ public class HistoryActivity extends ListActivity implements OnItemClickListener
         
         mHistory = new History(TranslateActivity.getPrefs(this));
         initializeAdapter(mHistory.getHistoryRecordsMostRecentFirst());
+        getListView().setEmptyView(findViewById(R.id.empty));
     }
     
     private void initializeAdapter(List<HistoryRecord> historyRecords) {
