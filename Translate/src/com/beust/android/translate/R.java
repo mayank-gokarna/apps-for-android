@@ -261,7 +261,7 @@ public final class R {
         public static final int zw=0x7f0200f7;
     }
     public static final class id {
-        public static final int about=0x7f070011;
+        public static final int about=0x7f070012;
         public static final int button_swap=0x7f070007;
         public static final int button_translate=0x7f070006;
         public static final int from=0x7f070001;
@@ -272,7 +272,8 @@ public final class R {
         public static final int output=0x7f070004;
         public static final int progress_bar=0x7f070009;
         public static final int random_word=0x7f07000f;
-        public static final int send_with_email=0x7f070010;
+        public static final int send_with_email=0x7f070011;
+        public static final int send_with_sms=0x7f070010;
         public static final int show_history=0x7f07000e;
         public static final int sort=0x7f07000b;
         public static final int status=0x7f07000a;

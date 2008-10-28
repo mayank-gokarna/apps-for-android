@@ -28,10 +28,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Contacts;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -396,13 +398,16 @@ public class TranslateActivity extends Activity implements OnClickListener {
             selectRandomWord();
             break;
 
-//        case R.id.send_with_sms: {
-//            Intent intent = new Intent(Intent.ACTION_SENDTO,
-//                    Uri.parse("smsto://"));
-//            intent.putExtra("sms_body", mToEditText.getText().toString());
-//            startActivity(intent);
-//            break;
-//        }
+        // We shouldn't need this menu item but because of a bug in 1.0, neither SMS nor Email
+        // filter on the ACTION_SEND intent.  Since they won't be shown in the activity chooser,
+        // I need to make an explicit menu for SMS
+        case R.id.send_with_sms: {
+            Intent i = new Intent(Intent.ACTION_PICK, Contacts.Phones.CONTENT_URI);
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType(Contacts.Phones.CONTENT_TYPE);
+            startActivityForResult(intent, 42 /* not used */);
+            break;
+        }
 
         case R.id.send_with_email:
             Intent intent = new Intent(Intent.ACTION_SEND);
@@ -413,6 +418,22 @@ public class TranslateActivity extends Activity implements OnClickListener {
         }
 
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
+        Uri contactURI = resultIntent.getData();
+        
+        Cursor cursor = getContentResolver().query(contactURI,
+                new String[] { Contacts.PhonesColumns.NUMBER }, 
+                null, null, null);
+        if (cursor.moveToFirst()) {
+            String phone = cursor.getString(0);
+            Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto://" + phone));
+            intent.putExtra("sms_body", mToEditText.getText().toString());
+            startActivity(intent);
+        }
+        
     }
     
     private void showHistory() {
