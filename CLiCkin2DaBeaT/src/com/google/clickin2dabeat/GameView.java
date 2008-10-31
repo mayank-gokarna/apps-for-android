@@ -78,7 +78,7 @@ public class GameView extends View {
     drawnTargets = new ArrayList<Target>();
     recordedTargets = new ArrayList<Target>();
 
-    vibe = new Vibrator();
+    vibe = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
     snd = new SoundPool(10, AudioManager.STREAM_SYSTEM, 0);
     hitSfx = snd.load(context, R.raw.hit, 0);

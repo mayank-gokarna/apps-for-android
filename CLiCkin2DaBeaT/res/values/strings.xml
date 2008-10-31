@@ -25,4 +25,10 @@
 <string name="BEAT_SETTING_INFO">Information on setting the beats</string>
 
 <string name="STILL_BUSY">Sorry, but I'm still trying to process the beats. @_@' Please wait.</string>
+<string name="WELCOME">Welcome to CLiCkin' 2 Da BeaT (Beta)</string>
+
+<string name="BETA_MESSAGE">This is an open source rhythm/music game. It is in beta right now and polishing is needed, but I am releasing early and often to give YOU the power to help shape this game. Please check back often for updates. I am happy to take feedback and code patches. Enjoy the game! :D   -Charles</string>
+<string name="VISIT_WEBSITE">Visit website</string>
+<string name="START_GAME">Start playing</string>
+<string name="QUIT">Quit</string>
 </resources>

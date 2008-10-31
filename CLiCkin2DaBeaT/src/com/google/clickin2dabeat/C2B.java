@@ -18,7 +18,9 @@ package com.google.clickin2dabeat;
 
 import android.app.Activity;
 import android.app.AlertDialog.Builder;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.content.res.Resources;
 import android.media.AudioManager;
@@ -153,7 +155,7 @@ public class C2B extends Activity {
     setContentView(layout);
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-    displayC2BFiles();
+    displayStartupMessage();
   }
 
   private void writeC2BFile(String filename) {
@@ -331,7 +333,7 @@ public class C2B extends Activity {
       }
     });
 
-    c2bFilesAlert.setNegativeButton("Quit", new OnClickListener() {
+    c2bFilesAlert.setNegativeButton(getString(R.string.QUIT), new OnClickListener() {
       public void onClick(DialogInterface dialog, int which) {
         finish();
       }
@@ -502,6 +504,47 @@ public class C2B extends Activity {
   }
 
 
+  private void displayStartupMessage() {
+    Builder startupMessage = new Builder(this);
+
+    String titleText = getString(R.string.WELCOME);
+    startupMessage.setTitle(titleText);
+
+    String message = getString(R.string.BETA_MESSAGE);
+    startupMessage.setMessage(message);
+
+    startupMessage.setPositiveButton(getString(R.string.START_GAME), new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        displayC2BFiles();
+      }
+    });
+    
+    final Activity self = this;
+    
+    startupMessage.setNeutralButton(getString(R.string.VISIT_WEBSITE), new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        Intent i = new Intent();
+        ComponentName comp =
+            new ComponentName("com.android.browser", "com.android.browser.BrowserActivity");
+        i.setComponent(comp);
+        i.setAction("android.intent.action.VIEW");
+        i.addCategory("android.intent.category.BROWSABLE");
+        Uri uri = Uri.parse("http://groups.google.com/group/clickin-2-da-beat");
+        i.setData(uri);
+        self.startActivity(i);
+        finish();
+      }
+    });
+
+    startupMessage.setNegativeButton(getString(R.string.QUIT), new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        finish();
+      }
+    });
+
+    startupMessage.setCancelable(false);
+    startupMessage.show();
+  }
 
   public int getCurrentTime() {
     try {
