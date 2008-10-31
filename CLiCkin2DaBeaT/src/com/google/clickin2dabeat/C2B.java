@@ -325,11 +325,27 @@ public class C2B extends Activity {
         dialog.dismiss();
       }
     });
-
+/*
     c2bFilesAlert.setNeutralButton("Set new beats", new OnClickListener() {
       public void onClick(DialogInterface dialog, int which) {
         dialog.dismiss();
         displaySetNewBeatsConfirmation();
+      }
+    });
+*/    
+    final Activity self = this;
+    c2bFilesAlert.setNeutralButton(getString(R.string.MOAR_STAGES), new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        Intent i = new Intent();
+        ComponentName comp =
+            new ComponentName("com.android.browser", "com.android.browser.BrowserActivity");
+        i.setComponent(comp);
+        i.setAction("android.intent.action.VIEW");
+        i.addCategory("android.intent.category.BROWSABLE");
+        Uri uri = Uri.parse("http://groups.google.com/group/clickin-2-da-beat/files");
+        i.setData(uri);
+        self.startActivity(i);
+        finish();
       }
     });
 
@@ -343,7 +359,7 @@ public class C2B extends Activity {
     c2bFilesAlert.show();
   }
 
-
+/*
   private void displaySetNewBeatsConfirmation() {
     Builder setNewBeatsConfirmation = new Builder(this);
 
@@ -371,7 +387,7 @@ public class C2B extends Activity {
     setNewBeatsConfirmation.setCancelable(false);
     setNewBeatsConfirmation.show();
   }
-
+*/
   private void displayCreateLevelInfo() {
     Builder createLevelInfoAlert = new Builder(this);
 
@@ -466,7 +482,23 @@ public class C2B extends Activity {
       }
     });
 
-    noFilesMessage.setNegativeButton(getString(R.string.ILL_COME_BACK_LATER),
+    final Activity self = this;
+    noFilesMessage.setNeutralButton(getString(R.string.ILL_GET_STAGES), new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        Intent i = new Intent();
+        ComponentName comp =
+            new ComponentName("com.android.browser", "com.android.browser.BrowserActivity");
+        i.setComponent(comp);
+        i.setAction("android.intent.action.VIEW");
+        i.addCategory("android.intent.category.BROWSABLE");
+        Uri uri = Uri.parse("http://groups.google.com/group/clickin-2-da-beat/files");
+        i.setData(uri);
+        self.startActivity(i);
+        finish();
+      }
+    });
+    
+    noFilesMessage.setNegativeButton(getString(R.string.QUIT),
         new OnClickListener() {
           public void onClick(DialogInterface dialog, int which) {
             finish();
