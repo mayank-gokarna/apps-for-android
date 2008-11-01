@@ -40,11 +40,7 @@ import java.util.Stack;
 public class DivideAndConquerActivity extends Activity
         implements DivideAndConquerView.BallEventCallBack,
         NewGameCallback,
-        DialogInterface.OnCancelListener,
-        Eula.OnEulaAgreedTo {
-
-    private boolean mAlreadyAgreedToEula = false;
-    private boolean mEngineReady = false;
+        DialogInterface.OnCancelListener {
 
     /**
      * Each level has a different background color and ball color.
@@ -73,7 +69,7 @@ public class DivideAndConquerActivity extends Activity
     private static final int NEW_GAME_NUM_BALLS = 1;
     private static final double LEVEL_UP_THRESHOLD = 0.8;
     private static final int TRY_AGAIN_PAUSE = 1000;
-    private static final int COLLISION_VIBRATE_MILLIS = 200;
+    private static final int COLLISION_VIBRATE_MILLIS = 100;
 
     private boolean mVibrateOn;
     
@@ -121,8 +117,6 @@ public class DivideAndConquerActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAlreadyAgreedToEula = Eula.show(this);
-
         // Turn off the title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -148,19 +142,8 @@ public class DivideAndConquerActivity extends Activity
                 );
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
 
-        mEngineReady = true;
-
         // show the welcome dialog
-        if (mAlreadyAgreedToEula) {
-            showDialog(WELCOME_DIALOG);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void onEulaAgreedTo() {
-        if (mEngineReady) {
-            showDialog(WELCOME_DIALOG);
-        } 
+        showDialog(WELCOME_DIALOG);
     }
 
     @Override
@@ -290,7 +273,7 @@ public class DivideAndConquerActivity extends Activity
     }
 
     /** {@inheritDoc} */
-    public void onNewRegion(final BallEngine ballEngine) {
+    public void onAreaChange(final BallEngine ballEngine) {
         final float percentageFilled = ballEngine.getPercentageFilled();
         updatePercentDisplay(percentageFilled);
         if (percentageFilled > LEVEL_UP_THRESHOLD) {

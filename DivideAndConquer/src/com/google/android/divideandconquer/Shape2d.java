@@ -46,4 +46,16 @@ public abstract class Shape2d {
                 && y > getTop() && y < getBottom());
 
     }
+
+    public float getArea() {
+        return getHeight() * getWidth();
+    }
+
+    public float getHeight() {
+        return getBottom() - getTop();
+    }
+
+    public float getWidth () {
+        return getRight() - getLeft();
+    }
 }

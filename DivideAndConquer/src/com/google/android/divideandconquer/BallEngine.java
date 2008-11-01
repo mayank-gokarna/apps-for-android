@@ -16,6 +16,8 @@
 package com.google.android.divideandconquer;
 
 import android.util.Log;
+import android.content.Context;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class BallEngine {
     private float mBallSpeed;
     private float mBallRadius;
 
+    private Context mContext;
+
     /**
      * Holds onto new regions during a split
      */
@@ -58,6 +62,10 @@ public class BallEngine {
         mMaxY = maxY;
         mBallSpeed = ballSpeed;
         mBallRadius = ballRadius;
+    }
+
+    public void setContext(Context mContext) {
+        this.mContext = mContext;
     }
 
     /**
@@ -80,8 +88,8 @@ public class BallEngine {
      */
     public void reset(long now, int numBalls) {
         mRegions.clear();
-        BallRegion region = new BallRegion(mMinX, mMaxX, mMinY, mMaxY, mNumBalls);
 
+        ArrayList<Ball> balls = new ArrayList<Ball>(numBalls);
         for (int i = 0; i < numBalls; i++) {
             Ball ball = new Ball.Builder()
                     .setNow(now)
@@ -91,8 +99,10 @@ public class BallEngine {
                     .setY((float) Math.random() * (mMaxY - mMinY) + mMinY)
                     .setRadiusPixels(mBallRadius)
                     .create();
-            region.addBall(ball);
+            balls.add(ball);
         }
+        BallRegion region = new BallRegion(now, mMinX, mMaxX, mMinY, mMaxY, balls);
+
         mRegions.add(region);
     }
 
@@ -175,6 +185,7 @@ public class BallEngine {
         while (it.hasNext()) {
             final BallRegion region = it.next();
             final BallRegion newRegion = region.update(now);
+
             if (newRegion != null) {
                 regionChange = true;
                 if (!newRegion.getBalls().isEmpty()) {
@@ -185,6 +196,8 @@ public class BallEngine {
                 if (region.getBalls().isEmpty()) {
                     it.remove();
                 }
+            } else if (region.consumeDoneShrinking()) {
+                regionChange = true;
             }
         }
         mRegions.addAll(mNewRegions);

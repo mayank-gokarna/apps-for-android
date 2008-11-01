@@ -37,28 +37,47 @@ public class BallRegion extends Shape2d {
 
     private AnimatingLine mAnimatingLine;
 
+    private boolean mShrinkingToFit = false;
+    private long mLastUpdate = 0;
+    private static final float PIXELS_PER_SECOND = 25.0f;
+
+    private static final float SHRINK_TO_FIT_AREA_THRESH = 10000.0f;
+    private static final float SHRINK_TO_FIT_AREA_THRESH_ONE_BALL = 20000.0f;
+    private static final float SHRINK_TO_FIT_AREA = 1000f;
+    private static final float MIN_EDGE = 30f;
+    private boolean mDoneShrinking = false;
+
     /*
      * @param left The minimum x component
      * @param right The maximum x component
      * @param top The minimum y component
      * @param bottom The maximum y component
-     * @param ballCapacity The number of balls the region might have (hint used to set up container)
+     * @param balls the balls of the region
      */
-    public BallRegion(float left, float right, float top, float bottom, int ballCapacity) {
+    public BallRegion(long now, float left, float right, float top, float bottom,
+                      ArrayList<Ball> balls) {
+        mLastUpdate = now;
         mLeft = left;
         mRight = right;
         mTop = top;
         mBottom = bottom;
-        mBalls = new ArrayList<Ball>(ballCapacity);
+
+        mBalls = balls;
+        final int numBalls = mBalls.size();
+        for (int i = 0; i < numBalls; i++) {
+            final Ball ball = mBalls.get(i);
+            ball.setRegion(this);
+        }
+        checkShrinkToFit();
     }
 
-    /**
-     * Add a ball to the region.  It will also set the balls region to this region.
-     * @param ball The ball
-     */
-    public void addBall(Ball ball) {
-        ball.setRegion(this);
-        mBalls.add(ball);
+    private void checkShrinkToFit() {
+        final float area = getArea();
+        if (area < SHRINK_TO_FIT_AREA_THRESH) {
+            mShrinkingToFit = true;
+        } else if (area < SHRINK_TO_FIT_AREA_THRESH_ONE_BALL && mBalls.size() == 1) {
+            mShrinkingToFit = true;
+        }
     }
 
     public float getLeft() {
@@ -86,9 +105,20 @@ public class BallRegion extends Shape2d {
         return mAnimatingLine;
     }
 
+    public boolean consumeDoneShrinking() {
+        if (mDoneShrinking) {
+            mDoneShrinking = false;
+            return true;
+        }
+        return false;
+    }
+
     public void setNow(long now) {
+        mLastUpdate = now;
+
         // update the balls
-        for (int i = 0; i < mBalls.size(); i++) {
+        final int numBalls = mBalls.size();
+        for (int i = 0; i < numBalls; i++) {
             final Ball ball = mBalls.get(i);
             ball.setNow(now);
         }
@@ -98,12 +128,12 @@ public class BallRegion extends Shape2d {
         }
     }
 
-    /**
-     * @return the area in the region in pixel*pixel
-     */
-    public float getArea() {
-        return (mRight - mLeft) * (mBottom - mTop);
-    }
+//    /**
+//     * @return the area in the region in pixel*pixel
+//     */
+//    public float getArea() {
+//        return (mRight - mLeft) * (mBottom - mTop);
+//    }
 
 
     /**
@@ -121,7 +151,8 @@ public class BallRegion extends Shape2d {
                 (mAnimatingLine != null && mAnimatingLine.update(now));
 
         // update the balls, look for collision
-        for (int i = 0; i < mBalls.size(); i++) {
+        final int numBalls = mBalls.size();
+        for (int i = 0; i < numBalls; i++) {
             final Ball ball = mBalls.get(i);
             ball.update(now);
             if (mAnimatingLine != null && ball.isIntersecting(mAnimatingLine)) {
@@ -129,10 +160,13 @@ public class BallRegion extends Shape2d {
             }
         }
 
+        handleShrinkToFit(now);
+        
         // no collsion, new region means we need to split out the apropriate
         // balls into a new region
         if (newRegion) {
             BallRegion otherRegion = splitRegion(
+                    now,
                     mAnimatingLine.getDirection(),
                     mAnimatingLine.getPerpAxisOffset());
             mAnimatingLine = null;
@@ -142,11 +176,40 @@ public class BallRegion extends Shape2d {
         }
     }
 
+    private void handleShrinkToFit(long now) {
+        // update shrinking to fit
+        if (mShrinkingToFit && mAnimatingLine == null) {
+            if (now == mLastUpdate) return;
+            float delta = (now - mLastUpdate) * PIXELS_PER_SECOND;
+            delta = delta / 1000;
+
+            if (getHeight()  > MIN_EDGE) {
+                mTop += delta;
+                mBottom -= delta;
+            }
+            if (getWidth() > MIN_EDGE) {
+                mLeft += delta;
+                mRight -= delta;                
+            }
+
+            final int numBalls = mBalls.size();
+            for (int i = 0; i < numBalls; i++) {
+                final Ball ball = mBalls.get(i);
+                ball.setRegion(this);
+            }
+            if (getArea() <= SHRINK_TO_FIT_AREA) {
+                mShrinkingToFit = false;
+                mDoneShrinking = true;
+            }
+        }
+        mLastUpdate = now;
+    }
+
     /**
      * Return whether this region can start a line at a certain point.
      */
     public boolean canStartLineAt(float x, float y) {
-        return mAnimatingLine == null && isPointWithin(x, y);
+        return !mShrinkingToFit && mAnimatingLine == null && isPointWithin(x, y);
     }
 
 
@@ -187,35 +250,39 @@ public class BallRegion extends Shape2d {
      * @param perpAxisOffset The offset of the perpendicular axis of the line.
      * @return A new region containing a portion of the balls.
      */
-    private BallRegion splitRegion(Direction direction, float perpAxisOffset) {
+    private BallRegion splitRegion(long now, Direction direction, float perpAxisOffset) {
+
+        ArrayList<Ball> splitBalls = new ArrayList<Ball>();
 
         if (direction == Direction.Horizontal) {
-            BallRegion region = new BallRegion(mLeft, mRight, perpAxisOffset,
-                    mBottom, mBalls.size() / 2);
             Iterator<Ball> it = mBalls.iterator();
             while (it.hasNext()) {
                 Ball ball = it.next();
                 if (ball.getY() > perpAxisOffset) {
                     it.remove();
-                    region.addBall(ball);
+                    splitBalls.add(ball);
                 }
             }
+            float oldBottom = mBottom;
             mBottom = perpAxisOffset;
-            return region;
+            checkShrinkToFit();
+            return new BallRegion(now, mLeft, mRight, perpAxisOffset,
+                    oldBottom, splitBalls);
         } else  {
             assert(direction == Direction.Vertical);
-            BallRegion region = new BallRegion(perpAxisOffset, mRight, mTop,
-                    mBottom, mBalls.size() / 2);
             Iterator<Ball> it = mBalls.iterator();
             while (it.hasNext()) {
                 Ball ball = it.next();
                 if (ball.getX() > perpAxisOffset) {
                     it.remove();
-                    region.addBall(ball);
+                    splitBalls.add(ball);
                 }
             }
+            float oldRight = mRight;
             mRight = perpAxisOffset;
-            return region;
+            checkShrinkToFit();
+            return new BallRegion(now, perpAxisOffset, oldRight, mTop,
+                    mBottom, splitBalls);
         }
     }
 

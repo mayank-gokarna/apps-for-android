@@ -76,7 +76,7 @@ public class DivideAndConquerView extends View {
          * A line made it to the edges of its region, splitting off a new region.
          * @param ballEngine The engine.
          */
-        void onNewRegion(BallEngine ballEngine);
+        void onAreaChange(BallEngine ballEngine);
     }
 
     /**
@@ -158,6 +158,7 @@ public class DivideAndConquerView extends View {
                 BORDER_WIDTH, getHeight() - BORDER_WIDTH,
                 BALL_SPEED,
                 BALL_RADIUS);
+        mEngine.setContext(getContext());
         mCallback.onEngineReady(mEngine);
     }
 
@@ -272,7 +273,7 @@ public class DivideAndConquerView extends View {
             }
 
             if (newRegion) {
-                mCallback.onNewRegion(mEngine);
+                mCallback.onAreaChange(mEngine);
 
                 // reset back to full alpha bg color
                 setBackgroundColor(mBackgroundColor);

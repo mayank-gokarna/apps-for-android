@@ -28,9 +28,6 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f040000;
-        public static final int eula_accept=0x7f040012;
-        public static final int eula_refuse=0x7f040013;
-        public static final int eula_title=0x7f040011;
         public static final int game_over=0x7f040002;
         public static final int instructions=0x7f040003;
         public static final int level=0x7f040006;

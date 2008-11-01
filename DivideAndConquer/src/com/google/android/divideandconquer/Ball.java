@@ -88,13 +88,17 @@ public class Ball extends Shape2d {
     public void setRegion(Shape2d region) {
         if (mX < region.getLeft()) {
             mX = region.getLeft();
+            bounceOffLeft();
         } else if (mX > region.getRight()) {
             mX = region.getRight();
+            bounceOffRight();
         }
         if (mY < region.getTop()) {
             mY = region.getTop();
+            bounceOffTop();
         } else if (mY > region.getBottom()) {
             mY = region.getBottom();
+            bounceOffBottom();
         }
         mRegion = region;
     }
@@ -110,44 +114,19 @@ public class Ball extends Shape2d {
         if (mX <= mRegion.getLeft() + mRadiusPixels) {
             // we're at left wall
             mX = mRegion.getLeft() + mRadiusPixels;
-            if (mAngle < Math.PI) {
-                // going down
-                mAngle -= ((mAngle - (Math.PI / 2)) * 2);
-            } else {
-                // going up
-                mAngle += (((1.5 * Math.PI) - mAngle) * 2);
-            }
+            bounceOffLeft();
         } else if (mY <= mRegion.getTop() + mRadiusPixels) {
             // at top wall
             mY = mRegion.getTop() + mRadiusPixels;
-            if (mAngle < 1.5 * Math.PI) {
-                // going left
-                mAngle -= (mAngle - Math.PI) * 2;
-            } else {
-                // going right
-                mAngle += (2*Math.PI - mAngle) * 2;
-                mAngle -= 2*Math.PI;
-            }
+            bounceOffTop();
         } else if (mX >= mRegion.getRight() - mRadiusPixels) {
             // at right wall
             mX = mRegion.getRight() - mRadiusPixels;
-            if (mAngle > 1.5*Math.PI) {
-                // going up
-                mAngle -= (mAngle - 1.5*Math.PI) * 2;
-            } else {
-                // going down
-                mAngle += (.5*Math.PI - mAngle) * 2;
-            }            
+            bounceOffRight();
         } else if (mY >= mRegion.getBottom() - mRadiusPixels) {
             // at bottom wall
             mY = mRegion.getBottom() - mRadiusPixels;
-            if (mAngle < 0.5*Math.PI) {
-                // going right
-                mAngle = -mAngle;
-            } else {
-                // going left
-                mAngle += (Math.PI - mAngle) * 2;
-            }
+            bounceOffBottom();
         }
 
         float delta = (now - mLastUpdate) * mPixelsPerSecond;
@@ -157,6 +136,47 @@ public class Ball extends Shape2d {
         mY += (delta * Math.sin(mAngle));
 
         mLastUpdate = now;
+    }
+
+    private void bounceOffBottom() {
+        if (mAngle < 0.5*Math.PI) {
+            // going right
+            mAngle = -mAngle;
+        } else {
+            // going left
+            mAngle += (Math.PI - mAngle) * 2;
+        }
+    }
+
+    private void bounceOffRight() {
+        if (mAngle > 1.5*Math.PI) {
+            // going up
+            mAngle -= (mAngle - 1.5*Math.PI) * 2;
+        } else {
+            // going down
+            mAngle += (.5*Math.PI - mAngle) * 2;
+        }
+    }
+
+    private void bounceOffTop() {
+        if (mAngle < 1.5 * Math.PI) {
+            // going left
+            mAngle -= (mAngle - Math.PI) * 2;
+        } else {
+            // going right
+            mAngle += (2*Math.PI - mAngle) * 2;
+            mAngle -= 2*Math.PI;
+        }
+    }
+
+    private void bounceOffLeft() {
+        if (mAngle < Math.PI) {
+            // going down
+            mAngle -= ((mAngle - (Math.PI / 2)) * 2);
+        } else {
+            // going up
+            mAngle += (((1.5 * Math.PI) - mAngle) * 2);
+        }
     }
 
 
