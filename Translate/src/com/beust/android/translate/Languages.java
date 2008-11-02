@@ -60,7 +60,7 @@ public final class Languages {
         
 //        ESPERANTO("eo", "Esperanto"),
 //        ESTONIAN("et", "Estonian", R.drawable.et),
-        FILIPINO("tl", "Filipino", R.drawable.tl),
+        FILIPINO("tl", "Filipino", R.drawable.ph),
 
         FINNISH("fi", "Finnish", R.drawable.fi),
         FRENCH("fr", "French", R.drawable.fr),
@@ -131,8 +131,7 @@ public final class Languages {
 //        TAJIK("tg", "Tajik", R.drawable.tg),
 //        TAMIL("ta", "Tamil"),
         
-        TAGALOG("tl", "Tagalog", R.drawable.tl),
-        
+        TAGALOG("tl", "Tagalog", R.drawable.ph),
 //        TELUGU("te", "Telugu"),
 //        THAI("th", "Thai", R.drawable.th),
 //        TIBETAN("bo", "Tibetan", R.drawable.bo),
