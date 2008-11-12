@@ -28,6 +28,9 @@ import java.util.Map;
  */
 public final class Languages {
     
+    /**
+     * Reference at http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+     */
     static enum Language {
         
 //        AFRIKAANS("af", "Afrikaans", R.drawable.af),
@@ -44,7 +47,7 @@ public final class Languages {
         BULGARIAN("bg", "Bulgarian", R.drawable.bg),
 
 //        BURMESE("my", "Burmese", R.drawable.my),
-        CATALAN("ca", "Catalan", R.drawable.ca),
+        CATALAN("ca", "Catalan"),
         
         CHINESE("zh", "Chinese", R.drawable.cn),
         CHINESE_SIMPLIFIED("zh-CN", "Chinese simplified", R.drawable.cn),
