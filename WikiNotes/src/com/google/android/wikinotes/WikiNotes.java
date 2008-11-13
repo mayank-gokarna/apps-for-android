@@ -158,6 +158,13 @@ public class WikiNotes extends Activity {
     protected void onResume() {
 	super.onResume();
 	Cursor c = mCursor;
+	if (c.getCount() < 1) {
+	    // if the note can't be found, don't try to load it -- bail out
+	    // (probably means it got deleted while we were frozen;
+	    // thx to joe.bowbeer for the find)
+	    finish();
+	    return;
+	}
 	c.requery();
 	c.moveToFirst();
 	showWikiNote(c.getString(c.getColumnIndexOrThrow(WikiNote.Notes.BODY)));
