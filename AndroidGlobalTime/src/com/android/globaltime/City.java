@@ -91,38 +91,26 @@ public  class City implements Comparable<City> {
             citiesByRawOffset[i] = city;
         }
     }
-    
+
     /**
      * Returns the cities, ordered by name.
      */
     public static City[] getCitiesByName() {
-        City[] ocities = new City[cities.size()];
-        Iterator<City> iter = cities.values().iterator();
-        int idx = 0;
-        while (iter.hasNext()) {
-            ocities[idx++] = iter.next();
-        }
+        City[] ocities = cities.values().toArray(new City[0]);
         Arrays.sort(ocities);
         return ocities;
     }
-    
+
     /**
      * Returns the cities, ordered by offset, accounting for summer/daylight
      * savings time.  This requires reading the entire time zone database
      * behind the scenes.
      */
     public static City[] getCitiesByOffset() {
-        City[] ocities = new City[cities.size()];
-        Iterator<City> iter = cities.values().iterator();
-        int idx = 0;
-        while (iter.hasNext()) {
-            ocities[idx++] = iter.next();
-        }
-        Arrays.sort(ocities, new Comparator() {
-                public int compare(Object o1, Object o2) {
+        City[] ocities = cities.values().toArray(new City[0]);
+        Arrays.sort(ocities, new Comparator<City>() {
+                public int compare(City c1, City c2) {
                     long now = System.currentTimeMillis();
-                    City c1 = (City)o1;
-                    City c2 = (City)o2;
                     TimeZone tz1 = c1.getTimeZone();
                     TimeZone tz2 = c2.getTimeZone();
                     int off1 = tz1.getOffset(now);
