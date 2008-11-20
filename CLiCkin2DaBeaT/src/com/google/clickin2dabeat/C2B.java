@@ -22,6 +22,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -71,6 +72,8 @@ public class C2B extends Activity {
 
   private String c2bFileName;
   private String[] filenames;
+  
+  private String marketId;
 
   // These are parsed in from the C2B file
   private String title;
@@ -91,7 +94,22 @@ public class C2B extends Activity {
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
-    resetGame();
+    UpdateChecker checker = new UpdateChecker();
+    int latestVersion = checker.getLatestVersionCode();
+    String packageName = C2B.class.getPackage().getName();
+    int currentVersion = 0;
+    try {
+      currentVersion = getPackageManager().getPackageInfo(packageName, 0).versionCode;
+    } catch (NameNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    if (latestVersion > currentVersion){
+      marketId = checker.marketId;
+      displayUpdateMessage();
+    } else {
+      resetGame();
+    }
   }
 
   private void resetGame() {
@@ -578,6 +596,38 @@ public class C2B extends Activity {
     startupMessage.show();
   }
 
+
+  private void displayUpdateMessage() {
+    Builder updateMessage = new Builder(this);
+
+    String titleText = getString(R.string.UPDATE_AVAILABLE);
+    updateMessage.setTitle(titleText);
+
+    String message = getString(R.string.UPDATE_MESSAGE);
+    updateMessage.setMessage(message);
+
+    updateMessage.setPositiveButton("Yes", new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        Uri marketUri = Uri.parse("market://details?id=" + marketId);
+        Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
+        startActivity(marketIntent);
+        finish();
+      }
+    });
+    
+    final Activity self = this;
+    
+
+    updateMessage.setNegativeButton("No", new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        resetGame();
+      }
+    });
+
+    updateMessage.setCancelable(false);
+    updateMessage.show();
+  }
+  
   public int getCurrentTime() {
     try {
       return background.getCurrentPosition();

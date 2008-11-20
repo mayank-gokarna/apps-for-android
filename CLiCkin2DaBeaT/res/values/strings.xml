@@ -33,4 +33,6 @@
 <string name="QUIT">Quit</string>
 
 <string name="MOAR_STAGES">Gimme moar stages!</string>
+<string name="UPDATE_AVAILABLE">Update available</string>
+<string name="UPDATE_MESSAGE">Would you like to update CLiCkin 2 Da BeaT?</string>
 </resources>
