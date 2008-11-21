@@ -45,15 +45,22 @@ public class GameView extends View {
   private static final double COMBO_FACTOR = .1;
 
   private static final float TARGET_RADIUS = 50;
+  
+  public static final String LAST_RATING_OK = "(^_')";
+  public static final String LAST_RATING_PERFECT = "(^_^)/";
+  public static final String LAST_RATING_MISS = "(X_X)";
 
   private C2B parent;
   private Vibrator vibe;
   private SoundPool snd;
-  private int hitSfx;
+  private int hitOkSfx;
+  private int hitPerfectSfx;
   private int missSfx;
 
   public int comboCount;
   public int longestCombo;
+  
+  public String lastRating;
 
   Paint innerPaint;
   Paint borderPaint;
@@ -74,6 +81,7 @@ public class GameView extends View {
     score = 0;
     comboCount = 0;
     longestCombo = 0;
+    lastRating = "";
 
     drawnTargets = new ArrayList<Target>();
     recordedTargets = new ArrayList<Target>();
@@ -81,8 +89,9 @@ public class GameView extends View {
     vibe = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
     snd = new SoundPool(10, AudioManager.STREAM_SYSTEM, 0);
-    hitSfx = snd.load(context, R.raw.hit, 0);
     missSfx = snd.load(context, R.raw.miss, 0);
+    hitOkSfx = snd.load(context, R.raw.ok, 0);
+    hitPerfectSfx = snd.load(context, R.raw.perfect, 0);
 
     innerPaint = new Paint();
     innerPaint.setColor(Color.argb(127, 0, 0, 0));
@@ -122,12 +131,20 @@ public class GameView extends View {
     // Move any expired targets out of drawn targets
     for (int j = 0; j < drawnTargets.size(); j++) {
       Target t = drawnTargets.get(j);
-      if (t.time + POST_THRESHOLD < currentTime) {
-        drawnTargets.remove(j);
+      if (t == null) {
+        // Do nothing - this is a concurrency issue where
+        // the target is already gone, so just ignore it
+      } else if (t.time + POST_THRESHOLD < currentTime) {
+        try {
+          drawnTargets.remove(j);
+        } catch (IndexOutOfBoundsException e){
+          // Do nothing here, j is already gone
+        }
         if (longestCombo < comboCount) {
           longestCombo = comboCount;
         }
         comboCount = 0;
+        lastRating = LAST_RATING_MISS;
       }
     }
   }
@@ -143,6 +160,7 @@ public class GameView extends View {
 
       if (parent.mode == C2B.ONEPASS_MODE) { // Record this point as a target
         hadHit = true;
+        snd.play(hitPerfectSfx, 1, 1, 0, 0, 1);
         Target targ = new Target(currentTime, (int) x, (int) y, "");
         recordedTargets.add(targ);
       } else if (parent.mode == C2B.TWOPASS_MODE) {
@@ -156,27 +174,32 @@ public class GameView extends View {
             double timeDiff = Math.abs(currentTime - t.time);
             if (timeDiff < TOLERANCE) {
               points = POINTS_FOR_PERFECT;
+              snd.play(hitPerfectSfx, 1, 1, 0, 0, 1);
+              lastRating = LAST_RATING_PERFECT;
             } else {
               points = (int) (POINTS_FOR_PERFECT - (timeDiff * PENALTY_FACTOR));
               points = points + (int) (points * (comboCount * COMBO_FACTOR));
+              snd.play(hitOkSfx, 1, 1, 0, 0, 1);
+              lastRating = LAST_RATING_OK;
             }
             if (points > 0) {
               score = score + points;
               hadHit = true;
             }
             drawnTargets.remove(i);
+            break;
           }
         }
       }
       if (hadHit) {
         comboCount++;
-        snd.play(hitSfx, 1, 1, 0, 0, 1);
       } else {
         if (longestCombo < comboCount) {
           longestCombo = comboCount;
         }
         comboCount = 0;
         snd.play(missSfx, 1, 1, 0, 0, 1);
+        lastRating = LAST_RATING_MISS;
       }
       vibe.vibrate(VIBE_PATTERN, -1);
     }
@@ -239,6 +262,9 @@ public class GameView extends View {
     paint.setTypeface(Typeface.DEFAULT_BOLD);
     y -= paint.ascent() / 2;
     canvas.drawText(scoreText, x, y, paint);
+
+    x = getWidth() / 2;
+    canvas.drawText(lastRating, x, y, paint);
 
     String comboText = "Combo: " + Integer.toString(comboCount);
     x = 60;
