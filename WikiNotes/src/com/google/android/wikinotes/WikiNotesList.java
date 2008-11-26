@@ -125,6 +125,7 @@ public class WikiNotesList extends ListActivity {
 	        'h').setIcon(R.drawable.icon_start);
 	menu.add(0, WikiNotes.LIST_ID, 0, R.string.menu_recent).setShortcut(
 	        '3', 'r').setIcon(R.drawable.icon_recent);
+	menu.add(0, WikiNotes.ABOUT_ID, 0, R.string.menu_about).setShortcut('5', 'a').setIcon(android.R.drawable.ic_dialog_info);
 	return true;
     }
 
@@ -137,6 +138,9 @@ public class WikiNotesList extends ListActivity {
 	case WikiNotes.LIST_ID:
 	    mHelper.listNotes();
 	    return true;
+	case WikiNotes.ABOUT_ID:
+		Eula.showEula(this);
+		return true;
 	default:
 	    return false;
 	}

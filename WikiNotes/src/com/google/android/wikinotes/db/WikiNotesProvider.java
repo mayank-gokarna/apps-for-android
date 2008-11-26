@@ -237,7 +237,11 @@ public class WikiNotesProvider extends ContentProvider {
      */
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {
-	int count;
+    if (WikiNote.Notes.ALL_NOTES_URI.equals(uri)) {
+    	return dbHelper.getWritableDatabase().delete("wikinotes", null, null);
+    }
+
+    int count;
 	SQLiteDatabase db = dbHelper.getWritableDatabase();
 	switch (URI_MATCHER.match(uri)) {
 	case NOTES:

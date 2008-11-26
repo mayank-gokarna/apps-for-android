@@ -89,6 +89,9 @@ public class WikiNote {
     public static final String[] WIKI_NOTES_PROJECTION =
 	    {Notes._ID, Notes.TITLE, Notes.BODY, Notes.MODIFIED_DATE};
 
+    public static final String[] WIKI_EXPORT_PROJECTION =
+    	{Notes.TITLE, Notes.BODY, Notes.CREATED_DATE, Notes.MODIFIED_DATE};
+
     /**
      * The root authority for the WikiNotesProvider
      */

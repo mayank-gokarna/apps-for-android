@@ -16,6 +16,8 @@
 
 package com.google.android.wikinotes;
 
+import java.util.regex.Pattern;
+
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -30,8 +32,6 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.google.android.wikinotes.db.WikiNote;
-
-import java.util.regex.Pattern;
 
 /**
  * The WikiNotes activity is the default handler for displaying individual wiki
@@ -56,6 +56,9 @@ public class WikiNotes extends Activity {
     public static final int HOME_ID = Menu.FIRST + 1;
     public static final int LIST_ID = Menu.FIRST + 3;
     public static final int DELETE_ID = Menu.FIRST + 4;
+    public static final int ABOUT_ID = Menu.FIRST + 5;
+    public static final int EXPORT_ID = Menu.FIRST + 6;
+    public static final int IMPORT_ID = Menu.FIRST + 7;
 
     private TextView mNoteView;
     Cursor mCursor;
@@ -145,6 +148,10 @@ public class WikiNotes extends Activity {
 	// Set the menu shortcut keys to be default keys for the activity as
 	// well
 	setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
+    if (!getSharedPreferences(Eula.PREFERENCES_EULA,
+            Activity.MODE_PRIVATE).getBoolean(Eula.PREFERENCE_EULA_ACCEPTED, false)) {
+    	Eula.showEula(this);
+    }
     }
 
     @Override
@@ -201,6 +208,9 @@ public class WikiNotes extends Activity {
 	        .setIcon(R.drawable.icon_recent);
 	menu.add(0, DELETE_ID, 0, R.string.menu_delete).setShortcut('2', 'd')
 	        .setIcon(R.drawable.icon_delete);
+	menu.add(0, ABOUT_ID, 0, R.string.menu_about).setShortcut('5', 'a').setIcon(android.R.drawable.ic_dialog_info);
+	menu.add(0, EXPORT_ID, 0, R.string.menu_export).setShortcut('6', 'x').setIcon(android.R.drawable.ic_dialog_info);
+	menu.add(0, IMPORT_ID, 0, R.string.menu_import).setShortcut('6', 'x').setIcon(android.R.drawable.ic_dialog_info);
 	return true;
     }
 
@@ -219,6 +229,15 @@ public class WikiNotes extends Activity {
 	case LIST_ID:
 	    mHelper.listNotes();
 	    return true;
+	case WikiNotes.ABOUT_ID:
+		Eula.showEula(this);
+		return true;
+	case WikiNotes.EXPORT_ID:
+		mHelper.exportNotes();
+		return true;
+	case WikiNotes.IMPORT_ID:
+		mHelper.importNotes();
+		return true;
 	default:
 	    return false;
 	}
