@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2008 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.google.android.wikinotes.db;
@@ -34,11 +34,12 @@ import java.util.HashMap;
 /**
  * The Wikinotes Content Provider is the guts of the wikinotes application. It
  * handles Content URLs to list all wiki notes, retrieve a note by name, or
- * return a list of matching notes based on text in the body or the title of the
- * note. It also handles all set up of the database, and reports back MIME types
- * for the individual notes or lists of notes to help Android route the data to
- * activities that can display that data (in this case either the WikiNotes
- * activity itself, or the WikiNotesList activity to list multiple notes).
+ * return a list of matching notes based on text in the body or the title of
+ * the note. It also handles all set up of the database, and reports back MIME
+ * types for the individual notes or lists of notes to help Android route the
+ * data to activities that can display that data (in this case either the
+ * WikiNotes activity itself, or the WikiNotesList activity to list multiple
+ * notes).
  */
 public class WikiNotesProvider extends ContentProvider {
 
@@ -57,8 +58,8 @@ public class WikiNotesProvider extends ContentProvider {
     private static final UriMatcher URI_MATCHER;
 
     /**
-     * This inner DatabaseHelper class defines methods to create and upgrade the
-     * database from previous versions.
+     * This inner DatabaseHelper class defines methods to create and upgrade
+     * the database from previous versions.
      */
     private static class DatabaseHelper extends SQLiteOpenHelper {
 	public DatabaseHelper(Context context) {
@@ -69,12 +70,13 @@ public class WikiNotesProvider extends ContentProvider {
 	public void onCreate(SQLiteDatabase db) {
 	    db.execSQL("CREATE TABLE wikinotes (_id INTEGER PRIMARY KEY,"
 		       + "title TEXT COLLATE LOCALIZED NOT NULL,"
-		       + "body TEXT," + "created INTEGER," + "modified INTEGER"
-		       + ");");
+		       + "body TEXT," + "created INTEGER,"
+		       + "modified INTEGER" + ");");
 	}
 
 	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	public void onUpgrade(SQLiteDatabase db, int oldVersion,
+			      int newVersion) {
 	    Log.w(TAG, "Upgrading database from version " + oldVersion +
 		       " to " + newVersion +
 		       ", which will destroy all old data");
@@ -98,7 +100,7 @@ public class WikiNotesProvider extends ContentProvider {
      */
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
-	                String[] selectionArgs, String sort) {
+			String[] selectionArgs, String sort) {
 	// Query the database using the arguments provided
 	SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 	String[] whereArgs = null;
@@ -119,14 +121,15 @@ public class WikiNotesProvider extends ContentProvider {
 	    qb.setProjectionMap(NOTES_LIST_PROJECTION_MAP);
 	    qb.appendWhere("body like ? or title like ?");
 	    whereArgs = new String[2];
-	    whereArgs[0] = whereArgs[1] = "%" + uri.getLastPathSegment() + "%";
+	    whereArgs[0] = whereArgs[1] = "%" + uri.getLastPathSegment() +
+					  "%";
 	    break;
 
 	case NOTE_NAME:
 	    // this match searches for an exact match for a specific note name
 	    qb.setTables("wikinotes");
 	    qb.appendWhere("title=?");
-	    whereArgs = new String[] {uri.getLastPathSegment()};
+	    whereArgs = new String[] { uri.getLastPathSegment() };
 	    break;
 
 	default:
@@ -144,23 +147,24 @@ public class WikiNotesProvider extends ContentProvider {
 
 	// Run the query and return the results as a Cursor
 	SQLiteDatabase mDb = dbHelper.getReadableDatabase();
-	Cursor c =
-	        qb.query(mDb, projection, null, whereArgs, null, null, orderBy);
+	Cursor c = qb.query(mDb, projection, null, whereArgs, null, null,
+			    orderBy);
 	c.setNotificationUri(getContext().getContentResolver(), uri);
 	return c;
     }
 
     /**
      * For a given URL, return a MIME type for the data that will be returned
-     * from that URL. This will help Android decide what to do with the data it
-     * gets back.
+     * from that URL. This will help Android decide what to do with the data
+     * it gets back.
      */
     @Override
     public String getType(Uri uri) {
 	switch (URI_MATCHER.match(uri)) {
 	case NOTES:
 	case NOTE_SEARCH:
-	    // for a notes list, or search results, return a mimetype indicating
+	    // for a notes list, or search results, return a mimetype
+	    // indicating
 	    // a directory of wikinotes
 	    return "vnd.android.cursor.dir/vnd.google.wikinote";
 
@@ -217,9 +221,8 @@ public class WikiNotesProvider extends ContentProvider {
 	SQLiteDatabase db = dbHelper.getWritableDatabase();
 	rowID = db.insert("wikinotes", "body", values);
 	if (rowID > 0) {
-	    Uri newUri =
-		    Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI, uri
-		            .getLastPathSegment());
+	    Uri newUri = Uri.withAppendedPath(WikiNote.Notes.ALL_NOTES_URI,
+					      uri.getLastPathSegment());
 	    getContext().getContentResolver().notifyChange(newUri, null);
 	    return newUri;
 	}
@@ -228,20 +231,27 @@ public class WikiNotesProvider extends ContentProvider {
     }
 
     /**
-     * Delete rows matching the where clause and args for the supplied URL. The
-     * URL can be either the all notes URL (in which case all notes matching the
-     * where clause will be deleted), or the note name, in which case it will
-     * delete the note with the exactly matching title. Any of the other URLs
-     * will be rejected as invalid. For deleting notes by title we use ReST
-     * style arguments from the URI and don't support where clause and args.
+     * Delete rows matching the where clause and args for the supplied URL.
+     * The URL can be either the all notes URL (in which case all notes
+     * matching the where clause will be deleted), or the note name, in which
+     * case it will delete the note with the exactly matching title. Any of
+     * the other URLs will be rejected as invalid. For deleting notes by title
+     * we use ReST style arguments from the URI and don't support where clause
+     * and args.
      */
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {
-    if (WikiNote.Notes.ALL_NOTES_URI.equals(uri)) {
-    	return dbHelper.getWritableDatabase().delete("wikinotes", null, null);
-    }
+	/* This is kind of dangerous: it deletes all records with a single
+	   Intent. It might make sense to make this ContentProvider
+	   non-public, since this is kind of over-powerful and the provider
+	   isn't generally intended to be public.  But for now it's still
+	   public. */ 
+	if (WikiNote.Notes.ALL_NOTES_URI.equals(uri)) {
+	    return dbHelper.getWritableDatabase().delete("wikinotes", null,
+							 null);
+	}
 
-    int count;
+	int count;
 	SQLiteDatabase db = dbHelper.getWritableDatabase();
 	switch (URI_MATCHER.match(uri)) {
 	case NOTES:
@@ -251,10 +261,10 @@ public class WikiNotesProvider extends ContentProvider {
 	case NOTE_NAME:
 	    if (!TextUtils.isEmpty(where) || (whereArgs != null)) {
 		throw new UnsupportedOperationException(
-		                                        "Cannot update note using where clause");
+							"Cannot update note using where clause");
 	    }
 	    String noteId = uri.getPathSegments().get(1);
-	    count = db.delete("wikinotes", "_id=?", new String[] {noteId});
+	    count = db.delete("wikinotes", "_id=?", new String[] { noteId });
 	    break;
 
 	default:
@@ -267,14 +277,14 @@ public class WikiNotesProvider extends ContentProvider {
 
     /**
      * The update method, which will allow either a mass update using a where
-     * clause, or an update targeted to a specific note name (the latter will be
-     * more common). Other matched URLs will be rejected as invalid. For
+     * clause, or an update targeted to a specific note name (the latter will
+     * be more common). Other matched URLs will be rejected as invalid. For
      * updating notes by title we use ReST style arguments from the URI and do
      * not support using the where clause or args.
      */
     @Override
     public int update(Uri uri, ContentValues values, String where,
-	              String[] whereArgs) {
+		      String[] whereArgs) {
 	int count;
 	SQLiteDatabase db = dbHelper.getWritableDatabase();
 	switch (URI_MATCHER.match(uri)) {
@@ -283,9 +293,8 @@ public class WikiNotesProvider extends ContentProvider {
 	    break;
 
 	case NOTE_NAME:
-	    values
-		    .put(WikiNote.Notes.MODIFIED_DATE, System
-		            .currentTimeMillis());
+	    values.put(WikiNote.Notes.MODIFIED_DATE, System
+		.currentTimeMillis());
 	    count = db.update("wikinotes", values, where, whereArgs);
 	    break;
 
@@ -307,15 +316,16 @@ public class WikiNotesProvider extends ContentProvider {
 	URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 	URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wikinotes", NOTES);
 	URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wikinotes/*",
-	                   NOTE_NAME);
+			   NOTE_NAME);
 	URI_MATCHER.addURI(WikiNote.WIKINOTES_AUTHORITY, "wiki/search/*",
-	                   NOTE_SEARCH);
+			   NOTE_SEARCH);
 
 	NOTES_LIST_PROJECTION_MAP = new HashMap<String, String>();
 	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes._ID, "_id");
 	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes.TITLE, "title");
 	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes.BODY, "body");
 	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes.CREATED_DATE, "created");
-	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes.MODIFIED_DATE, "modified");
+	NOTES_LIST_PROJECTION_MAP.put(WikiNote.Notes.MODIFIED_DATE,
+				      "modified");
     }
 }
