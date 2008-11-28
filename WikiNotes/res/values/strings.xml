@@ -65,4 +65,6 @@ If you wish to proceed with the import, be sure that a file named WikiNotes-impo
     <string name="import_failure_io">An error occurred while reading the data to import.\n\nPlease check your storage card, and try again.</string>
     <string name="import_failure_corrupt">The data in the import file doesn't seem to be WikiNotes XML.\n\nPlease verify that the file was previously exported from WikiNotes, and try again.</string>
     <string name="import_failure_nofile">There doesn't seem to be a file to import data from.\n\nPlease check your storage card and copy a file previously exported from WikiNotes into the root folder of the card, under the name "WikiNotes-import.xml".</string>
+    <string name="email_leader">Hello! I thought you might be interested in seeing this note I recorded on my Android phone.\n\n%1$s</string>
+    <string name="menu_email">Mail Note</string>
 </resources>

@@ -392,7 +392,7 @@ public class WikiActivityHelper {
 		}
 	    }
 	}
-	
+
 	// Victory! Inform the user.
 	showOutcomeDialog(R.string.import_success_title, String
 	    .format(mContext.getResources()
@@ -421,6 +421,22 @@ public class WikiActivityHelper {
 			       })
 	    .setNegativeButton(R.string.import_cancel_button, null).create()
 	    .show();
+    }
+
+    /**
+     * Launches the email system client to send a mail with the current
+     * message.
+     */
+    public void mailNote(final Cursor cursor) {
+	Intent intent = new Intent(Intent.ACTION_SEND);
+	intent.setType("message/rfc822");
+	intent.putExtra(Intent.EXTRA_SUBJECT, cursor.getString(cursor
+	    .getColumnIndexOrThrow("title")));
+	String body = String.format(mContext.getResources()
+	    .getString(R.string.email_leader), cursor.getString(cursor
+	    .getColumnIndexOrThrow("body")));
+	intent.putExtra(Intent.EXTRA_TEXT, body);
+	mContext.startActivity(Intent.createChooser(intent, "Title:"));
     }
 
     /* Some constants for filename structures. Could conceivably go into

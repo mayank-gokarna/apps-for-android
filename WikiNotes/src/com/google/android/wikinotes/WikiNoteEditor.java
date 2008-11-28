@@ -105,7 +105,11 @@ public class WikiNoteEditor extends Activity {
 		        finish();
 		    }
 	        });
-
+	if (!getSharedPreferences(Eula.PREFERENCES_EULA,
+				  Activity.MODE_PRIVATE)
+	    .getBoolean(Eula.PREFERENCE_EULA_ACCEPTED, false)) {
+	    Eula.showEula(this);
+	}
     }
 
     @Override

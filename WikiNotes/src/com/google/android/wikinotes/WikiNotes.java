@@ -60,6 +60,7 @@ public class WikiNotes extends Activity {
     public static final int ABOUT_ID = Menu.FIRST + 5;
     public static final int EXPORT_ID = Menu.FIRST + 6;
     public static final int IMPORT_ID = Menu.FIRST + 7;
+    public static final int EMAIL_ID = Menu.FIRST + 8;
 
     private TextView mNoteView;
     Cursor mCursor;
@@ -142,16 +143,15 @@ public class WikiNotes extends Activity {
 	// If a new note was created, jump straight into editing it
 	if (newNote) {
 	    mHelper.editNote(noteName, null);
+	} else if (!getSharedPreferences(Eula.PREFERENCES_EULA,
+					 Activity.MODE_PRIVATE)
+	    .getBoolean(Eula.PREFERENCE_EULA_ACCEPTED, false)) {
+	    Eula.showEula(this);
 	}
 
 	// Set the menu shortcut keys to be default keys for the activity as
 	// well
 	setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
-	if (!getSharedPreferences(Eula.PREFERENCES_EULA,
-				  Activity.MODE_PRIVATE)
-	    .getBoolean(Eula.PREFERENCE_EULA_ACCEPTED, false)) {
-	    Eula.showEula(this);
-	}
     }
 
     @Override
@@ -211,9 +211,11 @@ public class WikiNotes extends Activity {
 	    .setIcon(R.drawable.icon_delete);
 	menu.add(0, ABOUT_ID, 0, R.string.menu_about).setShortcut('5', 'a')
 	    .setIcon(android.R.drawable.ic_dialog_info);
-	menu.add(0, EXPORT_ID, 0, R.string.menu_export).setShortcut('6', 'x')
+	menu.add(0, EXPORT_ID, 0, R.string.menu_export).setShortcut('7', 'x')
 	    .setIcon(android.R.drawable.ic_dialog_info);
-	menu.add(0, IMPORT_ID, 0, R.string.menu_import).setShortcut('7', 'm')
+	menu.add(0, IMPORT_ID, 0, R.string.menu_import).setShortcut('8', 'm')
+	    .setIcon(android.R.drawable.ic_dialog_info);	
+	menu.add(0, EMAIL_ID, 0, R.string.menu_email).setShortcut('6', 'm')
 	    .setIcon(android.R.drawable.ic_dialog_info);
 	return true;
     }
@@ -241,6 +243,9 @@ public class WikiNotes extends Activity {
 	    return true;
 	case WikiNotes.IMPORT_ID:
 	    mHelper.importNotes();
+	    return true;
+	case WikiNotes.EMAIL_ID:
+	    mHelper.mailNote(mCursor);
 	    return true;
 	default:
 	    return false;
