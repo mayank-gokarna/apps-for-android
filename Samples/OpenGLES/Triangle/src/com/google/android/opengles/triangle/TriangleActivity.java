@@ -16,16 +16,32 @@
 
 package com.google.android.opengles.triangle;
 
+import javax.microedition.khronos.opengles.GL;
+
 import android.app.Activity;
+import android.opengl.GLDebugHelper;
 import android.os.Bundle;
 
 public class TriangleActivity extends Activity {
+
+    /** Set to true to enable checking of the OpenGL error code after every OpenGL call. Set to
+     * false for faster code.
+     *
+     */
+    private final static boolean DEBUG_CHECK_GL_ERROR = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         mGLView = (GLView) findViewById(R.id.glview);
+
+        if (DEBUG_CHECK_GL_ERROR) {
+            mGLView.setGLWrapper(new GLView.GLWrapper() {
+                public GL wrap(GL gl) {
+                    return GLDebugHelper.wrap(gl, GLDebugHelper.CONFIG_CHECK_GL_ERROR, null);
+                }});
+        }
         mGLView.setRenderer(new TriangleRenderer(this));
         mGLView.requestFocus();
     }
