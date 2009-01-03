@@ -42,30 +42,6 @@ public class DivideAndConquerActivity extends Activity
         NewGameCallback,
         DialogInterface.OnCancelListener {
 
-    /**
-     * Each level has a different background color and ball color.
-     */
-    static class LevelStyle {
-        private final int mBgColor;
-        private final int mBallColor;
-
-        LevelStyle(int bgColor, int ballColor) {
-            mBgColor = 0xFF000000 | bgColor;
-            mBallColor = 0xFF000000 |ballColor;
-        }
-    }
-
-    /**
-     * The styles we cycle through when leveling up.
-     */
-    static LevelStyle[] LEVEL_STYLES = new LevelStyle[] {
-            new LevelStyle(0xFFD162FF, 0xFF76A7FF),
-            new LevelStyle(0xFF76A7FF, 0xFF75FFE9),
-            new LevelStyle(0xFF7E33, 0x8DBDD9),
-            new LevelStyle(0x61FF6E, 0xD9B4D6),
-            new LevelStyle(0x2BA7FF, 0xFF842B),
-    };
-
     private static final int NEW_GAME_NUM_BALLS = 1;
     private static final double LEVEL_UP_THRESHOLD = 0.8;
     private static final int TRY_AGAIN_PAUSE = 1000;
@@ -91,29 +67,6 @@ public class DivideAndConquerActivity extends Activity
 
     private Toast mCurrentToast;
 
-// usefull for playing around with colors
-//    private int theindex = 0;
-//    public boolean onKeyUp(int i, KeyEvent event) {
-//        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-//            theindex++;
-//            theindex = theindex % LEVEL_STYLES.length;
-//            mBallsView.setColors(
-//                    LEVEL_STYLES[theindex].mBgColor,
-//                    LEVEL_STYLES[theindex].mBallColor
-//                    );
-//            return true;
-//        } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-//            theindex--;
-//            if (theindex < 0) theindex = LEVEL_STYLES.length - 1;
-//            mBallsView.setColors(
-//                    LEVEL_STYLES[theindex].mBgColor,
-//                    LEVEL_STYLES[theindex].mBallColor
-//                    );
-//            return true;
-//        }
-//        return false;
-//    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,10 +89,6 @@ public class DivideAndConquerActivity extends Activity
     public void onEngineReady(BallEngine ballEngine) {
         // display 10 balls bouncing around for visual effect
         ballEngine.reset(SystemClock.elapsedRealtime(), 10);
-        mBallsView.setColors(
-                LEVEL_STYLES[0].mBgColor,
-                LEVEL_STYLES[0].mBallColor
-                );
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
 
         // show the welcome dialog
@@ -233,7 +182,8 @@ public class DivideAndConquerActivity extends Activity
     private void saveMode() {
         // don't want to restore to a state where user can't resume game.
         final DivideAndConquerView.Mode mode = mBallsView.getMode();
-        final DivideAndConquerView.Mode toRestore = mode == DivideAndConquerView.Mode.Paused ? DivideAndConquerView.Mode.PausedByUser : mode;
+        final DivideAndConquerView.Mode toRestore = (mode == DivideAndConquerView.Mode.Paused) ?
+                DivideAndConquerView.Mode.PausedByUser : mode;
         mRestoreMode.push(toRestore);
     }
 
@@ -291,7 +241,6 @@ public class DivideAndConquerActivity extends Activity
         updatePercentDisplay(0);
         updateLevelDisplay(mNumBalls);
         ballEngine.reset(SystemClock.elapsedRealtime(), mNumBalls);
-        updateLevelColors();
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
         showToast("level " + mNumBalls);
     }
@@ -326,20 +275,8 @@ public class DivideAndConquerActivity extends Activity
         updatePercentDisplay(0);
         updateLivesDisplay(mNumLives, false);
         updateLevelDisplay(mNumBalls);
-        updateLevelColors();
         mBallsView.getEngine().reset(SystemClock.elapsedRealtime(), mNumBalls);
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
-    }
-
-    /**
-     * Update the background color and ball color appropriate to the current level.
-     */
-    private void updateLevelColors() {
-        final int index = (mNumBalls - 1) % LEVEL_STYLES.length;
-        mBallsView.setColors(
-                LEVEL_STYLES[index].mBgColor,
-                LEVEL_STYLES[index].mBallColor
-                );
     }
 
     /**

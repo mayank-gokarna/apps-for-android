@@ -128,14 +128,6 @@ public class BallRegion extends Shape2d {
         }
     }
 
-//    /**
-//     * @return the area in the region in pixel*pixel
-//     */
-//    public float getArea() {
-//        return (mRight - mLeft) * (mBottom - mTop);
-//    }
-
-
     /**
      * Update the balls an (if it exists) the animating line in this region.
      * @param now in millis
@@ -150,8 +142,9 @@ public class BallRegion extends Shape2d {
         final boolean newRegion =
                 (mAnimatingLine != null && mAnimatingLine.update(now));
 
-        // update the balls, look for collision
         final int numBalls = mBalls.size();
+
+        // move balls, check for collision with animating line
         for (int i = 0; i < numBalls; i++) {
             final Ball ball = mBalls.get(i);
             ball.update(now);
@@ -160,8 +153,20 @@ public class BallRegion extends Shape2d {
             }
         }
 
+        // update ball to ball collisions
+        for (int i = 0; i < numBalls; i++) {
+            final Ball ball = mBalls.get(i);
+            for (int j = i + 1; j < numBalls; j++) {
+                Ball other = mBalls.get(j);
+                if (ball.isCircleOverlapping(other)) {
+                    Ball.adjustForCollision(ball, other);
+                    break;
+                }
+            }
+        }        
+
         handleShrinkToFit(now);
-        
+
         // no collsion, new region means we need to split out the apropriate
         // balls into a new region
         if (newRegion) {

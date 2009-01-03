@@ -15,32 +15,36 @@
  */
 package com.google.android.divideandconquer;
 
-import android.view.View;
-import android.view.MotionEvent;
-import android.view.KeyEvent;
 import android.content.Context;
-import android.graphics.Paint;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.RectF;
-import android.os.SystemClock;
+import android.graphics.*;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Debug;
-import android.util.TypedValue;
+import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * Handles the visual display and touch input for the game.
  */
 public class DivideAndConquerView extends View {
 
-    private int mBackgroundColor = 0xFFFFE942;
-    private int mBallColor = 0xFF4258FF;
-
     static final int BORDER_WIDTH = 10;
-    static final float BALL_RADIUS = 4f;
+
+    // this needs to match size of ball drawable
+    static final float BALL_RADIUS = 5f;
+
     static final float BALL_SPEED = 80f;
 
+    // if true, will profile the drawing code during each animating line and export
+    // the result to a file named 'BallsDrawing.trace' on the sd card
+    // this file can be pulled off and profiled with traceview
+    // $ adb pull /sdcard/BallsDrawing.trace .
+    // traceview BallsDrawing.trace
     private static final boolean PROFILE_DRAWING = false;
+
     private boolean mDrawingProfilingStarted = false;
 
     private final Paint mPaint;
@@ -52,6 +56,8 @@ public class DivideAndConquerView extends View {
 
     // interface for starting a line
     private DirectionPoint mDirectionPoint = null;
+    private Bitmap mBallBitmap;
+    private float mBallBitmapRadius;
 
     /**
      * Callback notifying of events related to the ball engine.
@@ -121,18 +127,22 @@ public class DivideAndConquerView extends View {
         // so we can see the back key
         setFocusableInTouchMode(true);
 
-        setBackgroundColor(mBackgroundColor);
+        drawBackgroundGradient();
+
+        mBallBitmap = BitmapFactory.decodeResource(
+                context.getResources(),
+                R.drawable.ball);
+
+        mBallBitmapRadius = ((float) mBallBitmap.getWidth()) / 2f;
     }
 
-    /**
-     * Set the colors used to draw the background and the balls.
-     * @param bgColor The color for the background.
-     * @param ballColor The color for the balls.
-     */
-    public void setColors(int bgColor, int ballColor) {
-        mBackgroundColor = bgColor;
-        mBallColor = ballColor;
-        setBackgroundColor(mBackgroundColor);
+    final GradientDrawable mBackgroundGradient =
+            new GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{Color.RED, Color.YELLOW});
+
+    void drawBackgroundGradient() {
+        setBackgroundDrawable(mBackgroundGradient);
     }
 
     /**
@@ -276,7 +286,7 @@ public class DivideAndConquerView extends View {
                 mCallback.onAreaChange(mEngine);
 
                 // reset back to full alpha bg color
-                setBackgroundColor(mBackgroundColor);
+                drawBackgroundGradient();
             }
 
             if (PROFILE_DRAWING) {
@@ -330,26 +340,22 @@ public class DivideAndConquerView extends View {
                 region.getRight(), region.getBottom());
         canvas.drawRect(mRectF, mPaint);
 
-        // draw an outline
+
+        //draw an outline
+        mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(Color.BLACK);
-        final float minX = region.getLeft();
-        final float maxX = region.getRight();
-        final float minY = region.getTop();
-        final float maxY = region.getBottom();
-        canvas.drawLine(minX, minY, maxX, minY, mPaint); // top line
-        canvas.drawLine(minX, minY, minX, maxY, mPaint); // left line
-        canvas.drawLine(minX, maxY, maxX, maxY, mPaint); // bottom line
-        canvas.drawLine(maxX, minY, maxX, maxY, mPaint); // right line
+        canvas.drawRect(mRectF, mPaint);
+        mPaint.setStyle(Paint.Style.FILL);  // restore style
 
         // draw each ball
-        mPaint.setColor(mBallColor);
-        mPaint.setShadowLayer(1, 1, 2, Color.BLACK);
-        mPaint.setAntiAlias(true);
         for (Ball ball : region.getBalls()) {
-            canvas.drawCircle(ball.getX(), ball.getY(), BALL_RADIUS, mPaint);
+//            canvas.drawCircle(ball.getX(), ball.getY(), BALL_RADIUS, mPaint);
+            canvas.drawBitmap(
+                    mBallBitmap,
+                    ball.getX() - mBallBitmapRadius,
+                    ball.getY() - mBallBitmapRadius,
+                    mPaint);
         }
-        mPaint.clearShadowLayer();
-        mPaint.setAntiAlias(false);
 
         // draw the animating line
         final AnimatingLine al = region.getAnimatingLine();
@@ -368,7 +374,7 @@ public class DivideAndConquerView extends View {
     private void drawAnimatingLine(Canvas canvas, AnimatingLine al) {
 
         final float perc = al.getPercentageDone();
-        final int color = mBackgroundColor;
+        final int color = Color.RED;
         mPaint.setColor(Color.argb(
                 0xFF,
                 scaleToBlack(Color.red(color), perc),

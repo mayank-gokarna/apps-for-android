@@ -107,6 +107,27 @@ public class Ball extends Shape2d {
         mLastUpdate = now;
     }
 
+    public boolean isCircleOverlapping(Ball otherBall) {
+        final float dy = otherBall.mY - mY;
+        final float dx = otherBall.mX - mX;
+
+        final float distance = dy * dy + dx * dx;
+
+        return (distance < ((2 * mRadiusPixels) * (2 *mRadiusPixels)))
+                // avoid jittery collisions
+                && !movingAwayFromEachother(this, otherBall);
+    }
+
+    private boolean movingAwayFromEachother(Ball ballA, Ball ballB) {
+        double collA = Math.atan2(ballB.mY - ballA.mY, ballB.mX - ballA.mX);
+        double collB = Math.atan2(ballA.mY - ballB.mY, ballA.mX - ballB.mX);
+
+        double ax = Math.cos(ballA.mAngle - collA);
+        double bx = Math.cos(ballB.mAngle - collB);
+
+        return ax + bx < 0;        
+    }
+
     public void update(long now) {
         if (now <= mLastUpdate) return;
 
@@ -181,6 +202,44 @@ public class Ball extends Shape2d {
 
 
     /**
+     * Given that ball a and b have collided, adjust their angles to reflect their state
+     * after the collision.
+     *
+     * This method works based on the conservation of energy and momentum in an elastic
+     * collision.  Because the balls have equal mass and speed, it ends up being that they
+     * simply swap velocities along the axis of the collision, keeping the velocities tangent
+     * to the collision constant.
+     *
+     * @param ballA The first ball in a collision
+     * @param ballB The second ball in a collision
+     */
+    public static void adjustForCollision(Ball ballA, Ball ballB) {
+
+        final double collA = Math.atan2(ballB.mY - ballA.mY, ballB.mX - ballA.mX);
+        final double collB = Math.atan2(ballA.mY - ballB.mY, ballA.mX - ballB.mX);
+
+        final double ax = Math.cos(ballA.mAngle - collA);
+        final double ay = Math.sin(ballA.mAngle - collA);
+
+        final double bx = Math.cos(ballB.mAngle - collB);
+        final double by = Math.cos(ballB.mAngle - collB);
+
+        final double diffA = Math.atan2(ay, -bx);
+        final double diffB = Math.atan2(by, -ax);
+
+        ballA.mAngle = collA + diffA;
+        ballB.mAngle = collB + diffB;
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format(
+            "Ball(x=%f, y=%f, angle=%f)",
+                mX, mY, Math.toDegrees(mAngle));
+    }
+
+    /**
      * A more readable way to create balls than using a 5 param
      * constructor of all numbers.
      */
@@ -244,6 +303,5 @@ public class Ball extends Shape2d {
             mRadiusPixels = pixels;
             return this;
         }
-
     }
 }
