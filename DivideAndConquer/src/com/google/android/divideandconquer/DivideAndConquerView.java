@@ -16,6 +16,7 @@
 package com.google.android.divideandconquer;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Debug;
@@ -26,10 +27,13 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Handles the visual display and touch input for the game.
  */
-public class DivideAndConquerView extends View {
+public class DivideAndConquerView extends View implements BallEngine.BallEventCallBack {
 
     static final int BORDER_WIDTH = 10;
 
@@ -52,17 +56,20 @@ public class DivideAndConquerView extends View {
 
     private Mode mMode = Mode.Paused;
 
-    private BallEventCallBack mCallback;
+    private BallEngineCallBack mCallback;
 
     // interface for starting a line
     private DirectionPoint mDirectionPoint = null;
     private Bitmap mBallBitmap;
     private float mBallBitmapRadius;
+    private final Bitmap mExplosion1;
+    private final Bitmap mExplosion2;
+    private final Bitmap mExplosion3;
 
     /**
      * Callback notifying of events related to the ball engine.
      */
-    static interface BallEventCallBack {
+    static interface BallEngineCallBack {
 
         /**
          * The engine has its dimensions and is ready to go.
@@ -134,6 +141,16 @@ public class DivideAndConquerView extends View {
                 R.drawable.ball);
 
         mBallBitmapRadius = ((float) mBallBitmap.getWidth()) / 2f;
+
+        mExplosion1 = BitmapFactory.decodeResource(
+                context.getResources(),
+                R.drawable.explosion1);
+        mExplosion2 = BitmapFactory.decodeResource(
+                context.getResources(),
+                R.drawable.explosion2);
+        mExplosion3 = BitmapFactory.decodeResource(
+                context.getResources(),
+                R.drawable.explosion3);
     }
 
     final GradientDrawable mBackgroundGradient =
@@ -150,7 +167,7 @@ public class DivideAndConquerView extends View {
      * engine.
      * @param callback The callback.
      */
-    public void setCallback(BallEventCallBack callback) {
+    public void setCallback(BallEngineCallBack callback) {
         mCallback = callback;
     }
 
@@ -168,7 +185,7 @@ public class DivideAndConquerView extends View {
                 BORDER_WIDTH, getHeight() - BORDER_WIDTH,
                 BALL_SPEED,
                 BALL_RADIUS);
-        mEngine.setContext(getContext());
+        mEngine.setCallBack(this);
         mCallback.onEngineReady(mEngine);
     }
 
@@ -189,7 +206,10 @@ public class DivideAndConquerView extends View {
 
         if (mMode == Mode.Bouncing && mEngine != null) {
             // when starting up again, the engine needs to know what 'now' is.
-            mEngine.setNow(SystemClock.elapsedRealtime());
+            final long now = SystemClock.elapsedRealtime();
+            mEngine.setNow(now);
+
+            mExplosions.clear();
             invalidate();
         }
     }
@@ -271,16 +291,82 @@ public class DivideAndConquerView extends View {
         return false;
     }
 
+    /** {@inheritDoc} */
+    public void onBallHitsBall(Ball ballA, Ball ballB) {
+
+    }
+
+    /** {@inheritDoc} */
+    public void onBallHitsLine(long when, Ball ball, AnimatingLine animatingLine) {
+        mCallback.onBallHitsMovingLine(mEngine, ball.getX(), ball.getY());
+
+        mExplosions.add(
+                new Explosion(
+                        when,
+                        ball.getX(), ball.getY(),
+                        mExplosion1, mExplosion2, mExplosion3));
+
+    }
+
+    static class Explosion {
+        private long mLastUpdate;
+        private long mProgress = 0;
+        private final float mX;
+        private final float mY;
+
+        private final Bitmap mExplosion1;
+        private final Bitmap mExplosion2;
+        private final Bitmap mExplosion3;
+        private final float mRadius;
+
+        Explosion(long mLastUpdate, float mX, float mY,
+                  Bitmap explosion1, Bitmap explosion2, Bitmap explosion3) {
+            this.mLastUpdate = mLastUpdate;
+            this.mX = mX;
+            this.mY = mY;
+            this.mExplosion1 = explosion1;
+            this.mExplosion2 = explosion2;
+            this.mExplosion3 = explosion3;
+            mRadius = ((float) mExplosion1.getWidth()) / 2f;
+
+        }
+
+        public void update(long now) {
+            mProgress += (now - mLastUpdate);
+            mLastUpdate = now;
+        }
+
+        public void setNow(long now) {
+            mLastUpdate = now;
+        }
+
+        public void draw(Canvas canvas, Paint paint) {
+            if (mProgress < 80L) {
+                canvas.drawBitmap(mExplosion1, mX - mRadius, mY - mRadius, paint);
+            } else if (mProgress < 160L) {
+                canvas.drawBitmap(mExplosion2, mX - mRadius, mY - mRadius, paint);
+            } else if (mProgress < 400L) {
+                canvas.drawBitmap(mExplosion3, mX - mRadius, mY - mRadius, paint);
+            }
+        }
+
+        public boolean done() {
+            return mProgress > 700L;
+        }
+    }
+
+    private ArrayList<Explosion> mExplosions = new ArrayList<Explosion>();
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         boolean newRegion = false;
 
         if (mMode == Mode.Bouncing) {
-            try {
-                newRegion = mEngine.update(SystemClock.elapsedRealtime());
-            } catch (BallHitMovingLineException e) {
-                mCallback.onBallHitsMovingLine(mEngine, e.getX(), e.getY());
-            }
+
+            // handle the ball engine
+            final long now = SystemClock.elapsedRealtime();
+            newRegion = mEngine.update(now);
 
             if (newRegion) {
                 mCallback.onAreaChange(mEngine);
@@ -295,12 +381,27 @@ public class DivideAndConquerView extends View {
                     Debug.stopMethodTracing();
                 }
             }
+
+            // the X-plosions
+            for (int i = 0; i < mExplosions.size(); i++) {
+                final Explosion explosion = mExplosions.get(i);
+                explosion.update(now);
+            }
+
+
         }
 
         for (int i = 0; i < mEngine.getRegions().size(); i++) {
             BallRegion region = mEngine.getRegions().get(i);
             drawRegion(canvas, region);
         }
+
+        for (int i = 0; i < mExplosions.size(); i++) {
+            final Explosion explosion = mExplosions.get(i);
+            explosion.draw(canvas, mPaint);
+            // TODO prune explosions that are done
+        }
+
 
         if (mMode == Mode.PausedByUser) {
             drawPausedText(canvas);
@@ -334,7 +435,7 @@ public class DivideAndConquerView extends View {
     private void drawRegion(Canvas canvas, BallRegion region) {
 
         // draw fill rect to offset against background
-        mPaint.setColor(Color.WHITE);
+        mPaint.setColor(Color.LTGRAY);
 
         mRectF.set(region.getLeft(), region.getTop(),
                 region.getRight(), region.getBottom());
@@ -343,7 +444,7 @@ public class DivideAndConquerView extends View {
 
         //draw an outline
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.BLACK);
+        mPaint.setColor(Color.WHITE);
         canvas.drawRect(mRectF, mPaint);
         mPaint.setStyle(Paint.Style.FILL);  // restore style
 
@@ -365,7 +466,9 @@ public class DivideAndConquerView extends View {
     }
 
     private static int scaleToBlack(int component, float percentage) {
-        return (int) ((1f - percentage*0.4f) * component);
+//        return (int) ((1f - percentage*0.4f) * component);
+
+        return (int) (percentage * 0.6f * (0xFF - component) + component);
     }
 
     /**

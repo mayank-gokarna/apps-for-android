@@ -27,8 +27,10 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Color;
 
 import java.util.Stack;
 
@@ -38,14 +40,13 @@ import java.util.Stack;
  * hits a moving line and there is only one life left.
  */
 public class DivideAndConquerActivity extends Activity
-        implements DivideAndConquerView.BallEventCallBack,
+        implements DivideAndConquerView.BallEngineCallBack,
         NewGameCallback,
         DialogInterface.OnCancelListener {
 
     private static final int NEW_GAME_NUM_BALLS = 1;
     private static final double LEVEL_UP_THRESHOLD = 0.8;
-    private static final int TRY_AGAIN_PAUSE = 1000;
-    private static final int COLLISION_VIBRATE_MILLIS = 100;
+    private static final int COLLISION_VIBRATE_MILLIS = 50;
 
     private boolean mVibrateOn;
     
@@ -195,9 +196,10 @@ public class DivideAndConquerActivity extends Activity
 
     /** {@inheritDoc} */
     public void onBallHitsMovingLine(final BallEngine ballEngine, float x, float y) {
-        saveMode();
-        mBallsView.setMode(DivideAndConquerView.Mode.Paused);
         if (--mNumLives == 0) {
+            saveMode();
+            mBallsView.setMode(DivideAndConquerView.Mode.Paused);
+
             // vibrate three times
             if (mVibrateOn) {
                 mVibrator.vibrate(
@@ -211,16 +213,27 @@ public class DivideAndConquerActivity extends Activity
             if (mVibrateOn) {
                 mVibrator.vibrate(COLLISION_VIBRATE_MILLIS);
             }
-            mBallsView.postDelayed(new Runnable() {
-                public void run() {
-                    ballEngine.reset(SystemClock.elapsedRealtime(), mNumBalls);
-                    updateLivesDisplay(mNumLives, true);
-                    updatePercentDisplay(0);
-                    restoreMode();
-                }
-            }, TRY_AGAIN_PAUSE);
+            updateLivesDisplay(mNumLives);
+            if (mNumLives <= 1) {
+                mBallsView.postDelayed(mOneLifeToastRunnable, 700);
+            } else {
+                mBallsView.postDelayed(mLivesBlinkRedRunnable, 700);
+            }
         }
     }
+
+    private Runnable mOneLifeToastRunnable = new Runnable() {
+        public void run() {
+            showToast("1 life left!");
+        }
+    };
+
+    private Runnable mLivesBlinkRedRunnable = new Runnable() {
+        public void run() {
+            mLivesLeft.setTextColor(Color.RED);
+            mLivesLeft.postDelayed(mLivesTextWhiteRunnable, 2000);
+        }
+    };
 
     /** {@inheritDoc} */
     public void onAreaChange(final BallEngine ballEngine) {
@@ -242,8 +255,24 @@ public class DivideAndConquerActivity extends Activity
         updateLevelDisplay(mNumBalls);
         ballEngine.reset(SystemClock.elapsedRealtime(), mNumBalls);
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
-        showToast("level " + mNumBalls);
+        if (mNumBalls % 4 == 0) {
+            mNumLives++;
+            updateLivesDisplay(mNumLives);
+            showToast("bonus life!");
+        }
+        if (mNumBalls == 10) {
+            showToast("Level 10? You ROCK!");
+        } else if (mNumBalls == 15) {
+            showToast("BALLS TO THE WALL!");
+        }
     }
+
+    private Runnable mLivesTextWhiteRunnable = new Runnable() {
+
+        public void run() {
+            mLivesLeft.setTextColor(Color.WHITE);
+        }
+    };
 
     private void showToast(String text) {
         cancelToasts();
@@ -273,7 +302,7 @@ public class DivideAndConquerActivity extends Activity
         mNumBalls = NEW_GAME_NUM_BALLS;
         mNumLives = mNumLivesStart;
         updatePercentDisplay(0);
-        updateLivesDisplay(mNumLives, false);
+        updateLivesDisplay(mNumLives);
         updateLevelDisplay(mNumBalls);
         mBallsView.getEngine().reset(SystemClock.elapsedRealtime(), mNumBalls);
         mBallsView.setMode(DivideAndConquerView.Mode.Bouncing);
@@ -289,16 +318,11 @@ public class DivideAndConquerActivity extends Activity
     /**
      * Update the display showing the number of lives left.
      * @param numLives The number of lives left.
-     * @param showToast Whether to show a toast with the number of lives left
-     *   too.
      */
-    void updateLivesDisplay(int numLives, boolean showToast) {
+    void updateLivesDisplay(int numLives) {
         String text = (numLives == 1) ?
                 getString(R.string.one_life_left) : getString(R.string.lives_left, numLives);
         mLivesLeft.setText(text);
-        if (showToast) {
-            showToast(text);
-        }
     }
 
     /** {@inheritDoc} */

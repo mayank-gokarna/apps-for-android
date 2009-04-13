@@ -18,6 +18,7 @@ package com.google.android.divideandconquer;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.lang.ref.WeakReference;
 
 /**
  * A ball region is a rectangular region that contains bouncing
@@ -47,6 +48,8 @@ public class BallRegion extends Shape2d {
     private static final float MIN_EDGE = 30f;
     private boolean mDoneShrinking = false;
 
+    private WeakReference<BallEngine.BallEventCallBack> mCallBack;
+
     /*
      * @param left The minimum x component
      * @param right The maximum x component
@@ -69,6 +72,10 @@ public class BallRegion extends Shape2d {
             ball.setRegion(this);
         }
         checkShrinkToFit();
+    }
+
+    public void setCallBack(BallEngine.BallEventCallBack callBack) {
+        this.mCallBack = new WeakReference<BallEngine.BallEventCallBack>(callBack);
     }
 
     private void checkShrinkToFit() {
@@ -133,10 +140,8 @@ public class BallRegion extends Shape2d {
      * @param now in millis
      * @return A new region if a split has occured because the animating line
      *     finished.
-     * @throws BallHitMovingLineException If any of the balls collides with
-     *     the animating line.
      */
-    public BallRegion update(long now) throws BallHitMovingLineException {
+    public BallRegion update(long now) {
 
         // update the animating line
         final boolean newRegion =
@@ -149,7 +154,8 @@ public class BallRegion extends Shape2d {
             final Ball ball = mBalls.get(i);
             ball.update(now);
             if (mAnimatingLine != null && ball.isIntersecting(mAnimatingLine)) {
-                throw new BallHitMovingLineException(ball.getX(), ball.getY());
+                mAnimatingLine = null;
+                if (mCallBack != null) mCallBack.get().onBallHitsLine(now, ball, mAnimatingLine);
             }
         }
 
@@ -169,7 +175,7 @@ public class BallRegion extends Shape2d {
 
         // no collsion, new region means we need to split out the apropriate
         // balls into a new region
-        if (newRegion) {
+        if (newRegion && mAnimatingLine != null) {
             BallRegion otherRegion = splitRegion(
                     now,
                     mAnimatingLine.getDirection(),
@@ -271,8 +277,10 @@ public class BallRegion extends Shape2d {
             float oldBottom = mBottom;
             mBottom = perpAxisOffset;
             checkShrinkToFit();
-            return new BallRegion(now, mLeft, mRight, perpAxisOffset,
+            final BallRegion region = new BallRegion(now, mLeft, mRight, perpAxisOffset,
                     oldBottom, splitBalls);
+            region.setCallBack(mCallBack.get());
+            return region;
         } else  {
             assert(direction == Direction.Vertical);
             Iterator<Ball> it = mBalls.iterator();
@@ -286,8 +294,10 @@ public class BallRegion extends Shape2d {
             float oldRight = mRight;
             mRight = perpAxisOffset;
             checkShrinkToFit();
-            return new BallRegion(now, perpAxisOffset, oldRight, mTop,
+            final BallRegion region = new BallRegion(now, perpAxisOffset, oldRight, mTop,
                     mBottom, splitBalls);
+            region.setCallBack(mCallBack.get());
+            return region;
         }
     }
 

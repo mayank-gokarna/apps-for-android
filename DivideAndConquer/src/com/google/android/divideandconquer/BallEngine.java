@@ -33,16 +33,23 @@ import java.util.Iterator;
  * typically this is {@link android.os.SystemClock#elapsedRealtime()} 
  */
 public class BallEngine {
+
+    static public interface BallEventCallBack {
+
+        void onBallHitsBall(Ball ballA, Ball ballB);
+
+        void onBallHitsLine(long when, Ball ball, AnimatingLine animatingLine);
+    }
+
     private final float mMinX;
     private final float mMaxX;
     private final float mMinY;
     private final float mMaxY;
 
-    private int mNumBalls = 4;
     private float mBallSpeed;
     private float mBallRadius;
 
-    private Context mContext;
+    private BallEventCallBack mCallBack;
 
     /**
      * Holds onto new regions during a split
@@ -64,8 +71,8 @@ public class BallEngine {
         mBallRadius = ballRadius;
     }
 
-    public void setContext(Context mContext) {
-        this.mContext = mContext;
+    public void setCallBack(BallEventCallBack mCallBack) {
+        this.mCallBack = mCallBack;
     }
 
     /**
@@ -102,6 +109,7 @@ public class BallEngine {
             balls.add(ball);
         }
         BallRegion region = new BallRegion(now, mMinX, mMaxX, mMinY, mMaxY, balls);
+        region.setCallBack(mCallBack);
 
         mRegions.add(region);
     }
@@ -177,9 +185,8 @@ public class BallEngine {
     /**
      * @param now The latest notion of 'now'
      * @return whether any new regions were added by the update.
-     * @throws BallHitMovingLineException if a collision is detected
      */
-    public boolean update(long now) throws BallHitMovingLineException {
+    public boolean update(long now) {
         boolean regionChange = false;
         Iterator<BallRegion> it = mRegions.iterator();
         while (it.hasNext()) {

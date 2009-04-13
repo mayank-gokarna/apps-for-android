@@ -74,6 +74,10 @@ public class Ball extends Shape2d {
         return mRadiusPixels;
     }
 
+    public double getAngle() {
+        return mAngle;
+    }
+
     /**
      * Get the region the ball is contained in.
      */

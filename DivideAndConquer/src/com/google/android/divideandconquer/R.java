@@ -13,6 +13,9 @@ public final class R {
     public static final class drawable {
         public static final int ball=0x7f020000;
         public static final int ballsicon=0x7f020001;
+        public static final int explosion1=0x7f020002;
+        public static final int explosion2=0x7f020003;
+        public static final int explosion3=0x7f020004;
     }
     public static final class id {
         public static final int ballsView=0x7f050005;
