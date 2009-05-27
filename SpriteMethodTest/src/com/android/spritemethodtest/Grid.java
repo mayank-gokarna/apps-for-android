@@ -16,6 +16,8 @@
 
 package com.android.spritemethodtest;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.FloatBuffer;
 
@@ -30,11 +32,7 @@ import javax.microedition.khronos.opengles.GL11;
  */
 class Grid {
     private FloatBuffer mVertexBuffer;
-    private float[] mVertexArray;
-
     private FloatBuffer mTexCoordBuffer;
-    private float[] mTexCoordArray;
-
     private CharBuffer mIndexBuffer;
 
     private int mW;
@@ -58,18 +56,20 @@ class Grid {
         mW = vertsAcross;
         mH = vertsDown;
         int size = vertsAcross * vertsDown;
-        mVertexArray = new float[size * 3];
-        mVertexBuffer = FloatBuffer.wrap(mVertexArray);
-
-        mTexCoordArray = new float[size * 2];
-        mTexCoordBuffer = FloatBuffer.wrap(mTexCoordArray);
+        final int FLOAT_SIZE = 4;
+        final int CHAR_SIZE = 2;
+        mVertexBuffer = ByteBuffer.allocateDirect(FLOAT_SIZE * size * 3)
+            .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexCoordBuffer = ByteBuffer.allocateDirect(FLOAT_SIZE * size * 2)
+            .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         int quadW = mW - 1;
         int quadH = mH - 1;
         int quadCount = quadW * quadH;
         int indexCount = quadCount * 6;
         mIndexCount = indexCount;
-        char[] indexArray = new char[indexCount];
+        mIndexBuffer = ByteBuffer.allocateDirect(CHAR_SIZE * indexCount)
+            .order(ByteOrder.nativeOrder()).asCharBuffer();
 
         /*
          * Initialize triangle list mesh.
@@ -92,18 +92,16 @@ class Grid {
                     char c = (char) ((y + 1) * mW + x);
                     char d = (char) ((y + 1) * mW + x + 1);
 
-                    indexArray[i++] = a;
-                    indexArray[i++] = b;
-                    indexArray[i++] = c;
+                    mIndexBuffer.put(i++, a);
+                    mIndexBuffer.put(i++, b);
+                    mIndexBuffer.put(i++, c);
 
-                    indexArray[i++] = b;
-                    indexArray[i++] = c;
-                    indexArray[i++] = d;
+                    mIndexBuffer.put(i++, b);
+                    mIndexBuffer.put(i++, c);
+                    mIndexBuffer.put(i++, d);
                 }
             }
         }
-
-        mIndexBuffer = CharBuffer.wrap(indexArray);
         
         mVertBufferIndex = 0;
     }
@@ -119,13 +117,13 @@ class Grid {
         int index = mW * j + i;
 
         int posIndex = index * 3;
-        mVertexArray[posIndex] = x;
-        mVertexArray[posIndex + 1] = y;
-        mVertexArray[posIndex + 2] = z;
+        mVertexBuffer.put(posIndex, x);
+        mVertexBuffer.put(posIndex + 1, y);
+        mVertexBuffer.put(posIndex + 2, z);
 
         int texIndex = index * 2;
-        mTexCoordArray[texIndex] = u;
-        mTexCoordArray[texIndex + 1] = v;
+        mTexCoordBuffer.put(texIndex, u);
+        mTexCoordBuffer.put(texIndex + 1, v);
     }
 
     public static void beginDrawing(GL10 gl, boolean useTexture) {
