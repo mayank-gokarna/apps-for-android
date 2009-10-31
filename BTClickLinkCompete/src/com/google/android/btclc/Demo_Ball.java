@@ -24,6 +24,10 @@ import java.util.List;
  */
 
 public class Demo_Ball {
+    public enum BOUNCE_TYPE {
+        TOPLEFT, TOP, TOPRIGHT, LEFT, RIGHT, BOTTOMLEFT, BOTTOM, BOTTOMRIGHT
+    }
+    
     private final float radius = 20;
 
     private final float pxPerM = 2; // Let 2 pixels represent 1 meter
@@ -36,6 +40,8 @@ public class Demo_Ball {
 
     private float yPos = 240;
 
+    private float xMax = 320;
+    
     private float yMax = 410;
 
     private float xAcceleration = 0;
@@ -61,6 +67,13 @@ public class Demo_Ball {
     public Demo_Ball(boolean visible) {
         onScreen = visible;
         lastUpdate = System.currentTimeMillis();
+    }
+    
+    public Demo_Ball(boolean visible, int screenSizeX, int screenSizeY) {
+        onScreen = visible;
+        lastUpdate = System.currentTimeMillis();
+        xMax = screenSizeX;
+        yMax = screenSizeY;
     }
 
     public float getRadius() {
@@ -155,8 +168,8 @@ public class Demo_Ball {
             reboundYVelocity = yVelocity;
             onScreen = false;
             return Demo_Multiscreen.LEFT;
-        } else if (xPos + radius > 320) {
-            reboundXPos = 320 - radius;
+        } else if (xPos + radius > xMax) {
+            reboundXPos = xMax - radius;
             reboundYPos = yPos;
             reboundXVelocity = -xVelocity * reboundEnergyFactor;
             reboundYVelocity = yVelocity;
@@ -187,5 +200,64 @@ public class Demo_Ball {
                 .parseFloat(stateInfo.get(2)), Float.parseFloat(stateInfo.get(3)), Float
                 .parseFloat(stateInfo.get(4)), Float.parseFloat(stateInfo.get(5)), Integer
                 .parseInt(stateInfo.get(6)));
+    }
+    
+    public void doBounce(BOUNCE_TYPE bounceType, float vX, float vY){
+        switch (bounceType){
+            case TOPLEFT:
+                if (xVelocity > 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                if (yVelocity > 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+            case TOP:
+                if (yVelocity > 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+            case TOPRIGHT:
+                if (xVelocity < 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                if (yVelocity > 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+            case LEFT:
+                if (xVelocity > 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                break;
+            case RIGHT:
+                if (xVelocity < 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                break;
+            case BOTTOMLEFT:
+                if (xVelocity > 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                if (yVelocity < 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+            case BOTTOM:
+                if (yVelocity < 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+            case BOTTOMRIGHT:
+                if (xVelocity < 0){
+                    xVelocity = -xVelocity * reboundEnergyFactor;
+                }
+                if (yVelocity < 0){
+                    yVelocity = -yVelocity * reboundEnergyFactor;
+                }
+                break;
+        }
+        xVelocity = xVelocity + (vX * 100);
+        yVelocity = yVelocity + (vY * 100);
     }
 }
