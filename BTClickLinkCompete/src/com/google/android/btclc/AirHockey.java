@@ -24,6 +24,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.view.SurfaceHolder.Callback;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,12 @@ public class AirHockey extends Activity implements Callback {
     public static final String TAG = "AirHockey";
 
     private static final int SERVER_LIST_RESULT_CODE = 42;
+
+    public static final int UP = 3;
+
+    public static final int DOWN = 4;
+    
+    public static final int FLIPTOP = 5;
 
     private AirHockey self;
 
@@ -65,9 +72,11 @@ public class AirHockey extends Activity implements Callback {
 
     private Connection mConnection;
 
+    private String rivalDevice = "";
+
     private OnMessageReceivedListener dataReceivedListener = new OnMessageReceivedListener() {
         public void OnMessageReceived(String device, String message) {
-
+            mBall.restoreState(message);
         }
     };
 
@@ -79,7 +88,12 @@ public class AirHockey extends Activity implements Callback {
 
     private OnIncomingConnectionListener connectedListener = new OnIncomingConnectionListener() {
         public void OnIncomingConnection(String device) {
-
+            rivalDevice = device;
+            WindowManager w = getWindowManager();
+            Display d = w.getDefaultDisplay();
+            int width = d.getWidth();
+            int height = d.getHeight();
+            mBall = new Demo_Ball(true, width, height - 60);
         }
     };
 
@@ -91,7 +105,18 @@ public class AirHockey extends Activity implements Callback {
 
     private OnConnectionServiceReadyListener serviceReadyListener = new OnConnectionServiceReadyListener() {
         public void OnConnectionServiceReady() {
-
+            if (mType == 0) {
+                mConnection.startServer(1, connectedListener, maxConnectionsListener,
+                        dataReceivedListener, disconnectedListener);
+            } else {
+                WindowManager w = getWindowManager();
+                Display d = w.getDefaultDisplay();
+                int width = d.getWidth();
+                int height = d.getHeight();
+                mBall = new Demo_Ball(false, width, height - 60);
+                Intent serverListIntent = new Intent(self, ServerListActivity.class);
+                startActivityForResult(serverListIntent, SERVER_LIST_RESULT_CODE);
+            }
         }
     };
 
@@ -126,12 +151,6 @@ public class AirHockey extends Activity implements Callback {
 
         mConnection = new Connection(this, serviceReadyListener);
         mHolder.addCallback(self);
-
-        WindowManager w = getWindowManager();
-        Display d = w.getDefaultDisplay();
-        int width = d.getWidth();
-        int height = d.getHeight(); 
-        mBall = new Demo_Ball(true, width, height-60);
     }
 
     @Override
@@ -174,7 +193,7 @@ public class AirHockey extends Activity implements Callback {
 
             c.drawBitmap(mPaddleBmp, p.x - 60, p.y - 200, new Paint());
         }
-        if (mBall == null) {
+        if ((mBall == null) || !mBall.isOnScreen()) {
             return;
         }
         float x = mBall.getX();
@@ -212,13 +231,18 @@ public class AirHockey extends Activity implements Callback {
                 try {
                     Thread.sleep(5);
                     draw();
-                    handleCollision();
                     if (mBall != null) {
-                        // Testing on just one screen for now
+                        handleCollision();
                         int position = mBall.update();
-                        if (position != 0){
-                            mBall.doRebound();
+                        mBall.setAcceleration(0, 0);
+                        if (position != 0) {
+                            if ((position == UP) && (rivalDevice.length() > 1)) {
+                                mConnection.sendMessage(rivalDevice, mBall.getState() + "|" + FLIPTOP);
+                            } else {
+                                mBall.doRebound();
+                            }
                         }
+
                     }
                 } catch (InterruptedException ie) {
                     running = false;
@@ -238,7 +262,15 @@ public class AirHockey extends Activity implements Callback {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((resultCode == Activity.RESULT_OK) && (requestCode == SERVER_LIST_RESULT_CODE)) {
-
+            String device = data.getStringExtra(ServerListActivity.EXTRA_SELECTED_ADDRESS);
+            int connectionStatus = mConnection.connect(device, dataReceivedListener,
+                    disconnectedListener);
+            if (connectionStatus != Connection.SUCCESS) {
+                Toast.makeText(self, "Unable to connect; please try again.", 1).show();
+            } else {
+                rivalDevice = device;
+            }
+            return;
         }
     }
 
@@ -263,6 +295,7 @@ public class AirHockey extends Activity implements Callback {
         return false;
     }
 
+    // TODO: Scale this for G1 sized screens
     public Point getBallCenter() {
         if (mBall == null) {
             return new Point(-1, -1);
@@ -272,6 +305,7 @@ public class AirHockey extends Activity implements Callback {
         return new Point(x + 10, y + 12);
     }
 
+    // TODO: Scale this for G1 sized screens
     public Point getPaddleCenter() {
         if (mPaddleTimes.size() > 0) {
             Point p = mPaddlePoints.get(mPaddlePoints.size() - 1);
@@ -304,9 +338,17 @@ public class AirHockey extends Activity implements Callback {
             // Get paddle velocity
             float vX = 0;
             float vY = 0;
-            Point endPoint = mPaddlePoints.get(mPaddlePoints.size() - 1);
-            Point startPoint = mPaddlePoints.get(0);
-            long timeDiff = mPaddleTimes.get(mPaddleTimes.size() - 1) - mPaddleTimes.get(0);
+            Point endPoint = new Point(-1, -1);
+            Point startPoint = new Point(-1, -1);
+            long timeDiff = 0;
+            try {
+                endPoint = mPaddlePoints.get(mPaddlePoints.size() - 1);
+                startPoint = mPaddlePoints.get(0);
+                timeDiff = mPaddleTimes.get(mPaddleTimes.size() - 1) - mPaddleTimes.get(0);
+            } catch (IndexOutOfBoundsException e) {
+                // Paddle points were removed at the last moment
+                return;
+            }
             if (timeDiff > 0) {
                 vX = ((float) (endPoint.x - startPoint.x)) / timeDiff;
                 vY = ((float) (endPoint.y - startPoint.y)) / timeDiff;
