@@ -9,13 +9,19 @@ import com.google.android.btclc.Connection.OnMessageReceivedListener;
 import com.google.android.btclc.Demo_Ball.BOUNCE_TYPE;
 
 import android.app.Activity;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -37,7 +43,7 @@ public class AirHockey extends Activity implements Callback {
     public static final int UP = 3;
 
     public static final int DOWN = 4;
-    
+
     public static final int FLIPTOP = 5;
 
     private AirHockey self;
@@ -49,6 +55,8 @@ public class AirHockey extends Activity implements Callback {
     private SurfaceHolder mHolder;
 
     private Paint bgPaint;
+
+    private Paint goalPaint;
 
     private Paint ballPaint;
 
@@ -74,9 +82,26 @@ public class AirHockey extends Activity implements Callback {
 
     private String rivalDevice = "";
 
+    private SoundPool mSoundPool;
+
+    private int tockSound = 0;
+
+    private MediaPlayer mPlayer;
+
+    private int hostScore = 0;
+
+    private int clientScore = 0;
+
     private OnMessageReceivedListener dataReceivedListener = new OnMessageReceivedListener() {
         public void OnMessageReceived(String device, String message) {
-            mBall.restoreState(message);
+            if (message.indexOf("SCORE") == 0) {
+                String[] scoreMessageSplit = message.split(":");
+                hostScore = Integer.parseInt(scoreMessageSplit[1]);
+                clientScore = Integer.parseInt(scoreMessageSplit[2]);
+                showScore();
+            } else {
+                mBall.restoreState(message);
+            }
         }
     };
 
@@ -94,12 +119,29 @@ public class AirHockey extends Activity implements Callback {
             int width = d.getWidth();
             int height = d.getHeight();
             mBall = new Demo_Ball(true, width, height - 60);
+            mBall.putOnScreen(width/2, (height/2 + (int)(height*.05)), 0, 0, 0, 0, 0);
         }
     };
 
     private OnConnectionLostListener disconnectedListener = new OnConnectionLostListener() {
         public void OnConnectionLost(String device) {
+            class displayConnectionLostAlert implements Runnable {
+                public void run() {
+                    Builder connectionLostAlert = new Builder(self);
 
+                    connectionLostAlert.setTitle("Connection lost");
+                    connectionLostAlert.setMessage("Your connection with the other player has been lost.");
+
+                    connectionLostAlert.setPositiveButton("Ok", new OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+                    connectionLostAlert.setCancelable(false);
+                    connectionLostAlert.show();
+                }                
+            }
+            self.runOnUiThread(new displayConnectionLostAlert());
         }
     };
 
@@ -140,6 +182,8 @@ public class AirHockey extends Activity implements Callback {
 
         bgPaint = new Paint();
         bgPaint.setColor(Color.BLACK);
+        goalPaint = new Paint();
+        goalPaint.setColor(Color.RED);
 
         ballPaint = new Paint();
         ballPaint.setColor(Color.GREEN);
@@ -149,6 +193,8 @@ public class AirHockey extends Activity implements Callback {
         paddlePaint.setColor(Color.BLUE);
         paddlePaint.setAntiAlias(true);
 
+        mPlayer = MediaPlayer.create(this, R.raw.collision);
+
         mConnection = new Connection(this, serviceReadyListener);
         mHolder.addCallback(self);
     }
@@ -157,6 +203,9 @@ public class AirHockey extends Activity implements Callback {
     protected void onDestroy() {
         if (mConnection != null) {
             mConnection.shutdown();
+        }
+        if (mPlayer != null){
+            mPlayer.release();
         }
         super.onDestroy();
     }
@@ -182,6 +231,8 @@ public class AirHockey extends Activity implements Callback {
 
     private void doDraw(Canvas c) {
         c.drawRect(0, 0, c.getWidth(), c.getHeight(), bgPaint);
+        c.drawRect(0, c.getHeight() - (int) (c.getHeight() * 0.02), c.getWidth(), c.getHeight(),
+                goalPaint);
 
         if (mPaddleTimes.size() > 0) {
             Point p = mPaddlePoints.get(mPaddlePoints.size() - 1);
@@ -208,7 +259,7 @@ public class AirHockey extends Activity implements Callback {
 
             // Debug circle
             Point debugBallCircle = getBallCenter();
-            c.drawCircle(debugBallCircle.x, debugBallCircle.y, mBallRadius, ballPaint);
+            //c.drawCircle(debugBallCircle.x, debugBallCircle.y, mBallRadius, ballPaint);
 
             c.drawBitmap(bmp, x - 17, y - 23, new Paint());
         }
@@ -237,7 +288,21 @@ public class AirHockey extends Activity implements Callback {
                         mBall.setAcceleration(0, 0);
                         if (position != 0) {
                             if ((position == UP) && (rivalDevice.length() > 1)) {
-                                mConnection.sendMessage(rivalDevice, mBall.getState() + "|" + FLIPTOP);
+                                mConnection.sendMessage(rivalDevice, mBall.getState() + "|"
+                                        + FLIPTOP);
+                            } else if (position == DOWN){
+                              if (mType == 0){
+                                  clientScore = clientScore + 1;
+                              } else {
+                                  hostScore = hostScore + 1;
+                              }
+                              mConnection.sendMessage(rivalDevice, "SCORE:" + hostScore + ":" + clientScore);
+                              showScore();
+                              WindowManager w = getWindowManager();
+                              Display d = w.getDefaultDisplay();
+                              int width = d.getWidth();
+                              int height = d.getHeight();
+                              mBall.putOnScreen(width/2, (height/2 + (int)(height*.05)), 0, 0, 0, 0, 0);
                             } else {
                                 mBall.doRebound();
                             }
@@ -316,8 +381,23 @@ public class AirHockey extends Activity implements Callback {
             return new Point(-1, -1);
         }
     }
+    
+    private void showScore(){
+        class showScoreRunnable implements Runnable {
+            public void run() {
+                String scoreString = "";
+                if (mType == 0){
+                    scoreString = hostScore + " - " + clientScore;
+                } else {
+                    scoreString = clientScore + " - " + hostScore;
+                }
+                Toast.makeText(self, scoreString, 0).show();
+            }            
+        }
+        self.runOnUiThread(new showScoreRunnable());
+    }
 
-    public void handleCollision() {
+    private void handleCollision() {
         // TODO: Handle multiball case
         if (mBall == null) {
             return;
@@ -382,8 +462,13 @@ public class AirHockey extends Activity implements Callback {
             }
 
             mBall.doBounce(bounceType, vX, vY);
+            if (!mPlayer.isPlaying()) {
+                mPlayer.release();
+                mPlayer = MediaPlayer.create(this, R.raw.collision);
+                mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mPlayer.start();
+            }
         }
-
     }
 
 }

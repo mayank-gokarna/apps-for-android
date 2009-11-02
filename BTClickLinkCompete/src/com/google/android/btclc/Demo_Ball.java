@@ -109,13 +109,21 @@ public class Demo_Ball {
         lastUpdate = System.currentTimeMillis();
 
         if (startingSide == Demo_Multiscreen.RIGHT) {
-            xPos = 320 - radius - 2;
+            xPos = xMax - radius - 2;
         } else if (startingSide == Demo_Multiscreen.LEFT) {
             xPos = radius + 2;
         } else if (startingSide == Demo_Multiscreen.UP) {
             yPos = radius + 2;
         } else if (startingSide == Demo_Multiscreen.DOWN) {
             yPos = yMax - radius - 2;
+        } else if (startingSide == AirHockey.FLIPTOP) {
+            yPos = radius + 2;
+            xPos = xMax - x;
+            if (xPos < 0){
+                xPos = 0;
+            }
+            yVelocity = -vy;
+            yAcceleration = -ay;
         }
 
         onScreen = true;
@@ -127,6 +135,10 @@ public class Demo_Ball {
         }
         xAcceleration = ax;
         yAcceleration = ay;
+    }
+    
+    public boolean isOnScreen(){
+        return onScreen;
     }
 
     public int update() {
@@ -257,7 +269,7 @@ public class Demo_Ball {
                 }
                 break;
         }
-        xVelocity = xVelocity + (vX * 100);
-        yVelocity = yVelocity + (vY * 100);
+        xVelocity = xVelocity + (vX * 500);
+        yVelocity = yVelocity + (vY * 150);
     }
 }

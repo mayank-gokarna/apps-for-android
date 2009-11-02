@@ -44,7 +44,8 @@ public class ConfigActivity extends Activity {
         Button startServer = (Button) findViewById(R.id.start_demo_server);
         startServer.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                Intent serverIntent = new Intent(self, Demo_Multiscreen.class);
+                //Intent serverIntent = new Intent(self, Demo_Multiscreen.class);
+                Intent serverIntent = new Intent(self, AirHockey.class);
                 serverIntent.putExtra("TYPE", 0);
                 startActivity(serverIntent);
             }
@@ -53,7 +54,8 @@ public class ConfigActivity extends Activity {
         Button startClient = (Button) findViewById(R.id.start_demo_client);
         startClient.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                Intent clientIntent = new Intent(self, Demo_Multiscreen.class);
+                //Intent clientIntent = new Intent(self, Demo_Multiscreen.class);
+                Intent clientIntent = new Intent(self, AirHockey.class);
                 clientIntent.putExtra("TYPE", 1);
                 startActivity(clientIntent);
             }
