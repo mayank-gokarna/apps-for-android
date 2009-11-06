@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
 
 import android.app.Activity;
 import android.app.ListActivity;

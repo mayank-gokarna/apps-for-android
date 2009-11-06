@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
+
+import net.clc.bt.IConnection;
+import net.clc.bt.IConnectionCallback;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -31,7 +34,7 @@ import android.util.Log;
  */
 
 public class Connection {
-    public static final String TAG = "com.google.android.btclc.Connection";
+    public static final String TAG = "net.clc.bt.Connection";
 
     public static final int SUCCESS = 0;
 
@@ -233,6 +236,30 @@ public class Connection {
         return Connection.FAILURE;
     }
 
+    public String getAddress() {
+        if (!mStarted) {
+            return "";
+        }
+        try {
+            return mIconnection.getAddress();
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in getAddress", e);
+        }
+        return "";
+    }
+    
+    public String getName() {
+        if (!mStarted) {
+            return "";
+        }
+        try {
+            return mIconnection.getName();
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in getVersion", e);
+        }
+        return "";
+    }
+    
     public void shutdown() {
         try {
             mStarted = false;

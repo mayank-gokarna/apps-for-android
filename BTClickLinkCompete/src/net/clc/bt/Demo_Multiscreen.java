@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
 
-import com.google.android.btclc.Connection.OnConnectionLostListener;
-import com.google.android.btclc.Connection.OnConnectionServiceReadyListener;
-import com.google.android.btclc.Connection.OnIncomingConnectionListener;
-import com.google.android.btclc.Connection.OnMaxConnectionsReachedListener;
-import com.google.android.btclc.Connection.OnMessageReceivedListener;
+import net.clc.bt.Connection.OnConnectionLostListener;
+import net.clc.bt.Connection.OnConnectionServiceReadyListener;
+import net.clc.bt.Connection.OnIncomingConnectionListener;
+import net.clc.bt.Connection.OnMaxConnectionsReachedListener;
+import net.clc.bt.Connection.OnMessageReceivedListener;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -161,6 +161,7 @@ public class Demo_Multiscreen extends Activity implements Callback {
                 mBall = new Demo_Ball(true);
                 mConnection.startServer(4, connectedListener, maxConnectionsListener,
                         dataReceivedListener, disconnectedListener);
+                self.setTitle("MultiScreen: " + mConnection.getName() + "-" + mConnection.getAddress());
             } else {
                 mBall = new Demo_Ball(false);
                 Intent serverListIntent = new Intent(self, ServerListActivity.class);

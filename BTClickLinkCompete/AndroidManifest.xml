@@ -12,7 +12,7 @@
 		limitations under the License. */
 	-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.google.android.btclc" android:versionCode="1"
+	package="net.clc.bt" android:versionCode="1"
 	android:versionName="1.0">
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
 

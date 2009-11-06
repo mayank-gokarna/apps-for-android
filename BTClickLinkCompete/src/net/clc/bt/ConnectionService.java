@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
+
+import net.clc.bt.IConnection;
+import net.clc.bt.IConnectionCallback;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -42,7 +45,7 @@ import java.util.UUID;
  */
 
 public class ConnectionService extends Service {
-    public static final String TAG = "com.google.android.btclc.ConnectionService";
+    public static final String TAG = "net.clc.bt.ConnectionService";
 
     private ArrayList<UUID> mUuid;
 
@@ -317,6 +320,14 @@ public class ConnectionService extends Service {
             }
             mCallback = null;
             return Connection.SUCCESS;
+        }
+
+        public String getAddress() throws RemoteException {
+            return mBtAdapter.getAddress();
+        }
+        
+        public String getName() throws RemoteException {
+            return mBtAdapter.getName();
         }
     };
 

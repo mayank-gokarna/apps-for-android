@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,7 +42,7 @@ public class ConfigActivity extends Activity {
         self = this;
         setContentView(R.layout.config);
 
-        Button startServer = (Button) findViewById(R.id.start_demo_server);
+        Button startServer = (Button) findViewById(R.id.start_hockey_server);
         startServer.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //Intent serverIntent = new Intent(self, Demo_Multiscreen.class);
@@ -51,7 +52,7 @@ public class ConfigActivity extends Activity {
             }
         });
 
-        Button startClient = (Button) findViewById(R.id.start_demo_client);
+        Button startClient = (Button) findViewById(R.id.start_hockey_client);
         startClient.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //Intent clientIntent = new Intent(self, Demo_Multiscreen.class);
@@ -60,5 +61,41 @@ public class ConfigActivity extends Activity {
                 startActivity(clientIntent);
             }
         });
+        
+        Button startMultiScreenServer = (Button) findViewById(R.id.start_demo_server);
+        startMultiScreenServer.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                //Intent serverIntent = new Intent(self, Demo_Multiscreen.class);
+                Intent serverIntent = new Intent(self, Demo_Multiscreen.class);
+                serverIntent.putExtra("TYPE", 0);
+                startActivity(serverIntent);
+            }
+        });
+
+        Button startMultiScreenClient = (Button) findViewById(R.id.start_demo_client);
+        startMultiScreenClient.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                //Intent clientIntent = new Intent(self, Demo_Multiscreen.class);
+                Intent clientIntent = new Intent(self, Demo_Multiscreen.class);
+                clientIntent.putExtra("TYPE", 1);
+                startActivity(clientIntent);
+            }
+        });
+        
+        
+        Button gotoWeb = (Button) findViewById(R.id.goto_website);
+        gotoWeb.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent();
+                i.setAction("android.intent.action.VIEW");
+                i.addCategory("android.intent.category.BROWSABLE");
+                Uri uri = Uri.parse("http://apps-for-android.googlecode.com/svn/trunk/BTClickLinkCompete/docs/index.html");
+                i.setData(uri);
+                self.startActivity(i);
+            }
+        });
+        
+
+
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.btclc;
+package net.clc.bt;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,12 +1,12 @@
 
-package com.google.android.btclc;
+package net.clc.bt;
 
-import com.google.android.btclc.Connection.OnConnectionLostListener;
-import com.google.android.btclc.Connection.OnConnectionServiceReadyListener;
-import com.google.android.btclc.Connection.OnIncomingConnectionListener;
-import com.google.android.btclc.Connection.OnMaxConnectionsReachedListener;
-import com.google.android.btclc.Connection.OnMessageReceivedListener;
-import com.google.android.btclc.Demo_Ball.BOUNCE_TYPE;
+import net.clc.bt.Connection.OnConnectionLostListener;
+import net.clc.bt.Connection.OnConnectionServiceReadyListener;
+import net.clc.bt.Connection.OnIncomingConnectionListener;
+import net.clc.bt.Connection.OnMaxConnectionsReachedListener;
+import net.clc.bt.Connection.OnMessageReceivedListener;
+import net.clc.bt.Demo_Ball.BOUNCE_TYPE;
 
 import android.app.Activity;
 import android.app.AlertDialog.Builder;
@@ -159,6 +159,7 @@ public class AirHockey extends Activity implements Callback {
             if (mType == 0) {
                 mConnection.startServer(1, connectedListener, maxConnectionsListener,
                         dataReceivedListener, disconnectedListener);
+                self.setTitle("Air Hockey: " + mConnection.getName() + "-" + mConnection.getAddress());
             } else {
                 WindowManager w = getWindowManager();
                 Display d = w.getDefaultDisplay();
