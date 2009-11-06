@@ -30,6 +30,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.view.SurfaceHolder.Callback;
+import android.view.WindowManager.BadTokenException;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -119,7 +120,7 @@ public class AirHockey extends Activity implements Callback {
             int width = d.getWidth();
             int height = d.getHeight();
             mBall = new Demo_Ball(true, width, height - 60);
-            mBall.putOnScreen(width/2, (height/2 + (int)(height*.05)), 0, 0, 0, 0, 0);
+            mBall.putOnScreen(width / 2, (height / 2 + (int) (height * .05)), 0, 0, 0, 0, 0);
         }
     };
 
@@ -130,7 +131,8 @@ public class AirHockey extends Activity implements Callback {
                     Builder connectionLostAlert = new Builder(self);
 
                     connectionLostAlert.setTitle("Connection lost");
-                    connectionLostAlert.setMessage("Your connection with the other player has been lost.");
+                    connectionLostAlert
+                            .setMessage("Your connection with the other player has been lost.");
 
                     connectionLostAlert.setPositiveButton("Ok", new OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -138,8 +140,15 @@ public class AirHockey extends Activity implements Callback {
                         }
                     });
                     connectionLostAlert.setCancelable(false);
+                    try {
                     connectionLostAlert.show();
-                }                
+                    } catch (BadTokenException e){
+                        // Something really bad happened here; 
+                        // seems like the Activity itself went away before
+                        // the runnable finished.
+                        // Bail out gracefully here and do nothing.
+                    }
+                }
             }
             self.runOnUiThread(new displayConnectionLostAlert());
         }
@@ -204,7 +213,7 @@ public class AirHockey extends Activity implements Callback {
         if (mConnection != null) {
             mConnection.shutdown();
         }
-        if (mPlayer != null){
+        if (mPlayer != null) {
             mPlayer.release();
         }
         super.onDestroy();
@@ -241,8 +250,9 @@ public class AirHockey extends Activity implements Callback {
             // Point debugPaddleCircle = getPaddleCenter();
             // c.drawCircle(debugPaddleCircle.x, debugPaddleCircle.y,
             // mPaddleRadius, ballPaint);
-
-            c.drawBitmap(mPaddleBmp, p.x - 60, p.y - 200, new Paint());
+            if (p != null) {
+                c.drawBitmap(mPaddleBmp, p.x - 60, p.y - 200, new Paint());
+            }
         }
         if ((mBall == null) || !mBall.isOnScreen()) {
             return;
@@ -259,7 +269,8 @@ public class AirHockey extends Activity implements Callback {
 
             // Debug circle
             Point debugBallCircle = getBallCenter();
-            //c.drawCircle(debugBallCircle.x, debugBallCircle.y, mBallRadius, ballPaint);
+            // c.drawCircle(debugBallCircle.x, debugBallCircle.y, mBallRadius,
+            // ballPaint);
 
             c.drawBitmap(bmp, x - 17, y - 23, new Paint());
         }
@@ -290,19 +301,21 @@ public class AirHockey extends Activity implements Callback {
                             if ((position == UP) && (rivalDevice.length() > 1)) {
                                 mConnection.sendMessage(rivalDevice, mBall.getState() + "|"
                                         + FLIPTOP);
-                            } else if (position == DOWN){
-                              if (mType == 0){
-                                  clientScore = clientScore + 1;
-                              } else {
-                                  hostScore = hostScore + 1;
-                              }
-                              mConnection.sendMessage(rivalDevice, "SCORE:" + hostScore + ":" + clientScore);
-                              showScore();
-                              WindowManager w = getWindowManager();
-                              Display d = w.getDefaultDisplay();
-                              int width = d.getWidth();
-                              int height = d.getHeight();
-                              mBall.putOnScreen(width/2, (height/2 + (int)(height*.05)), 0, 0, 0, 0, 0);
+                            } else if (position == DOWN) {
+                                if (mType == 0) {
+                                    clientScore = clientScore + 1;
+                                } else {
+                                    hostScore = hostScore + 1;
+                                }
+                                mConnection.sendMessage(rivalDevice, "SCORE:" + hostScore + ":"
+                                        + clientScore);
+                                showScore();
+                                WindowManager w = getWindowManager();
+                                Display d = w.getDefaultDisplay();
+                                int width = d.getWidth();
+                                int height = d.getHeight();
+                                mBall.putOnScreen(width / 2, (height / 2 + (int) (height * .05)),
+                                        0, 0, 0, 0, 0);
                             } else {
                                 mBall.doRebound();
                             }
@@ -381,18 +394,18 @@ public class AirHockey extends Activity implements Callback {
             return new Point(-1, -1);
         }
     }
-    
-    private void showScore(){
+
+    private void showScore() {
         class showScoreRunnable implements Runnable {
             public void run() {
                 String scoreString = "";
-                if (mType == 0){
+                if (mType == 0) {
                     scoreString = hostScore + " - " + clientScore;
                 } else {
                     scoreString = clientScore + " - " + hostScore;
                 }
                 Toast.makeText(self, scoreString, 0).show();
-            }            
+            }
         }
         self.runOnUiThread(new showScoreRunnable());
     }
