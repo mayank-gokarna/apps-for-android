@@ -77,7 +77,7 @@ public class GLSprite extends Renderable {
                     y, 
                     z);
             
-            mGrid.draw(gl, true);
+            mGrid.draw(gl, true, false);
             
             gl.glPopMatrix();
         }

@@ -43,7 +43,6 @@ public class CanvasTestActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
         mCanvasSurfaceView = new CanvasSurfaceView(this);
         SimpleCanvasRenderer spriteRenderer = new SimpleCanvasRenderer();
        
@@ -74,11 +73,11 @@ public class CanvasTestActivity extends Activity {
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         
         // Make the background.
-        // Note that 512x512 is larger than the screen, so some clipping will
-        // occur when this image is drawn.
+        // Note that the background image is larger than the screen, 
+        // so some clipping will occur when it is drawn.
         CanvasSprite background = new CanvasSprite(mBitmaps[0]);
-        background.width = 512;
-        background.height = 512;
+        background.width = mBitmaps[0].getWidth();
+        background.height = mBitmaps[0].getHeight();
         spriteArray[0] = background;
         
         // This list of things to move. It points to the same content as

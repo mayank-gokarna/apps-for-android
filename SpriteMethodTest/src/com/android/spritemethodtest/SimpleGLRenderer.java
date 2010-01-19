@@ -95,7 +95,7 @@ public class SimpleGLRenderer implements GLSurfaceView.Renderer {
             gl.glMatrixMode(GL10.GL_MODELVIEW);
           
             if (mUseVerts) {
-                Grid.beginDrawing(gl, true);
+                Grid.beginDrawing(gl, true, false);
             }
             
             for (int x = 0; x < mSprites.length; x++) {
@@ -165,7 +165,7 @@ public class SimpleGLRenderer implements GLSurfaceView.Renderer {
             if (mUseHardwareBuffers) {
                 for (int x = 0; x < mSprites.length; x++) {
                     // Ditch old buffer indexes.
-                    mSprites[x].getGrid().forgetHardwareBuffers();
+                    mSprites[x].getGrid().invalidateHardwareBuffers();
                 }
             }
             
@@ -216,7 +216,7 @@ public class SimpleGLRenderer implements GLSurfaceView.Renderer {
                     mSprites[x].setTextureName(0);
                 }
                 if (mUseHardwareBuffers) {
-                    mSprites[x].getGrid().freeHardwareBuffers(gl);
+                    mSprites[x].getGrid().releaseHardwareBuffers(gl);
                 }
             }
         }
