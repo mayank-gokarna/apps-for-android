@@ -22,10 +22,7 @@
 		android:text="Start Air Hockey Demo Client" />
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content"></TextView>
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content"></TextView>
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content"></TextView>		
+
 	<Button android:id="@+id/start_demo_server"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:text="Start Multiscreen Demo Server" />
@@ -34,12 +31,18 @@
 		android:text="Start Multiscreen Demo Client" />
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content"></TextView>
+    
+  <Button android:id="@+id/start_video_server"
+    android:layout_width="fill_parent" android:layout_height="wrap_content"
+    android:text="Start Video Demo Server" />
+  <Button android:id="@+id/start_video_client"
+    android:layout_width="fill_parent" android:layout_height="wrap_content"
+    android:text="Start Video Demo Client" />        
 	<TextView android:layout_width="fill_parent"
 		android:layout_height="wrap_content"></TextView>
+    
 	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content"></TextView>
-	<TextView android:layout_width="fill_parent"
-		android:layout_height="wrap_content"></TextView>		
+		android:layout_height="wrap_content"></TextView>	
 	<Button android:id="@+id/goto_website"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:text="Visit the Click, Link, Compete Website" />

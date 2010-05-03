@@ -82,6 +82,24 @@ public class ConfigActivity extends Activity {
             }
         });
         
+        Button startVideoServer = (Button) findViewById(R.id.start_video_server);
+        startVideoServer.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent serverIntent = new Intent(self, MultiScreenVideo.class);
+                serverIntent.putExtra("isMaster", true);
+                startActivity(serverIntent);
+            }
+        });
+
+        Button startVideoClient = (Button) findViewById(R.id.start_video_client);
+        startVideoClient.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent clientIntent = new Intent(self, MultiScreenVideo.class);
+                clientIntent.putExtra("isMaster", false);
+                startActivity(clientIntent);
+            }
+        });
+        
         
         Button gotoWeb = (Button) findViewById(R.id.goto_website);
         gotoWeb.setOnClickListener(new OnClickListener() {
