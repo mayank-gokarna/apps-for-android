@@ -1,6 +1,7 @@
 HeightMapProfiler 1.0
 
 Author: Chris Pruett
+With help from: Dan Brunton
 
 ABOUT
 
