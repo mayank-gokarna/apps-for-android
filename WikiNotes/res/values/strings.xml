@@ -15,8 +15,8 @@
 	* limitations under the License.
 -->
 <resources>
-	<string name="app_name">Wiki Notes</string>
-	<string name="wiki_title">Wiki Notes -%s</string>
+    <string name="app_name">Wiki Notes</string>
+    <string name="wiki_title">Wiki Notes -%s</string>
     <string name="wiki_editing">Editing Note - %s</string>
     <string name="confirm_button">Confirm</string>
     <string name="cancel_button">Cancel</string>
