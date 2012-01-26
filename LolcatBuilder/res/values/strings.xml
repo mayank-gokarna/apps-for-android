@@ -32,13 +32,13 @@
     <string name="lolcat_caption_dialog_ok">OK</string>
     <string name="lolcat_caption_dialog_cancel">Cancel</string>
     <string name="lolcat_saving">Saving...</string>
-    <string name="lolcat_save_failed">Couldn't save photo</string>
-    <string name="lolcat_scan_failed">Couldn't scan photo on SD card</string>
-    <string name="lolcat_share_failed">Couldn't share photo</string>
+    <string name="lolcat_save_failed">"Couldn't save photo"</string>
+    <string name="lolcat_scan_failed">"Couldn't scan photo on SD card"</string>
+    <string name="lolcat_share_failed">"Couldn't share photo"</string>
     <string name="lolcat_scanning">Scanning...</string>
     <string name="lolcat_sendImage_label">Share picture via</string>
     <string name="lolcat_save_succeeded_dialog_title">Image saved!</string>
-    <string name="lolcat_save_succeeded_dialog_body_format">"Lolcat image successfully saved:\n  Filename: %s\n  Uri: %s"</string>
+    <string formatted="false" name="lolcat_save_succeeded_dialog_body_format">"Lolcat image successfully saved:\n  Filename: %s\n  Uri: %s"</string>
     <string name="lolcat_save_succeeded_dialog_view">View in gallery</string>
     <string name="lolcat_save_succeeded_dialog_share">Share</string>
     <string name="lolcat_save_succeeded_dialog_cancel">Cancel</string>

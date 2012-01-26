@@ -17,15 +17,20 @@
 package com.google.android.photostream;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
+import android.content.pm.ResolveInfo;
+import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.ViewAnimator;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.ArrayAdapter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -36,6 +41,7 @@ import android.view.ViewTreeObserver;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.AnimationUtils;
+import android.view.LayoutInflater;
 import android.net.Uri;
 
 import java.io.File;
@@ -43,6 +49,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Activity that displays a photo along with its title and the date at which it was taken.
@@ -318,6 +326,46 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
      */
     private class CropWallpaperTask extends UserTask<Flickr.Photo, Void, Boolean> {
         private File mFile;
+        private Uri _captureUri;
+        private boolean startCrop;
+                
+        // this is something to keep our information
+        class CropOption
+        {
+            CharSequence TITLE;
+            Drawable ICON;
+            Intent CROP_APP;
+        }
+        
+        // we will present the available selection in a list dialog, so we need an adapter
+        class CropOptionAdapter extends ArrayAdapter<CropOption>
+        {
+            private List<CropOption> _items;
+            private Context _ctx;
+        
+            CropOptionAdapter(Context ctx, List<CropOption> items)
+            {
+                super(ctx, R.layout.crop_option, items);
+                _items = items;
+                _ctx = ctx;
+            }
+        
+            @Override
+            public View getView( int position, View convertView, ViewGroup parent )
+            {
+                if ( convertView == null )
+                    convertView = LayoutInflater.from( _ctx ).inflate( R.layout.crop_option, null );
+        
+                CropOption item = _items.get( position );
+                if ( item != null )
+                {
+                    ( ( ImageView ) convertView.findViewById( R.id.crop_icon ) ).setImageDrawable( item.ICON );
+                    ( ( TextView ) convertView.findViewById( R.id.crop_name ) ).setText( item.TITLE );
+                    return convertView;
+                }
+                return null;
+            }
+        }
 
         @Override
         public void onPreExecute() {
@@ -360,19 +408,90 @@ public class ViewPhotoActivity extends Activity implements View.OnClickListener,
             } else {
                 final int width = getWallpaperDesiredMinimumWidth();
                 final int height = getWallpaperDesiredMinimumHeight();
+                // Initilize the default
+                _captureUri = Uri.fromFile(mFile);
+                startCrop = false;
 
-                final Intent intent = new Intent("com.android.camera.action.CROP");
-                intent.setClassName("com.android.camera", "com.android.camera.CropImage");
-                intent.setData(Uri.fromFile(mFile));
-                intent.putExtra("outputX", width);
-                intent.putExtra("outputY", height);
-                intent.putExtra("aspectX", width);
-                intent.putExtra("aspectY", height);
-                intent.putExtra("scale", true);
-                intent.putExtra("noFaceDetection", true);
-                intent.putExtra("output", Uri.parse("file:/" + mFile.getAbsolutePath()));
-
-                startActivityForResult(intent, REQUEST_CROP_IMAGE);
+                try
+                {
+                    final List<CropOption> cropOptions = new ArrayList<CropOption>();
+                
+                    // this 2 lines are all you need to find the intent!!!
+                    Intent intent = new Intent( "com.android.camera.action.CROP" );
+                    intent.setType( "image/*" );
+                
+                    List<ResolveInfo> list = getPackageManager().queryIntentActivities( intent, 0 );
+                    if ( list.size() == 0 )
+                    {
+                        // I tend to put any kind of text to be presented to the user as a resource for easier translation (if it ever comes to that...)
+                        Toast.makeText(ViewPhotoActivity.this, getText( R.string.error_crop_option ), Toast.LENGTH_LONG ).show();
+                        // this is the URI returned from the camera, it could be a file or a content URI, the crop app will take any
+                        _captureUri = null; // leave the picture there
+                    }
+                    else
+                    {
+                        intent.setData( _captureUri );
+                        intent.putExtra("outputX", width);
+                        intent.putExtra("outputY", height);
+                        intent.putExtra("aspectX", width);
+                        intent.putExtra("aspectY", height);
+                        intent.putExtra("scale", true);
+                        intent.putExtra("noFaceDetection", true);
+                        intent.putExtra("output", Uri.parse("file:/" + mFile.getAbsolutePath()));
+                        //intent.putExtra( "", true ); // I seem to have lost the option to have the crop app auto rotate the image, any takers?
+                        intent.putExtra( "return-data", false );
+                
+                        for ( ResolveInfo res : list )
+                        {
+                            final CropOption co = new CropOption();
+                            co.TITLE = getPackageManager().getApplicationLabel( res.activityInfo.applicationInfo );
+                            co.ICON = getPackageManager().getApplicationIcon( res.activityInfo.applicationInfo );
+                            co.CROP_APP = new Intent( intent );
+                            co.CROP_APP.setComponent( new ComponentName( res.activityInfo.packageName, res.activityInfo.name ) );
+                            cropOptions.add( co );
+                        }
+                
+                        // set up the chooser dialog
+                        CropOptionAdapter adapter = new CropOptionAdapter( ViewPhotoActivity.this, cropOptions );
+                        AlertDialog.Builder builder = new AlertDialog.Builder( ViewPhotoActivity.this );
+                        builder.setTitle( R.string.choose_crop_title );
+                        builder.setAdapter( adapter, new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, int item )
+                            {
+                                startCrop = true;
+                                startActivityForResult( cropOptions.get( item ).CROP_APP, REQUEST_CROP_IMAGE);
+                            }
+                        } );
+                        builder.setOnCancelListener( new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel( DialogInterface dialog )
+                            {
+                                if (startCrop == true)
+                                {
+                                    // we don't want to keep the capture around if we cancel the crop because
+                                    // we don't want it anymore
+                                    if ( _captureUri != null)
+                                    {
+                                        getContentResolver().delete( _captureUri, null, null );
+                                        _captureUri = null;
+                                    }
+                                }
+                                else
+                                {
+                                    // User canceled the selection of a Crop Application
+                                    cleanupWallpaper();
+                                    showWallpaperError();
+                                }
+                            }
+                        } );
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                        }
+                }
+                catch ( Exception e )
+                {
+                    android.util.Log.e(Flickr.LOG_TAG, "processing capture", e );
+                }
             }
 
             mTask = null;

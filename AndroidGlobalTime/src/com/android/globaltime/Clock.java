@@ -19,12 +19,16 @@ package com.android.globaltime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.text.DateFormat;
+
+import android.content.Context;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.pim.DateUtils;
+import android.text.format.DateUtils;
+//import android.text.format.DateFormat;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -232,7 +236,9 @@ public class Clock {
         // Get the city name and digital time strings
         String cityName = mCity.getName();
         cal.setTimeInMillis(mTime);
-        String time = DateUtils.timeString(cal.getTimeInMillis()) + " "  +
+        //java.text.DateFormat mTimeFormat = android.text.format.DateFormat.getTimeFormat(this.getApplicationContext());
+        DateFormat mTimeFormat = DateFormat.getTimeInstance();
+        String time = mTimeFormat.format(cal.getTimeInMillis()) + " "  +
             DateUtils.getDayOfWeekString(cal.get(Calendar.DAY_OF_WEEK),
                     DateUtils.LENGTH_SHORT) + " " +
             " (UTC" +

@@ -55,16 +55,16 @@ For more information, visit us at http://code.google.com/p/apps-for-android/\n"
     <string name="export_dismiss_button">Okay</string>    
     <string name="import_confirm_title">Are you sure?</string>
     <string name="import_confirm_body">Be careful! Importing notes will destroy all the notes you currently have!\n\n
-If you don't want to lose your current notes, please touch 'Cancel'.\n\n
-If you wish to proceed with the import, be sure that a file named WikiNotes-import.xml is on your removable storage card (SD card) and touch 'Proceed'.\n</string>
+If you don\'t want to lose your current notes, please touch \'Cancel\'.\n\n
+If you wish to proceed with the import, be sure that a file named WikiNotes-import.xml is on your removable storage card (SD card) and touch \'Proceed\'.\n</string>
     <string name="import_confirm_button">Proceed</string>
     <string name="import_cancel_button">Cancel</string>
     <string name="import_success">Successfully imported %1$d notes.</string>
     <string name="import_success_title">Import Succeeded</string>
     <string name="import_failure_title">Import Failed</string>
     <string name="import_failure_io">An error occurred while reading the data to import.\n\nPlease check your storage card, and try again.</string>
-    <string name="import_failure_corrupt">The data in the import file doesn't seem to be WikiNotes XML.\n\nPlease verify that the file was previously exported from WikiNotes, and try again.</string>
-    <string name="import_failure_nofile">There doesn't seem to be a file to import data from.\n\nPlease check your storage card and copy a file previously exported from WikiNotes into the root folder of the card, under the name "WikiNotes-import.xml".</string>
+    <string name="import_failure_corrupt">The data in the import file doesn\'t seem to be WikiNotes XML.\n\nPlease verify that the file was previously exported from WikiNotes, and try again.</string>
+    <string name="import_failure_nofile">There doesn\'t seem to be a file to import data from.\n\nPlease check your storage card and copy a file previously exported from WikiNotes into the root folder of the card, under the name "WikiNotes-import.xml".</string>
     <string name="email_leader">Hello! I thought you might be interested in seeing this note I recorded on my Android phone.\n\n%1$s</string>
     <string name="menu_email">Mail Note</string>
 </resources>

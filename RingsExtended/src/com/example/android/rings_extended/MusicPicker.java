@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.database.CharArrayBuffer;
 import android.database.Cursor;
 import android.media.AudioManager;
-import android.media.MediaFile;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -232,14 +231,14 @@ public class MusicPicker extends ListActivity
             builder.delete(0, builder.length());
 
             String name = cursor.getString(mAlbumIdx);
-            if (name == null || name.equals(MediaFile.UNKNOWN_STRING)) {
+            if (name == null || name.equals(MediaStore.UNKNOWN_STRING)) {
                 builder.append(mUnknownAlbum);
             } else {
                 builder.append(name);
             }
             builder.append('\n');
             name = cursor.getString(mArtistIdx);
-            if (name == null || name.equals(MediaFile.UNKNOWN_STRING)) {
+            if (name == null || name.equals(MediaStore.UNKNOWN_STRING)) {
                 builder.append(mUnknownArtist);
             } else {
                 builder.append(name);
